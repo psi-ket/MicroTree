@@ -8,6 +8,7 @@ import { createDatabase, createRepositories, type DatabaseHandle } from '@resear
 import { detectToolchain, type Toolchain } from '@research-studio/latex-engine';
 import { buildApp, type RuntimeApp } from '../src/app';
 import type { ModelProviderFactory } from '../src/services/ai/provider-service';
+import type { DocumentRuntimeOptions } from '../src/services/document-runtime';
 import type { LibraryRuntimeOptions } from '../src/services/library-runtime';
 import type { LiteratureServiceOptions } from '../src/services/literature-service';
 import { loadConfig, type RuntimeConfig } from '../src/config';
@@ -29,6 +30,7 @@ export interface TestAiOptions {
   config?: Record<string, string>;
   literature?: LiteratureServiceOptions;
   library?: LibraryRuntimeOptions;
+  documents?: DocumentRuntimeOptions;
 }
 
 export interface TestRuntime extends RuntimeApp {
@@ -67,6 +69,7 @@ async function start(base: string, ai: TestAiOptions, secrets: SecretStore): Pro
     ai: { db: openAiDb(db.sqlite), secrets, env: ai.env ?? {}, modelFactory: ai.modelFactory, agentRegistry: ai.agentRegistry },
     literature: ai.literature,
     library: { db: db.db, ...ai.library },
+    ...(ai.documents ? { documents: ai.documents } : {}),
   });
 
   const session = await runtime.app.inject({

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { AgentActivitySchema, AgentRunSchema, ConversationMessageSchema, EditProposalSchema } from './ai';
+import { DocumentJobSchema } from './documents';
 import { ImportJobSchema } from './library';
 import { CompileJobSchema, ProjectSchema } from './schemas';
 
@@ -57,6 +58,10 @@ export const ServerEventSchema = z.discriminatedUnion('type', [
   // changed (IDs only; clients refetch what they show).
   z.object({ type: z.literal('library.job'), job: ImportJobSchema }),
   z.object({ type: z.literal('library.changed'), kind: z.enum(['items', 'collections']), ids: z.array(z.string()) }),
+  // Documents and retrieval (M3.3): processing progress, and a notice that the
+  // search index changed (clients refetch the index status).
+  z.object({ type: z.literal('documents.job'), job: DocumentJobSchema }),
+  z.object({ type: z.literal('retrieval.changed') }),
 ]);
 export type ServerEvent = z.infer<typeof ServerEventSchema>;
 export type ServerEventType = ServerEvent['type'];

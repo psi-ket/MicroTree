@@ -62,6 +62,22 @@ const EnvSchema = z.object({
   RS_ZOTERO_URL: z.url({ protocol: /^https?$/ }).default('https://api.zotero.org'),
   /** Zotero desktop's local API; must be on this computer. */
   RS_ZOTERO_LOCAL_URL: z.url({ protocol: /^http$/ }).default('http://localhost:23119/api'),
+  // Document intelligence and retrieval (M3.3)
+  RS_GROBID: z.enum(['on', 'off']).default('on'),
+  /** GROBID service; a host other than this computer needs RS_GROBID_ALLOW_REMOTE=1. */
+  RS_GROBID_URL: z.url({ protocol: /^https?$/ }).default('http://127.0.0.1:8070'),
+  RS_GROBID_ALLOW_REMOTE: z.enum(['0', '1']).default('0'),
+  RS_GROBID_TIMEOUT_MS: z.coerce.number().int().min(10_000).max(60 * 60_000).default(180_000),
+  /** GROBID consolidation calls external metadata services from the GROBID server. Off by default. */
+  RS_GROBID_CONSOLIDATION: z.enum(['0', '1']).default('0'),
+  RS_PYMUPDF: z.enum(['auto', 'off']).default('auto'),
+  /** Python with PyMuPDF installed (`pip install pymupdf`). */
+  RS_PYTHON: z.string().min(1).max(500).optional(),
+  RS_INGESTION_CONCURRENCY: z.coerce.number().int().min(1).max(8).default(2),
+  RS_INGESTION_MAX_PAGES: z.coerce.number().int().min(1).max(5000).default(500),
+  /** Default embedding endpoint (Ollama). Changing it in the app is limited to this computer unless remote is allowed. */
+  RS_OLLAMA_URL: z.url({ protocol: /^https?$/ }).default('http://127.0.0.1:11434'),
+  RS_EMBEDDINGS_ALLOW_REMOTE: z.enum(['0', '1']).default('0'),
 });
 
 export interface RuntimeConfig {
@@ -105,6 +121,19 @@ export interface RuntimeConfig {
     maxPdfBytes: number;
     zoteroUrl: string;
     zoteroLocalUrl: string;
+  };
+  documents: {
+    grobidEnabled: boolean;
+    grobidUrl: string;
+    grobidAllowRemote: boolean;
+    grobidTimeoutMs: number;
+    grobidConsolidation: boolean;
+    pymupdfEnabled: boolean;
+    python: string;
+    concurrency: number;
+    maxPages: number;
+    ollamaUrl: string;
+    embeddingsAllowRemote: boolean;
   };
 }
 
@@ -181,6 +210,19 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): RuntimeConfig 
       maxPdfBytes: e.RS_LIBRARY_MAX_PDF_BYTES,
       zoteroUrl: e.RS_ZOTERO_URL.replace(/\/+$/, ''),
       zoteroLocalUrl: e.RS_ZOTERO_LOCAL_URL.replace(/\/+$/, ''),
+    },
+    documents: {
+      grobidEnabled: e.RS_GROBID === 'on',
+      grobidUrl: e.RS_GROBID_URL.replace(/\/+$/, ''),
+      grobidAllowRemote: e.RS_GROBID_ALLOW_REMOTE === '1',
+      grobidTimeoutMs: e.RS_GROBID_TIMEOUT_MS,
+      grobidConsolidation: e.RS_GROBID_CONSOLIDATION === '1',
+      pymupdfEnabled: e.RS_PYMUPDF === 'auto',
+      python: e.RS_PYTHON ?? (process.platform === 'win32' ? 'python' : 'python3'),
+      concurrency: e.RS_INGESTION_CONCURRENCY,
+      maxPages: e.RS_INGESTION_MAX_PAGES,
+      ollamaUrl: e.RS_OLLAMA_URL.replace(/\/+$/, ''),
+      embeddingsAllowRemote: e.RS_EMBEDDINGS_ALLOW_REMOTE === '1',
     },
   };
 }
