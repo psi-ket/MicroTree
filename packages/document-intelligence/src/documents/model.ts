@@ -251,6 +251,28 @@ export interface NormalizedDocument {
   warnings: string[];
 }
 
+/** A retrieval passage produced by segmentation, before it is stored. */
+export interface PassageDraft {
+  order: number;
+  kind: PassageKind;
+  sectionKey: string | null;
+  sectionPath: string;
+  sectionType: SectionType;
+  /** Blocks whose text the passage holds, in order; the first is the parent block. */
+  blockKeys: string[];
+  text: string;
+  normalizedText: string;
+  textHash: string;
+  stableKey: string;
+  pageStart: number | null;
+  pageEnd: number | null;
+  coordinates: DocumentCoordinate[];
+  tokenCount: number;
+  language: string | null;
+  /** Sentences contained in this passage, by block and order (kept for M5). */
+  sentences: { blockKey: string; order: number }[];
+}
+
 export function emptyMetadata(): ExtractedMetadata {
   return { title: null, authors: [], abstract: null, publicationDate: null, doi: null, arxivId: null, keywords: [], venue: null, language: null };
 }
