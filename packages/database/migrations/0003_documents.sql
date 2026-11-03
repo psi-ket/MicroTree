@@ -212,7 +212,9 @@ CREATE TABLE `passage_embeddings` (
 CREATE INDEX `passage_embeddings_extraction_idx` ON `passage_embeddings` (`space_id`,`extraction_id`);--> statement-breakpoint
 -- Keyword index over passages (FTS5). The body is the normalised search text
 -- (the original text stays in document_passages.text). Underscores stay inside
--- tokens (H_2); hyphens split, so "qubit-level" matches "qubit level".
+-- tokens (H_2); hyphens split, so "qubit-level" matches "qubit level". English
+-- Porter stemming lets "codes" match "code" and "Hamiltonians" "Hamiltonian";
+-- Greek letters and identifiers pass through unchanged.
 CREATE VIRTUAL TABLE `passage_fts` USING fts5(
 	`body`,
 	`heading`,
@@ -220,7 +222,7 @@ CREATE VIRTUAL TABLE `passage_fts` USING fts5(
 	`extraction_id` UNINDEXED,
 	`kind` UNINDEXED,
 	`section_type` UNINDEXED,
-	tokenize = "unicode61 remove_diacritics 2 tokenchars '_'"
+	tokenize = "porter unicode61 remove_diacritics 2 tokenchars '_'"
 );
 --> statement-breakpoint
 CREATE TRIGGER `document_passages_fts_delete` AFTER DELETE ON `document_passages` BEGIN
