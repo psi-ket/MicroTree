@@ -19,6 +19,17 @@ import {
   type ReferenceMetadata,
 } from '@research-studio/document-intelligence';
 import {
+  APPROVAL_STATUSES,
+  COMPILATION_STATUSES,
+  INSERTION_STATUSES,
+  PRIVACY_MODES,
+  VERSION_ORIGINS,
+  VISUAL_ARTIFACT_TYPES,
+  VISUAL_ASSET_KINDS,
+  VISUAL_TASK_STATUSES,
+  VISUAL_TASK_TYPES,
+  type PreprocessOperation,
+  type VisualProvenance,
   ATTACHMENT_SOURCES,
   ATTACHMENT_TYPES,
   AUDIT_OUTCOMES,
@@ -688,4 +699,135 @@ export const passageEmbeddings = sqliteTable(
     embeddedAt: text('embedded_at').notNull(),
   },
   (t) => [primaryKey({ columns: [t.spaceId, t.passageId] }), index('passage_embeddings_extraction_idx').on(t.spaceId, t.extractionId)],
+);
+
+// ------------------------------------------------------------------------
+// Visual intelligence (M4, migration 0004)
+// ------------------------------------------------------------------------
+
+/**
+ * Images and renders kept for visual work. Bytes are stored once by SHA-256
+ * in the runtime's visual object store, never in SQLite. A variant names its
+ * parent and the exact preprocessing that produced it; originals never change.
+ */
+export const visualAssets = sqliteTable(
+  'visual_assets',
+  {
+    id: text('id').primaryKey(),
+    kind: text('kind', { enum: VISUAL_ASSET_KINDS }).notNull(),
+    parentAssetId: text('parent_asset_id'),
+    /** The original at the root of a variant chain (itself for originals). */
+    originalAssetId: text('original_asset_id').notNull(),
+    storageKey: text('storage_key').notNull(),
+    mimeType: text('mime_type').notNull(),
+    fileSize: integer('file_size').notNull(),
+    sha256: text('sha256').notNull(),
+    width: integer('width'),
+    height: integer('height'),
+    operations: text('operations', { mode: 'json' }).$type<PreprocessOperation[]>().notNull().default([]),
+    preprocessVersion: text('preprocess_version'),
+    provenance: text('provenance', { mode: 'json' }).$type<VisualProvenance>().notNull(),
+    /** Display name only; never part of a path. */
+    label: text('label').notNull(),
+    projectId: text('project_id').references(() => projects.id, { onDelete: 'set null' }),
+    createdAt: text('created_at').notNull(),
+  },
+  (t) => [index('visual_assets_original_idx').on(t.originalAssetId), index('visual_assets_sha_idx').on(t.sha256), index('visual_assets_created_idx').on(t.createdAt)],
+);
+
+export const visualArtifacts = sqliteTable(
+  'visual_artifacts',
+  {
+    id: text('id').primaryKey(),
+    artifactType: text('artifact_type', { enum: VISUAL_ARTIFACT_TYPES }).notNull(),
+    title: text('title').notNull(),
+    description: text('description'),
+    projectId: text('project_id').references(() => projects.id, { onDelete: 'set null' }),
+    sourceAssetId: text('source_asset_id'),
+    currentVersion: integer('current_version').notNull(),
+    approval: text('approval', { enum: APPROVAL_STATUSES }).notNull().default('draft'),
+    approvedAt: text('approved_at'),
+    approvedVersion: integer('approved_version'),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (t) => [index('visual_artifacts_updated_idx').on(t.updatedAt), index('visual_artifacts_project_idx').on(t.projectId)],
+);
+
+export const visualArtifactVersions = sqliteTable(
+  'visual_artifact_versions',
+  {
+    id: text('id').primaryKey(),
+    artifactId: text('artifact_id')
+      .notNull()
+      .references(() => visualArtifacts.id, { onDelete: 'cascade' }),
+    versionNumber: integer('version_number').notNull(),
+    sourceCode: text('source_code').notNull(),
+    structuredData: text('structured_data', { mode: 'json' }).$type<Record<string, unknown>>(),
+    dataCsv: text('data_csv'),
+    warnings: text('warnings', { mode: 'json' }).$type<string[]>().notNull().default([]),
+    origin: text('origin', { enum: VERSION_ORIGINS }).notNull(),
+    changeDescription: text('change_description').notNull(),
+    packages: text('packages', { mode: 'json' }).$type<string[]>().notNull().default([]),
+    compilationStatus: text('compilation_status', { enum: COMPILATION_STATUSES }).notNull().default('not-compiled'),
+    diagnostics: text('diagnostics', { mode: 'json' }).$type<Diagnostic[]>().notNull().default([]),
+    compileLog: text('compile_log'),
+    previewAssetId: text('preview_asset_id'),
+    taskId: text('task_id'),
+    createdAt: text('created_at').notNull(),
+  },
+  (t) => [uniqueIndex('visual_artifact_versions_uq').on(t.artifactId, t.versionNumber)],
+);
+
+export const visualTasks = sqliteTable(
+  'visual_tasks',
+  {
+    id: text('id').primaryKey(),
+    taskType: text('task_type', { enum: VISUAL_TASK_TYPES }).notNull(),
+    /** What ran after automatic detection (null while undecided). */
+    resolvedType: text('resolved_type', { enum: VISUAL_TASK_TYPES }),
+    projectId: text('project_id').references(() => projects.id, { onDelete: 'set null' }),
+    sourceAssetId: text('source_asset_id'),
+    inputAssetId: text('input_asset_id'),
+    sourceAttachmentId: text('source_attachment_id'),
+    sourcePage: integer('source_page'),
+    providerId: text('provider_id'),
+    providerKind: text('provider_kind'),
+    model: text('model'),
+    privacyMode: text('privacy_mode', { enum: PRIVACY_MODES }).notNull(),
+    consentAt: text('consent_at'),
+    promptVersion: text('prompt_version').notNull(),
+    config: text('config', { mode: 'json' }).$type<Record<string, unknown>>().notNull(),
+    status: text('status', { enum: VISUAL_TASK_STATUSES }).notNull(),
+    progress: text('progress'),
+    error: text('error'),
+    /** Choices offered when the classification was ambiguous. */
+    choices: text('choices', { mode: 'json' }).$type<string[]>(),
+    usage: text('usage', { mode: 'json' }).$type<Record<string, number | null>>(),
+    artifactId: text('artifact_id'),
+    artifactVersion: integer('artifact_version'),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+    finishedAt: text('finished_at'),
+  },
+  (t) => [index('visual_tasks_created_idx').on(t.createdAt), index('visual_tasks_status_idx').on(t.status)],
+);
+
+/** A reviewed insertion of an artifact version into a project, kept for rollback. */
+export const visualInsertions = sqliteTable(
+  'visual_insertions',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    artifactId: text('artifact_id').notNull(),
+    versionNumber: integer('version_number').notNull(),
+    createdFiles: text('created_files', { mode: 'json' }).$type<{ path: string; sha256: string }[]>().notNull(),
+    modifiedFile: text('modified_file', { mode: 'json' }).$type<{ path: string; beforeSha256: string; afterSha256: string; before: string } | null>(),
+    status: text('status', { enum: INSERTION_STATUSES }).notNull(),
+    createdAt: text('created_at').notNull(),
+    rolledBackAt: text('rolled_back_at'),
+  },
+  (t) => [index('visual_insertions_project_idx').on(t.projectId)],
 );

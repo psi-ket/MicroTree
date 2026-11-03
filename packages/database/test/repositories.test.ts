@@ -63,6 +63,11 @@ describe('migrations', () => {
       'projects',
       'scholarly_works',
       'settings',
+      'visual_artifact_versions',
+      'visual_artifacts',
+      'visual_assets',
+      'visual_insertions',
+      'visual_tasks',
     ]);
   });
 

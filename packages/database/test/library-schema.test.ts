@@ -212,7 +212,7 @@ describe('library schema', () => {
   it('can be rolled back with the down script and applied again', () => {
     addWork('w1');
     // Later migrations depend on the library tables, so they are rolled back first (newest first).
-    for (const name of ['0003_documents', '0002_library']) {
+    for (const name of ['0004_visual', '0003_documents', '0002_library']) {
       const down = readFileSync(fileURLToPath(new URL(`../migrations/down/${name}.sql`, import.meta.url)), 'utf8');
       handle.sqlite.exec(down);
       // drizzle's bookkeeping table has no usable id in SQLite; the latest row is the one with the newest created_at.
