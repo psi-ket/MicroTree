@@ -285,7 +285,7 @@ describe('full-text view', () => {
     expect(dialog.textContent).toContain('In your library (same identifier)');
     expect(within(dialog).getByText('ρ').tagName).toBe('CODE');
     await expectAccessible(baseElement);
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Open "Introduction" in the PDF (page 1)' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'p. 1, open "Introduction" in the PDF' }));
     const highlight = await screen.findByTestId('pdf-highlight');
     expect(highlight.closest('[data-page]')!.getAttribute('data-page')).toBe('1');
     expect(screen.getByRole('button', { name: 'Back to the text' })).toBeTruthy();

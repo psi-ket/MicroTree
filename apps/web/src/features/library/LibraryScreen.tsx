@@ -93,7 +93,7 @@ export function LibraryScreen({ backLabel, onBack }: { backLabel: string; onBack
           <BookMarked className="size-[18px] text-accent" aria-hidden />
           Library
         </h1>
-        <nav aria-label="Library sections" className="flex items-center gap-0.5 sm:ml-3">
+        <nav aria-label="Library sections" className="flex flex-wrap items-center gap-0.5 sm:ml-3 sm:flex-nowrap">
           {TABS.map((t) => (
             <button
               key={t.id}
@@ -101,7 +101,7 @@ export function LibraryScreen({ backLabel, onBack }: { backLabel: string; onBack
               aria-current={tab === t.id ? 'page' : undefined}
               onClick={() => setTab(t.id)}
               className={cn(
-                'relative h-8 rounded-ctl px-2.5 text-ui text-ink-muted hover:bg-sunken hover:text-ink',
+                'relative h-8 whitespace-nowrap rounded-ctl px-2.5 text-ui text-ink-muted hover:bg-sunken hover:text-ink',
                 tab === t.id && 'text-ink after:absolute after:inset-x-2.5 after:-bottom-[9px] after:h-0.5 after:bg-accent sm:after:-bottom-[13px]',
               )}
             >

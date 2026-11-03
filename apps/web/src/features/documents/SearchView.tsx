@@ -178,7 +178,7 @@ export function SearchView({ paperScope, onClearPaperScope }: { paperScope: { id
                 </Button>
               </div>
             ) : (
-              <div>
+              <div className="flex flex-col">
                 <Label htmlFor="rs-scope" className="text-2xs text-ink-muted">
                   Scope
                 </Label>
@@ -192,7 +192,7 @@ export function SearchView({ paperScope, onClearPaperScope }: { paperScope: { id
                 </Select>
               </div>
             )}
-            <div>
+            <div className="flex flex-col">
               <Label htmlFor="rs-section" className="text-2xs text-ink-muted">
                 Section
               </Label>
@@ -205,20 +205,20 @@ export function SearchView({ paperScope, onClearPaperScope }: { paperScope: { id
                 ))}
               </Select>
             </div>
-            <div>
+            <div className="flex flex-col">
               <Label htmlFor="rs-author" className="text-2xs text-ink-muted">
                 Author
               </Label>
               <Input id="rs-author" value={author} onChange={(e) => setAuthor(e.target.value)} className="h-7 w-32 text-xs" maxLength={200} />
             </div>
             <div className="flex items-end gap-1">
-              <div>
+              <div className="flex flex-col">
                 <Label htmlFor="rs-from" className="text-2xs text-ink-muted">
                   From year
                 </Label>
                 <Input id="rs-from" inputMode="numeric" value={yearFrom} onChange={(e) => setYearFrom(e.target.value)} className="h-7 w-16 text-xs" maxLength={4} />
               </div>
-              <div>
+              <div className="flex flex-col">
                 <Label htmlFor="rs-to" className="text-2xs text-ink-muted">
                   To year
                 </Label>

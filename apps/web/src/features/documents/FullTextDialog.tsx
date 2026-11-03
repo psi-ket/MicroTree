@@ -14,9 +14,11 @@ type Jump = { page: number; highlights: DocumentCoordinate[] };
 
 function PageButton({ page, coords, onJump, label }: { page: number | null; coords: DocumentCoordinate[]; onJump: (j: Jump) => void; label?: string }) {
   if (!page) return <span className="text-2xs text-ink-muted">page unknown</span>;
+  // The visible text starts the accessible name; the rest says what happens.
   return (
-    <button type="button" className="text-2xs text-accent underline-offset-2 hover:underline" onClick={() => onJump({ page, highlights: coords })} aria-label={label ?? `Open the PDF at page ${page}`}>
+    <button type="button" className="text-2xs text-accent underline-offset-2 hover:underline" onClick={() => onJump({ page, highlights: coords })}>
       p. {page}
+      <span className="sr-only">{label ? `, open ${label} in the PDF` : ', open the PDF at this page'}</span>
     </button>
   );
 }
@@ -97,8 +99,8 @@ function Contents({ structure, onJump }: { structure: DocumentStructure; onJump:
         <p className={cn('leading-relaxed text-ink', b.type === 'list' && 'whitespace-pre-line')}>
           <BlockText block={b} />
         </p>
-        <div className="mt-0.5 flex gap-2 opacity-70 group-hover:opacity-100">
-          <PageButton page={b.pageStart} coords={b.coordinates} onJump={onJump} label={`Open this paragraph in the PDF (page ${b.pageStart})`} />
+        <div className="mt-0.5 flex gap-2">
+          <PageButton page={b.pageStart} coords={b.coordinates} onJump={onJump} label="this paragraph" />
           {b.type === 'footnote' ? <span className="text-2xs text-ink-muted">footnote</span> : null}
         </div>
       </div>
@@ -112,7 +114,7 @@ function Contents({ structure, onJump }: { structure: DocumentStructure; onJump:
           {s.headingNumber ? `${s.headingNumber} ` : ''}
           {s.heading}
         </h3>
-        <PageButton page={s.pageStart} coords={s.coordinates} onJump={onJump} label={`Open "${s.heading}" in the PDF (page ${s.pageStart})`} />
+        <PageButton page={s.pageStart} coords={s.coordinates} onJump={onJump} label={`"${s.heading}"`} />
       </div>
       {s.type === 'references' ? (
         <ol className="mt-2 flex list-decimal flex-col gap-1.5 pl-5 text-xs text-ink">

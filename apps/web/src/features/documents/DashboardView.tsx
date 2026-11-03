@@ -60,7 +60,7 @@ function EmbeddingSettings({ providers }: { providers: RetrievalProviders }) {
           if (model.trim() && model !== providers.settings.embeddingModel) void save({ embeddingModel: model.trim() });
         }}
       >
-        <div>
+        <div className="flex flex-col">
           <Label htmlFor="emb-model" className="text-2xs text-ink-muted">
             Embedding model
           </Label>
