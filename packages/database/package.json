@@ -15,6 +15,7 @@
     "db:check": "drizzle-kit check"
   },
   "dependencies": {
+    "@research-studio/document-intelligence": "workspace:*",
     "@research-studio/shared-types": "workspace:*",
     "better-sqlite3": "^13.0.3",
     "drizzle-orm": "^0.45.4"

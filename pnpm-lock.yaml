@@ -287,6 +287,9 @@ importers:
 
   packages/database:
     dependencies:
+      '@research-studio/document-intelligence':
+        specifier: workspace:*
+        version: link:../document-intelligence
       '@research-studio/shared-types':
         specifier: workspace:*
         version: link:../shared-types
@@ -312,6 +315,12 @@ importers:
       '@research-studio/shared-types':
         specifier: workspace:*
         version: link:../shared-types
+
+  packages/document-intelligence:
+    devDependencies:
+      pdfjs-dist:
+        specifier: 6.5.438
+        version: 6.5.438
 
   packages/latex-engine:
     dependencies:

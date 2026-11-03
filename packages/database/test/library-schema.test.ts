@@ -211,10 +211,13 @@ describe('library schema', () => {
 
   it('can be rolled back with the down script and applied again', () => {
     addWork('w1');
-    const down = readFileSync(fileURLToPath(new URL('../migrations/down/0002_library.sql', import.meta.url)), 'utf8');
-    handle.sqlite.exec(down);
-    // drizzle's bookkeeping table has no usable id in SQLite; the latest row is the one with the newest created_at.
-    handle.sqlite.prepare('DELETE FROM __drizzle_migrations WHERE created_at = (SELECT max(created_at) FROM __drizzle_migrations)').run();
+    // Later migrations depend on the library tables, so they are rolled back first (newest first).
+    for (const name of ['0003_documents', '0002_library']) {
+      const down = readFileSync(fileURLToPath(new URL(`../migrations/down/${name}.sql`, import.meta.url)), 'utf8');
+      handle.sqlite.exec(down);
+      // drizzle's bookkeeping table has no usable id in SQLite; the latest row is the one with the newest created_at.
+      handle.sqlite.prepare('DELETE FROM __drizzle_migrations WHERE created_at = (SELECT max(created_at) FROM __drizzle_migrations)').run();
+    }
     const tables = () =>
       (handle.sqlite.prepare("SELECT name FROM sqlite_master WHERE type='table' AND (name LIKE 'library_%' OR name = 'scholarly_works')").all() as {
         name: string;
