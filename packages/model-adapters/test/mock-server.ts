@@ -89,6 +89,11 @@ export class MockProviderServer {
     if (p.includes(':generateContent')) return this.gemini(res, p, false);
     if (p === '/api/tags') return this.json(res, 200, { models: [{ name: 'qwen2.5:7b', model: 'qwen2.5:7b' }] });
     if (p === '/api/chat') return this.ollama(res, body!);
+    if (p === '/api/show') {
+      const model = String(body?.model ?? '');
+      if (model === 'unknown-caps') return this.json(res, 200, {});
+      return this.json(res, 200, { capabilities: /vision|llava|vl/.test(model) ? ['completion', 'vision'] : ['completion'] });
+    }
     this.json(res, 404, { error: 'no route' });
   }
 

@@ -237,7 +237,8 @@ describe('message content', () => {
       expect(info.capabilities).toMatchObject({ toolUse: false, reasoning: false });
     }
     const vision = Object.values(PROVIDER_KINDS).filter((i) => i.capabilities.vision).map((i) => i.kind);
-    expect(vision.sort()).toEqual(['anthropic', 'gemini', 'openai']);
+    // Ollama sends images since M4; per-model support comes from describeModel (/api/show).
+    expect(vision.sort()).toEqual(['anthropic', 'gemini', 'ollama', 'openai']);
   });
 });
 

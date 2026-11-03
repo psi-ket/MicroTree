@@ -255,7 +255,26 @@ describe('image input', () => {
     expect(contents[2]!.parts).toEqual([{ text: 'What does this figure show?' }, { inlineData: { mimeType: 'image/png', data: B64 } }]);
   });
 
-  it.each(['openai-compatible', 'ollama'] as const)('%s refuses images before sending anything', async (kind) => {
+  it('ollama sends images as base64 in the message, and reports per-model vision support', async () => {
+    await collect(provider('ollama').stream(withImage('llama3.2-vision')));
+    const messages = sent().messages as Record<string, unknown>[];
+    expect(messages[3]).toEqual({ role: 'user', content: 'What does this figure show?', images: [B64] });
+    expect(messages[2]).toEqual({ role: 'assistant', content: 'Earlier answer.' });
+    const p = provider('ollama');
+    expect(await p.describeModel!('llama3.2-vision')).toEqual({ vision: true });
+    expect(await p.describeModel!('qwen2.5:7b')).toEqual({ vision: false });
+    expect(await p.describeModel!('unknown-caps')).toEqual({ vision: null });
+  });
+
+  it('openai passes the image detail level when one is set', async () => {
+    const r = withImage('ok');
+    (r.messages[2]!.content as { detail?: string }[])[1]!.detail = 'high';
+    await collect(provider('openai').stream(r));
+    const messages = sent().messages as { content: { image_url?: unknown }[] }[];
+    expect(messages[3]!.content[1]!.image_url).toEqual({ url: `data:image/png;base64,${B64}`, detail: 'high' });
+  });
+
+  it.each(['openai-compatible'] as const)('%s refuses images before sending anything', async (kind) => {
     const before = server.requests.length;
     await expect(collect(provider(kind).stream(withImage('ok')))).rejects.toMatchObject({ code: 'unsupported-modality' });
     expect(server.requests.length).toBe(before);
