@@ -71,14 +71,14 @@ export class HashEmbeddingProvider implements EmbeddingProvider {
   async embed(texts: string[]): Promise<EmbeddingResult[]> {
     this.calls.push(texts);
     return texts.map((t) => {
-      const v = new Array<number>(this.dimensions).fill(0);
+      const v: number[] = Array.from({ length: this.dimensions }, () => 0);
       const norm = normalizeSearchText(t);
       const feats = [...(norm.match(/\p{L}+/gu) ?? []), ...[...norm.replace(/\s+/g, ' ')].map((_, i, a) => a.slice(i, i + 3).join(''))];
       for (const f of feats) {
         const h = createHash('md5').update(f).digest();
         v[h.readUInt16LE(0) % this.dimensions]! += h[2]! & 1 ? 1 : -1;
       }
-      if (v.every((x) => x === 0)) v[0] = 1;
+      if (!v.some((x) => x !== 0)) v[0] = 1;
       return { vector: v, dimensions: this.dimensions };
     });
   }
