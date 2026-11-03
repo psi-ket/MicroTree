@@ -240,3 +240,72 @@ is listed above. The production runtime bundle was smoke-tested by a script
 - [ ] Zotero: local API is import-only; no group libraries; no automatic two-way sync
 - [ ] Scanned PDFs are not OCRed
 - [ ] The E2E restart step reloads the app; the runtime-process restart is covered by the runtime integration test only
+
+## M3.3 — Scientific PDF intelligence, full-text extraction and hybrid retrieval
+
+Verification (2026-11-03, Linux, Node 22.23, Python 3.13 with PyMuPDF 2.1,
+Chromium for the E2E spec): `pnpm typecheck` and `pnpm lint` pass (17/17
+packages). `pnpm turbo run test --continue`: 845 passed, 22 skipped, 25
+failed. **All 25 failures exist unchanged at the M3.2 commit** in this
+container and come from the environment (no TeX toolchain, no Claude Code or
+Codex CLI, one Windows-path containment test that fails on Linux) in
+`latex-engine` (3), `agent-adapters` (11), `document-engine` (1) and
+`runtime` (10); every new or changed package passes. `e2e/documents.spec.ts`
+passes in Chromium [x]; `e2e/library.spec.ts` passes up to its compile step,
+which needs TeX.
+
+**What was not verified:** no real GROBID service (Docker had no daemon here
+and the GROBID documentation site was not reachable; the client follows the
+GROBID 0.9 documentation from its repository and is tested against a mock
+and a synthetic TEI file), no real embedding model (Ollama was not
+available; tested against a mock), no real published paper (all PDFs and
+TEI are synthetic).
+
+**Model and storage (`document-intelligence`, 27 tests; `database`, 7 new tests)**
+- [x] Extractor-independent model: metadata, sections, blocks (13 types), sentences, equations, figures, tables, references, quality, warnings; missing structures explicit
+- [x] Canonical coordinates (CropBox-relative, top-left, unrotated, one-based pages) with conversions from GROBID (same, rotated, scaled frames), PyMuPDF and PDF user space, and to PDF.js viewports; tested against PDF.js on Letter, A4, rotations and CropBoxes
+- [x] Sentence segmentation (abbreviations, initials, decimals, identifiers, citations), search-text normalisation (NFKC, hyphenation, Greek and subscripts kept), versions and staleness
+- [x] Migration `0003_documents`: extractions (one active per attachment), raw outputs, sections, blocks, passages, sentences, references, elements, jobs (one unfinished per attachment and config), FTS5 with delete trigger, embedding spaces, vectors, passage links; cascades; down script; up → down → up
+
+**Ingestion (`paper-ingestion`, 47 tests)**
+- [x] Hardened TEI reader: no DTD or entities (XXE and entity-expansion payloads refused), size, depth and element limits
+- [x] GROBID client: health and version, documented options with consolidation off, 204/400/500 permanent, 503 retried with delay and limit, timeout retried once, unreachable, cancellation, bounded concurrency, response cap, remote hosts refused without opt-in
+- [x] TEI parser and normaliser: header (title, authors, affiliations, e-mail, date, DOI, arXiv, keywords, venue), abstract, numbered section hierarchy, paragraphs with sentences and boxes, citation and figure markers, inline and display formulas with labels, figures, tables with cells, footnotes, lists, acknowledgements, appendix, references (raw, parsed, identifiers), duplicate removal, structure limits
+- [x] PyMuPDF adapter: isolated subprocess, page geometry (sizes, rotation, CropBox), text boxes in the PDF's frame, words, two-column reading order, running heads removed, headings, captions, references, scans vs empty PDFs, malformed PDFs, page limit, timeout, cancellation, missing Python
+- [x] Pipeline: validation, GROBID, PyMuPDF geometry and coverage, fallback, needs-OCR, segmentation, keyword index, activation after indexing, embeddings stage; failed reprocess keeps the old extraction; indexing failure leaves nothing behind; dedupe, cancellation, resume after restart, crash limit
+- [ ] OCR of scans (needs_ocr is reported; OCR itself is out of scope)
+- [ ] A run against a real GROBID service and real papers
+
+**Retrieval (`research-retrieval`, 35 tests + opt-in benchmark)**
+- [x] Section-aware segmentation (paragraph and section boundaries, sentence splitting with overlap, formula and caption passages, references separate, stable keys, sentence links)
+- [x] Keyword search (FTS5, Porter stemming): phrases, OR, exclusion, section, paper and kind filters, Greek letters, `H_2`, hyphenated terms, identifiers in references, inactive extractions excluded, deterministic order, user FTS syntax neutralised
+- [x] Embedding provider interface and Ollama `/api/embed` provider: batches, model check and digest, dimension and value validation, retries, cancellation (against a mock)
+- [x] SQLite vector store: exact cosine, per-space isolation, dimension checks, cache reuse, deletion with extractions, sweep; 20 000 × 768 in about 26 ms per query after a 310 ms load
+- [x] Reciprocal Rank Fusion with component ranks, weights and reproducible ties; keyword, semantic and hybrid modes; pagination; visible relaxed matching; model mismatch reported
+- [x] Evaluation set and metrics (Recall@5/10, MRR, nDCG@10), keyword baseline enforced; stemming compared (`docs/RETRIEVAL_EVALUATION.md`)
+- [ ] Evaluation with a real embedding model
+
+**Runtime (5 integration tests in `apps/runtime/test/documents.test.ts`)**
+- [x] Routes under `/documents`, `/research`, `/retrieval` with Zod contracts, typed client, `documents.job` and `retrieval.changed` events, audit events
+- [x] Processing a library PDF end to end with mock GROBID and real PyMuPDF; structure, sections, passages (paged), references, elements
+- [x] Keyword search with scope and filters, exact passages with provenance, passage location with boxes and page geometry, neighbours and sentences
+- [x] Embeddings through a mock Ollama: reindex, hybrid and semantic search, similar passages, model change isolated until reindex, old space removed after the switch, remote base URL refused
+- [x] GROBID failure falls back to PyMuPDF; attachment deletion removes extraction and index rows; needs-OCR; validation, unknown IDs, auth; persistence across restart; no storage path in any response
+
+**Web (9 component tests in `apps/web/test/documents.test.tsx`, `e2e/documents.spec.ts`)**
+- [x] Paper details: Full text panel (extract, reprocess, cancel, progress, failures with reasons, quality, out-of-date marker, semantic index count, search in this paper)
+- [x] Full-text view: contents, sections, paragraphs with markers and inline formulas, equations (with the not-a-rendering note), tables, references (library link only for identical identifiers), warnings, page jumps that open the PDF highlighted
+- [x] Search text: method, scope (library, collection, paper), section, author and year filters, bibliography toggle, results with title, authors, year, venue, section, page, method and ranks, marked terms, provenance, more results, relaxed and semantic notices, score disclaimer
+- [x] Source view: PDF at the page with the passage's boxes (rotation and zoom handled), no highlight without boxes, neighbouring text, provenance, back to results
+- [x] Full text dashboard: counts, last indexed, process waiting PDFs, extractor and embedding status with fixes (GROBID Docker command), automatic processing and embedding settings, semantic index progress, reindex and cancel, in progress, recent failures with retry
+- [x] Accessibility: axe without violations in jsdom and in Chromium (contrast included); no horizontal scrolling at 390 px
+
+**Docs**
+- [x] `docs/PAPER_INGESTION.md`, `docs/DOCUMENT_INTELLIGENCE.md`, `docs/RESEARCH_RETRIEVAL.md`, `docs/EMBEDDING_PROVIDERS.md`, `docs/RETRIEVAL_EVALUATION.md`; README, architecture §9, security T41–T50 and residual risks, `DATABASE_SCHEMA.md`, `LIBRARY.md` §12, `API_SPECIFICATION.md`, `.env.example`, `docs/reviews/m3.3-documents.md` (plan and report)
+
+**Not done / known limits**
+- [ ] No real GROBID, embedding model or published paper in the verification (see above)
+- [ ] The PyMuPDF fallback has no equation or table structure; reading order handles two columns, not complex layouts
+- [ ] Symbols such as `=` and `∝` are not keyword tokens
+- [ ] No hosted embedding providers and no learned reranker
+- [ ] Exact vector scan; an approximate index would be needed for very large libraries

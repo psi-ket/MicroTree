@@ -5,8 +5,9 @@ interface; a small **runtime** on your machine owns the files, the database and
 the TeX toolchain. Your projects are ordinary folders on disk.
 
 This repository implements milestones **M0** (foundation), **M1** (LaTeX
-workspace), **M2** (AI assistant), **M3.1** (scholarly literature search) and
-**M3.2** (personal research library and reference manager).
+workspace), **M2** (AI assistant), **M3.1** (scholarly literature search),
+**M3.2** (personal research library and reference manager) and **M3.3**
+(scientific PDF intelligence, full-text extraction and hybrid retrieval).
 See [`docs/implementation-checklist.md`](docs/implementation-checklist.md)
 for exactly what is done and how it is verified.
 
@@ -27,6 +28,8 @@ both, and only inside the configured workspace folder.
 | pnpm | 9 (`npm i -g pnpm@9`, or Corepack) |
 | TeX distribution | TeX Live or MiKTeX with `latexmk`, `pdflatex` and `synctex` on `PATH` (or set `RS_LATEXMK_PATH` / `RS_SYNCTEX_PATH`). `xelatex` / `lualatex` are needed only if you pick those engines. |
 | Build tools | Only if `better-sqlite3` has no prebuilt binary for your platform (Python + a C++ compiler). |
+| Full text (optional) | [GROBID](https://github.com/kermitt2/grobid) running locally (for example `docker run --rm --init --ulimit core=0 -p 127.0.0.1:8070:8070 grobid/grobid:0.9.1-crf`) for structure, and Python 3 with PyMuPDF (`pip install pymupdf`) for page geometry and the fallback. Either one is enough to search full text; both give the best result. |
+| Semantic search (optional) | A local [Ollama](https://ollama.com) with an embedding model (`ollama pull nomic-embed-text`). Keyword search needs nothing. |
 | AI (optional) | An API key for Anthropic, OpenAI or Gemini, any OpenAI-compatible endpoint, a local [Ollama](https://ollama.com), or an installed and logged-in [Claude Code](https://docs.claude.com/en/docs/claude-code) or [Codex CLI](https://github.com/openai/codex). |
 | Literature search (optional) | Internet access from the runtime. No accounts are needed; free OpenAlex and Semantic Scholar keys raise their limits. |
 
@@ -250,6 +253,35 @@ collections and PDFs, and to send selected papers back; or import read-only
 from Zotero running on this computer. Changes made on both sides are shown
 side by side for you to settle. Details: [`docs/LIBRARY.md`](docs/LIBRARY.md).
 
+## Full text and search across your papers
+
+PDFs in the library can be turned into structured, searchable text on this
+computer, without any AI model.
+
+- **Extract**: in a paper's details, **Full text → Extract full text** (or
+  **Library → Full text → Process waiting PDFs**, or turn on automatic
+  processing there). GROBID gives sections, paragraphs, sentences, equations,
+  figures, tables and references with their positions in the PDF; PyMuPDF
+  checks page geometry and coverage and reads the page layout when GROBID is
+  not available. Scans without a text layer are marked **Needs OCR**.
+  Processing runs in the background and can be cancelled; reprocessing keeps
+  the current text until the new extraction is ready.
+- **Read**: **Full text** opens the extracted structure with a table of
+  contents; every section, paragraph, equation and reference opens the PDF
+  at its page. Quality indicators and warnings say what was not found.
+- **Search**: **Library → Search text** searches every processed paper by
+  keyword (phrases, `OR`, `-word`, `section:methods`, DOIs and arXiv IDs),
+  semantically (with local embeddings) or both (rank fusion), within the
+  library, a collection or one paper, filtered by author, year and section.
+  Results are the exact passages with page, section, method and source;
+  **Open in PDF** shows the passage highlighted at its place.
+
+Nothing leaves the computer by default: GROBID and Ollama must be local
+unless the operator allows otherwise, and the app warns when they are not.
+Details: [`docs/PAPER_INGESTION.md`](docs/PAPER_INGESTION.md),
+[`docs/RESEARCH_RETRIEVAL.md`](docs/RESEARCH_RETRIEVAL.md),
+[`docs/EMBEDDING_PROVIDERS.md`](docs/EMBEDDING_PROVIDERS.md).
+
 ## Security in short
 
 - The runtime listens on loopback only, rejects unexpected `Host` headers
@@ -310,6 +342,9 @@ packages/
                         deduplication, merging, ranking, BibTeX and citations
   research-library/     Personal library: PDF store, imports (PDF, BibTeX, RIS), metadata
                         resolution, collections, exports, project .bib updates, Zotero
+  document-intelligence/ Document model, coordinates and transforms, sentences, normalisation
+  paper-ingestion/      GROBID and PyMuPDF adapters, TEI parsing, normalisation, job pipeline
+  research-retrieval/   Passages, embeddings (Ollama), FTS5 and vector search, hybrid ranking
 docs/                   Architecture, security model, decisions (ADRs), checklist, API, reviews
 e2e/                    Playwright end-to-end tests, a mock OpenAI-compatible server and
                         mock scholarly APIs that replay recorded responses
@@ -327,6 +362,7 @@ runtime build bundles them.
 | `pnpm test` | Vitest unit and integration tests in every package. The latex-engine and runtime suites run the real TeX toolchain; they skip those cases if `latexmk` is missing. |
 | `pnpm test:e2e` | Playwright: starts a fresh runtime and web server on ports 4399/5199 with a throwaway data folder (keys in memory, agents off), a mock model service on 4499 and mock scholarly APIs on 4498. The tests create a project, edit, upload, compile and check the PDF; configure a model and review an AI edit; and search the literature (merging, BibTeX, rate limits, cancellation, keys, phone-sized dark layout, accessibility checks with axe). No real API keys or network are needed. Run `pnpm exec playwright install chromium` once. |
 | `RS_LITERATURE_LIVE=1 pnpm --filter @research-studio/literature-engine exec vitest run test/live.test.ts` | Opt-in smoke test against the four real scholarly APIs (no keys; set `RS_LITERATURE_MAILTO` to use Crossref's polite pool). Not part of `pnpm test`. |
+| `pnpm --filter @research-studio/research-retrieval eval` | Retrieval evaluation (Recall@5/10, MRR, nDCG@10) on the labelled set; set `RS_EVAL_OLLAMA_URL` and `RS_EVAL_MODEL` to include a real embedding model. |
 | `pnpm check` | typecheck + lint + test |
 | `pnpm db:generate` | Generate a migration after editing `packages/database/src/schema.ts` |
 | `pnpm db:migrate` | Apply migrations to the configured database (the runtime also does this on start) |
@@ -335,16 +371,18 @@ Further reading:
 
 - [`docs/architecture.md`](docs/architecture.md): components, data flow, compile pipeline
 - [`docs/security.md`](docs/security.md): threat model and mitigations
-- [`docs/API_SPECIFICATION.md`](docs/API_SPECIFICATION.md): literature routes
+- [`docs/API_SPECIFICATION.md`](docs/API_SPECIFICATION.md): literature, library, document and retrieval routes
 - [`docs/LITERATURE_ENGINE.md`](docs/LITERATURE_ENGINE.md): providers, merging, ranking, caching
 - [`docs/LIBRARY.md`](docs/LIBRARY.md): the personal library, PDF storage, `.bib` updates, Zotero
+- [`docs/PAPER_INGESTION.md`](docs/PAPER_INGESTION.md), [`docs/DOCUMENT_INTELLIGENCE.md`](docs/DOCUMENT_INTELLIGENCE.md), [`docs/RESEARCH_RETRIEVAL.md`](docs/RESEARCH_RETRIEVAL.md), [`docs/EMBEDDING_PROVIDERS.md`](docs/EMBEDDING_PROVIDERS.md), [`docs/RETRIEVAL_EVALUATION.md`](docs/RETRIEVAL_EVALUATION.md): full text and search
 - [`docs/DATABASE_SCHEMA.md`](docs/DATABASE_SCHEMA.md): every table
 - [`docs/decisions/`](docs/decisions/): architecture decision records
 
 ## Not in this milestone
 
-Full-text ingestion (GROBID), OCR of scanned PDFs, embeddings, semantic search
-and RAG, AI summaries of papers, automatic two-way Zotero sync and Zotero group
+OCR of scanned PDFs, hosted embedding providers, RAG and AI summaries of
+papers or literature reviews, sentence-level claim verification and
+citation-correctness judgements (M5), automatic two-way Zotero sync and Zotero group
 libraries, the claim/evidence verification engine, collaboration, Git
 integration, attaching images to AI requests (the runtime's adapters accept
 them; there is no UI yet), tool use, an OS-level sandbox for TeX, and

@@ -217,4 +217,16 @@ No test uses a real Zotero account or key, or a real scholarly API.
 - Collections are flat (no nesting) and papers are added with selection actions, not drag and drop.
 - The E2E "restart" step reloads the app; the runtime-process restart is
   covered by the runtime integration test.
-- Scanned PDFs without a text layer are not OCRed; they are added unresolved.
+- Scanned PDFs without a text layer are not OCRed; they are added unresolved,
+  and full-text processing marks them **Needs OCR**.
+
+## 12. Full text (M3.3)
+
+A paper's details show a **Full text** panel for each PDF: extract, reprocess
+or cancel, the extraction's status and quality, and the full-text view
+(contents, sections, equations, tables, references, each opening the PDF at
+its page). The library's **Search text** tab searches the passages of all
+processed PDFs, and the **Full text** tab is the processing dashboard.
+Processing reads the PDFs from the store described in §3 and never copies
+them. See [`PAPER_INGESTION.md`](PAPER_INGESTION.md) and
+[`RESEARCH_RETRIEVAL.md`](RESEARCH_RETRIEVAL.md).
