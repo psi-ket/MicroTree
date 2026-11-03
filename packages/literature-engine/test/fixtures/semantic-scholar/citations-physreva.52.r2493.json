@@ -1,0 +1,147 @@
+{
+ "offset": 0,
+ "next": 3,
+ "data": [
+  {
+   "citingPaper": {
+    "paperId": "428a18266b7a5fb1ac1eacf56c7d2728eb8d5a7a",
+    "externalIds": {
+     "DOI": "10.1016/j.asej.2026.104502",
+     "CorpusId": 293964026
+    },
+    "title": "Gravitational redshift as a template for correlated dephasing in quantum processors",
+    "venue": "Ain Shams Engineering Journal",
+    "year": 2027,
+    "citationCount": 0,
+    "authors": [
+     {
+      "authorId": "2317446073",
+      "name": "Abdel-Haleem Abdel-Aty"
+     },
+     {
+      "authorId": "2282812952",
+      "name": "R. Altuijri"
+     },
+     {
+      "authorId": "2297703043",
+      "name": "Naif S. Alharthi"
+     },
+     {
+      "authorId": "13751844",
+      "name": "R. T. Matoog"
+     },
+     {
+      "authorId": "2219592438",
+      "name": "S. Shaaban"
+     },
+     {
+      "authorId": "35467428",
+      "name": "Betty Wan Niu Voon"
+     },
+     {
+      "authorId": "2372649890",
+      "name": "M. Hafez"
+     }
+    ]
+   }
+  },
+  {
+   "citingPaper": {
+    "paperId": "171bcef7355c282c7c3ca42bffe49c2ae3fc9286",
+    "externalIds": {
+     "ArXiv": "2610.39208",
+     "CorpusId": 295371928
+    },
+    "title": "Force Sensing in a Recoverable Bosonic Quantum Memory",
+    "venue": "",
+    "year": 2026,
+    "citationCount": 0,
+    "authors": [
+     {
+      "authorId": "2213010775",
+      "name": "Tai-Rong Bai"
+     },
+     {
+      "authorId": "2152934692",
+      "name": "Wen Zheng"
+     },
+     {
+      "authorId": "2367553928",
+      "name": "Hao-Yang Cai"
+     },
+     {
+      "authorId": "2367322470",
+      "name": "Xian-Ke Li"
+     },
+     {
+      "authorId": "2150458608",
+      "name": "Yang-Yang Ge"
+     },
+     {
+      "authorId": "2291990081",
+      "name": "Kun Zhou"
+     },
+     {
+      "authorId": "2218115438",
+      "name": "Xiang-Min Yu"
+     },
+     {
+      "authorId": "2258544881",
+      "name": "Yu Zhang"
+     },
+     {
+      "authorId": "47319939",
+      "name": "Shao-Xiong Li"
+     },
+     {
+      "authorId": "3558843",
+      "name": "Xin-Sheng Tan"
+     },
+     {
+      "authorId": "2143817088",
+      "name": "Jie Zhao"
+     },
+     {
+      "authorId": "2367343433",
+      "name": "Yang Yu"
+     }
+    ]
+   }
+  },
+  {
+   "citingPaper": {
+    "paperId": "74ff9cf9c6f064637f76b33007764f116ac15fa9",
+    "externalIds": {
+     "ArXiv": "2610.40490",
+     "CorpusId": 295372453
+    },
+    "title": "Fast and accurate neural triage decoding of ultra-high-rate quantum LDPC codes",
+    "venue": "",
+    "year": 2026,
+    "citationCount": 0,
+    "authors": [
+     {
+      "authorId": "2278397326",
+      "name": "Hong-Ye Hu"
+     },
+     {
+      "authorId": "2524825987",
+      "name": "Zhen-Lai Wang"
+     },
+     {
+      "authorId": "2499854358",
+      "name": "Bin-Zhao Luo"
+     },
+     {
+      "authorId": "2524782908",
+      "name": "Tao Xiang"
+     },
+     {
+      "authorId": "2290098358",
+      "name": "Chen Zhao"
+     }
+    ]
+   }
+  }
+ ]
+}

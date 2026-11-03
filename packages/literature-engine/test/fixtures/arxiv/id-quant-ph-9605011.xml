@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/KYElFFmuDVUVPchZFl1QphJBnLk</id>
+  <title>arXiv Query: search_query=&amp;id_list=quant-ph/9605011&amp;start=0&amp;max_results=1</title>
+  <updated>2026-11-02T22:23:06Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=&amp;start=0&amp;max_results=1&amp;id_list=quant-ph/9605011" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>1</opensearch:itemsPerPage>
+  <opensearch:totalResults>1</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/quant-ph/9605011v2</id>
+    <title>Fault-tolerant quantum computation</title>
+    <updated>1997-03-05T01:42:43Z</updated>
+    <link href="https://arxiv.org/abs/quant-ph/9605011v2" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/quant-ph/9605011v2" rel="related" type="application/pdf" title="pdf"/>
+    <summary>  Recently, it was realized that use of the properties of quantum mechanics might speed up certain computations dramatically. Interest in quantum computation has since been growing. One of the main difficulties of realizing quantum computation is that decoherence tends to destroy the information in a superposition of states in a quantum computer, thus making long computations impossible. A futher difficulty is that inaccuracies in quantum state transformations throughout the computation accumulate, rendering the output of long computations unreliable. It was previously known that a quantum circuit with t gates could tolerate O(1/t) amounts of inaccuracy and decoherence per gate. We show, for any quantum computation with t gates, how to build a polynomial size quantum circuit that can tolerate O(1/(log t)^c) amounts of inaccuracy and decoherence per gate, for some constant c. We do this by showing how to compute using quantum error correcting codes. These codes were previously known to provide resistance to errors while storing and transmitting quantum data.</summary>
+    <category term="quant-ph" scheme="http://arxiv.org/schemas/atom"/>
+    <published>1996-05-13T14:29:00Z</published>
+    <arxiv:comment>Latex, 11 pages, no figures, in 37th Symposium on Foundations of Computing, IEEE Computer Society Press, 1996, pp. 56-65</arxiv:comment>
+    <arxiv:primary_category term="quant-ph"/>
+    <author>
+      <name>Peter W. Shor</name>
+      <arxiv:affiliation>AT&amp;T Research</arxiv:affiliation>
+    </author>
+  </entry>
+</feed>

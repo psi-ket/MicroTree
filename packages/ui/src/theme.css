@@ -1,0 +1,156 @@
+/*
+ * Research Studio design tokens — "ink & proof sheet".
+ *
+ *   paper     cool, blue-tinted page tone (never cream)
+ *   ink       blue-black text
+ *   prussian  the single accent: fountain-pen Prussian blue
+ *   proof     semantic marks borrowed from proofreading:
+ *             correction red (errors), ochre (warnings), verdigris (success)
+ *
+ * Consumed by Tailwind v4 through `@theme inline`, so utilities such as
+ * `bg-paper`, `text-ink-muted` and `border-rule` follow the active theme.
+ */
+
+:root {
+  color-scheme: light;
+  --rs-paper: #eef1f5;
+  --rs-panel: #fbfcfd;
+  --rs-raised: #ffffff;
+  --rs-sunken: #e4e8ee;
+  --rs-ink: #18202d;
+  --rs-ink-muted: #556072;
+  --rs-ink-faint: #8a93a3;
+  --rs-rule: #d7dce4;
+  --rs-rule-strong: #bcc4d0;
+  --rs-accent: #24508f;
+  --rs-accent-hover: #1c4177;
+  --rs-accent-ink: #ffffff;
+  --rs-accent-soft: #dfe8f5;
+  --rs-danger: #b8382a;
+  --rs-danger-soft: #f7e3df;
+  --rs-warning: #9a6a12;
+  --rs-warning-soft: #f5ecd6;
+  --rs-success: #2a7f6d;
+  --rs-success-soft: #dcefe9;
+  --rs-highlight: rgb(255 214 102 / 0.38);
+  --rs-grid-minor: rgb(36 80 143 / 0.05);
+  --rs-grid-major: rgb(36 80 143 / 0.1);
+  --rs-shadow: 0 1px 2px rgb(24 32 45 / 0.06), 0 8px 24px -12px rgb(24 32 45 / 0.18);
+  --rs-page-shadow: 0 1px 1px rgb(24 32 45 / 0.08), 0 6px 18px -8px rgb(24 32 45 / 0.25);
+}
+
+:root.dark {
+  color-scheme: dark;
+  --rs-paper: #0e1219;
+  --rs-panel: #131822;
+  --rs-raised: #1a2130;
+  --rs-sunken: #0b0e14;
+  --rs-ink: #dce3ee;
+  --rs-ink-muted: #96a1b4;
+  --rs-ink-faint: #667185;
+  --rs-rule: #232b39;
+  --rs-rule-strong: #323d50;
+  --rs-accent: #8fb3e8;
+  --rs-accent-hover: #a9c5ee;
+  --rs-accent-ink: #0e1626;
+  --rs-accent-soft: #1b2a43;
+  --rs-danger: #ec7d6d;
+  --rs-danger-soft: #3a1d1b;
+  --rs-warning: #e0b459;
+  --rs-warning-soft: #33280f;
+  --rs-success: #6cc3ad;
+  --rs-success-soft: #13302a;
+  --rs-highlight: rgb(224 180 89 / 0.32);
+  --rs-grid-minor: rgb(143 179 232 / 0.035);
+  --rs-grid-major: rgb(143 179 232 / 0.075);
+  --rs-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 10px 30px -12px rgb(0 0 0 / 0.6);
+  --rs-page-shadow: 0 1px 2px rgb(0 0 0 / 0.5), 0 10px 26px -10px rgb(0 0 0 / 0.7);
+}
+
+@theme inline {
+  --color-paper: var(--rs-paper);
+  --color-panel: var(--rs-panel);
+  --color-raised: var(--rs-raised);
+  --color-sunken: var(--rs-sunken);
+  --color-ink: var(--rs-ink);
+  --color-ink-muted: var(--rs-ink-muted);
+  --color-ink-faint: var(--rs-ink-faint);
+  --color-rule: var(--rs-rule);
+  --color-rule-strong: var(--rs-rule-strong);
+  --color-accent: var(--rs-accent);
+  --color-accent-hover: var(--rs-accent-hover);
+  --color-accent-ink: var(--rs-accent-ink);
+  --color-accent-soft: var(--rs-accent-soft);
+  --color-danger: var(--rs-danger);
+  --color-danger-soft: var(--rs-danger-soft);
+  --color-warning: var(--rs-warning);
+  --color-warning-soft: var(--rs-warning-soft);
+  --color-success: var(--rs-success);
+  --color-success-soft: var(--rs-success-soft);
+  --color-highlight: var(--rs-highlight);
+
+  --font-sans: 'Atkinson Hyperlegible Next Variable', 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  --font-mono: 'Atkinson Hyperlegible Mono Variable', 'Atkinson Hyperlegible Mono', ui-monospace, 'Cascadia Code', monospace;
+  --font-display: 'STIX Two Text Variable', 'STIX Two Text', 'Cambria', Georgia, serif;
+
+  /* Dense UI scale: 11 / 12 / 13 / 15 / 20 / 28 */
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.05rem;
+  --text-ui: 0.8125rem;
+  --text-ui--line-height: 1.25rem;
+
+  --shadow-float: var(--rs-shadow);
+  --shadow-page: var(--rs-page-shadow);
+  --radius-ctl: 5px;
+}
+
+@keyframes rs-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes rs-rise {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px);
+  }
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    background: var(--rs-paper);
+    color: var(--rs-ink);
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: 'ss01', 'tnum';
+  }
+  ::selection {
+    background: var(--rs-accent-soft);
+  }
+  :focus-visible {
+    outline: 2px solid var(--rs-accent);
+    outline-offset: 1px;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--rs-rule-strong) transparent;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

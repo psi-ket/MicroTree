@@ -1,0 +1,1603 @@
+{
+ "meta": {
+  "notice": "No API key, so this request shares one free daily budget ($0.10) with everyone on your network's IP address. Get a free key with its own $1/day at https://openalex.org/settings/api and add api_key=YOUR_KEY to your requests. An AI agent can get one for its user in one call: POST https://api.openalex.org/api-keys with {\"email\": \"<your user's email>\"}; we email them a link, and the key works once they click it. Docs for agents: https://help.openalex.org/llms.txt",
+  "count": 4468,
+  "db_response_time_ms": 48,
+  "page": 1,
+  "per_page": 3,
+  "groups_count": null,
+  "x_query": {
+   "oql": "get works citing (W1999706070)",
+   "x_new_oql": "get works citing (W1999706070)",
+   "oqo": {
+    "get_rows": "works",
+    "filter_rows": [
+     {
+      "column_id": "referenced_works",
+      "value": "W1999706070"
+     }
+    ]
+   },
+   "url": "/works?filter=referenced_works:W1999706070&per_page=3",
+   "order": "most cited (age-adjusted) first",
+   "order_default": true
+  },
+  "cost_usd": 0.0001
+ },
+ "results": [
+  {
+   "id": "https://openalex.org/W3037737784",
+   "doi": "https://doi.org/10.1103/revmodphys.81.865",
+   "title": "Quantum entanglement",
+   "display_name": "Quantum entanglement",
+   "publication_year": 2009,
+   "publication_date": "2009-06-17",
+   "type": "article",
+   "ids": {
+    "openalex": "https://openalex.org/W3037737784",
+    "doi": "https://doi.org/10.1103/revmodphys.81.865",
+    "mag": "3037737784"
+   },
+   "authorships": [
+    {
+     "author_position": "first",
+     "author": {
+      "id": "https://openalex.org/A5012662473",
+      "display_name": "Ryszard Horodecki",
+      "orcid": "https://orcid.org/0000-0003-2935-290X",
+      "observed_orcids": [
+       "https://orcid.org/0000-0003-2935-290X"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I40413290",
+       "display_name": "University of Gdańsk",
+       "ror": "https://ror.org/011dv8m48",
+       "country_code": "PL",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I40413290"
+       ]
+      }
+     ],
+     "countries": [
+      "PL"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Ryszard Horodecki",
+     "raw_affiliation_strings": [
+      "Institute of Theoretical Physics and Astrophysics, University of Gdańsk, 80-952 Gdańsk, Poland"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Institute of Theoretical Physics and Astrophysics, University of Gdańsk, 80-952 Gdańsk, Poland",
+       "institution_ids": [
+        "https://openalex.org/I40413290"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": "https://openalex.org/A5081239197",
+      "display_name": "Paweł Horodecki",
+      "orcid": "https://orcid.org/0000-0002-3233-1336",
+      "observed_orcids": [
+       "https://orcid.org/0000-0002-3233-1336"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I40413290",
+       "display_name": "University of Gdańsk",
+       "ror": "https://ror.org/011dv8m48",
+       "country_code": "PL",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I40413290"
+       ]
+      }
+     ],
+     "countries": [
+      "PL"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Paweł Horodecki",
+     "raw_affiliation_strings": [
+      "Institute of Theoretical Physics and Astrophysics, University of Gdańsk, 80-952 Gdańsk, Poland"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Institute of Theoretical Physics and Astrophysics, University of Gdańsk, 80-952 Gdańsk, Poland",
+       "institution_ids": [
+        "https://openalex.org/I40413290"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": "https://openalex.org/A5033198961",
+      "display_name": "Michał Horodecki",
+      "orcid": "https://orcid.org/0000-0002-0446-3059",
+      "observed_orcids": [
+       "https://orcid.org/0000-0002-0446-3059"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I40413290",
+       "display_name": "University of Gdańsk",
+       "ror": "https://ror.org/011dv8m48",
+       "country_code": "PL",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I40413290"
+       ]
+      }
+     ],
+     "countries": [
+      "PL"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Michał Horodecki",
+     "raw_affiliation_strings": [
+      "Institute of Theoretical Physics and Astrophysics, University of Gdańsk, 80-952 Gdańsk, Poland"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Institute of Theoretical Physics and Astrophysics, University of Gdańsk, 80-952 Gdańsk, Poland",
+       "institution_ids": [
+        "https://openalex.org/I40413290"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "last",
+     "author": {
+      "id": "https://openalex.org/A5085393246",
+      "display_name": "Karol Horodecki",
+      "orcid": "https://orcid.org/0000-0001-7540-4147",
+      "observed_orcids": [
+       "https://orcid.org/0000-0001-7540-4147"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I40413290",
+       "display_name": "University of Gdańsk",
+       "ror": "https://ror.org/011dv8m48",
+       "country_code": "PL",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I40413290"
+       ]
+      }
+     ],
+     "countries": [
+      "PL"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Karol Horodecki",
+     "raw_affiliation_strings": [
+      "Institute of Theoretical Physics and Astrophysics, University of Gdańsk, 80-952 Gdańsk, Poland"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Institute of Theoretical Physics and Astrophysics, University of Gdańsk, 80-952 Gdańsk, Poland",
+       "institution_ids": [
+        "https://openalex.org/I40413290"
+       ]
+      }
+     ]
+    }
+   ],
+   "primary_location": {
+    "id": "doi:10.1103/revmodphys.81.865",
+    "doi": "https://doi.org/10.1103/revmodphys.81.865",
+    "is_oa": false,
+    "landing_page_url": "https://doi.org/10.1103/revmodphys.81.865",
+    "pdf_url": null,
+    "source": {
+     "id": "https://openalex.org/S73260565",
+     "display_name": "Reviews of Modern Physics",
+     "issn_l": "0034-6861",
+     "issn": [
+      "0034-6861",
+      "1538-4527",
+      "1539-0756"
+     ],
+     "is_oa": false,
+     "is_in_doaj": false,
+     "is_core": true,
+     "listed_in": [
+      "cwts-core",
+      "dongbi-a",
+      "jufo-3",
+      "norway-2",
+      "poland-200",
+      "russia-white-list-1"
+     ],
+     "host_organization": "https://openalex.org/P4310320261",
+     "host_organization_name": "American Physical Society",
+     "host_organization_lineage": [
+      "https://openalex.org/P4310320261"
+     ],
+     "host_organization_lineage_names": [
+      "American Physical Society"
+     ],
+     "type": "journal"
+    },
+    "license": null,
+    "license_id": null,
+    "version": "publishedVersion",
+    "is_accepted": true,
+    "is_published": true,
+    "raw_source_name": "Reviews of Modern Physics",
+    "raw_type": "journal-article"
+   },
+   "best_oa_location": {
+    "id": "pmh:oai:arXiv.org:quant-ph/0702225",
+    "doi": null,
+    "is_oa": true,
+    "landing_page_url": "http://arxiv.org/abs/quant-ph/0702225",
+    "pdf_url": "https://arxiv.org/pdf/quant-ph/0702225",
+    "source": {
+     "id": "https://openalex.org/S4306400194",
+     "display_name": "arXiv (Cornell University)",
+     "issn_l": "2331-8422",
+     "issn": [
+      "2331-8422"
+     ],
+     "is_oa": true,
+     "is_in_doaj": false,
+     "is_core": false,
+     "listed_in": [],
+     "host_organization": "https://openalex.org/I205783295",
+     "host_organization_name": "Cornell University",
+     "host_organization_lineage": [
+      "https://openalex.org/I205783295"
+     ],
+     "host_organization_lineage_names": [],
+     "type": "repository"
+    },
+    "license": null,
+    "license_id": null,
+    "version": "submittedVersion",
+    "is_accepted": false,
+    "is_published": false,
+    "raw_source_name": null,
+    "raw_type": "text"
+   },
+   "open_access": {
+    "is_oa": true,
+    "oa_status": "green",
+    "oa_url": "https://arxiv.org/pdf/quant-ph/0702225",
+    "any_repository_has_fulltext": true
+   },
+   "cited_by_count": 10094,
+   "referenced_works_count": 691,
+   "biblio": {
+    "volume": "81",
+    "issue": "2",
+    "first_page": "865",
+    "last_page": "942"
+   },
+   "abstract_inverted_index": {
+    "All": [
+     0
+    ],
+    "our": [
+     1
+    ],
+    "former": [
+     2
+    ],
+    "experience": [
+     3
+    ],
+    "with": [
+     4
+    ],
+    "application": [
+     5
+    ],
+    "of": [
+     6,
+     27,
+     53,
+     110,
+     123,
+     136,
+     159,
+     178,
+     194,
+     199
+    ],
+    "quantum": [
+     7,
+     17,
+     28,
+     55,
+     67,
+     72,
+     74,
+     146,
+     162
+    ],
+    "theory": [
+     8
+    ],
+    "seems": [
+     9
+    ],
+    "to": [
+     10,
+     39,
+     90,
+     97,
+     113
+    ],
+    "say": [
+     11
+    ],
+    "that": [
+     12,
+     82
+    ],
+    "what": [
+     13
+    ],
+    "is": [
+     14,
+     86,
+     94,
+     101,
+     112,
+     169,
+     201
+    ],
+    "predicted": [
+     15
+    ],
+    "by": [
+     16,
+     31
+    ],
+    "formalism": [
+     18
+    ],
+    "must": [
+     19
+    ],
+    "occur": [
+     20
+    ],
+    "in": [
+     21,
+     161,
+     197
+    ],
+    "the": [
+     22,
+     25,
+     98,
+     108,
+     176
+    ],
+    "laboratory.": [
+     23
+    ],
+    "But": [
+     24
+    ],
+    "essence": [
+     26
+    ],
+    "formalism---entanglement,": [
+     29
+    ],
+    "recognized": [
+     30
+    ],
+    "Einstein,": [
+     32
+    ],
+    "Podolsky,": [
+     33
+    ],
+    "Rosen,": [
+     34
+    ],
+    "and": [
+     35,
+     76,
+     88,
+     105,
+     130,
+     145,
+     150,
+     171
+    ],
+    "Schr\\\"odinger---waited": [
+     36
+    ],
+    "over": [
+     37
+    ],
+    "$70\\phantom{\\rule{0.3em}{0ex}}\\text{years}$": [
+     38
+    ],
+    "enter": [
+     40
+    ],
+    "laboratories": [
+     41
+    ],
+    "as": [
+     42,
+     46,
+     48,
+     175
+    ],
+    "a": [
+     43,
+     165
+    ],
+    "new": [
+     44,
+     84
+    ],
+    "resource": [
+     45,
+     85
+    ],
+    "real": [
+     47
+    ],
+    "energy.": [
+     49
+    ],
+    "This": [
+     50,
+     118
+    ],
+    "holistic": [
+     51
+    ],
+    "property": [
+     52
+    ],
+    "compound": [
+     54
+    ],
+    "systems,": [
+     56
+    ],
+    "which": [
+     57,
+     111
+    ],
+    "involves": [
+     58
+    ],
+    "nonclassical": [
+     59
+    ],
+    "correlations": [
+     60
+    ],
+    "between": [
+     61
+    ],
+    "subsystems,": [
+     62
+    ],
+    "has": [
+     63
+    ],
+    "potential": [
+     64
+    ],
+    "for": [
+     65
+    ],
+    "many": [
+     66
+    ],
+    "processes,": [
+     68
+    ],
+    "including": [
+     69,
+     125,
+     184
+    ],
+    "canonical": [
+     70
+    ],
+    "ones:": [
+     71
+    ],
+    "cryptography,": [
+     73
+    ],
+    "teleportation,": [
+     75
+    ],
+    "dense": [
+     77
+    ],
+    "coding.": [
+     78
+    ],
+    "However,": [
+     79
+    ],
+    "it": [
+     80,
+     93,
+     100
+    ],
+    "appears": [
+     81
+    ],
+    "this": [
+     83
+    ],
+    "complex": [
+     87
+    ],
+    "difficult": [
+     89
+    ],
+    "detect.": [
+     91
+    ],
+    "Although": [
+     92
+    ],
+    "usually": [
+     95
+    ],
+    "fragile": [
+     96
+    ],
+    "environment,": [
+     99
+    ],
+    "robust": [
+     102
+    ],
+    "against": [
+     103
+    ],
+    "conceptual": [
+     104
+    ],
+    "mathematical": [
+     106
+    ],
+    "tools,": [
+     107
+    ],
+    "task": [
+     109
+    ],
+    "decipher": [
+     114
+    ],
+    "its": [
+     115,
+     126,
+     185
+    ],
+    "rich": [
+     116
+    ],
+    "structure.": [
+     117
+    ],
+    "article": [
+     119
+    ],
+    "reviews": [
+     120
+    ],
+    "basic": [
+     121,
+     157,
+     192
+    ],
+    "aspects": [
+     122
+    ],
+    "entanglement": [
+     124,
+     137,
+     143,
+     160,
+     179,
+     189,
+     195,
+     200
+    ],
+    "characterization,": [
+     127
+    ],
+    "detection,": [
+     128
+    ],
+    "distillation,": [
+     129
+    ],
+    "quantification.": [
+     131
+    ],
+    "In": [
+     132
+    ],
+    "particular,": [
+     133
+    ],
+    "various": [
+     134
+    ],
+    "manifestations": [
+     135
+    ],
+    "via": [
+     138
+    ],
+    "Bell": [
+     139
+    ],
+    "inequalities,": [
+     140,
+     142
+    ],
+    "entropic": [
+     141
+    ],
+    "witnesses,": [
+     144
+    ],
+    "cryptography": [
+     147
+    ],
+    "are": [
+     148,
+     153,
+     181
+    ],
+    "discussed,": [
+     149
+    ],
+    "some": [
+     151,
+     172
+    ],
+    "interrelations": [
+     152
+    ],
+    "pointed": [
+     154
+    ],
+    "out.": [
+     155
+    ],
+    "The": [
+     156,
+     191
+    ],
+    "role": [
+     158,
+     193
+    ],
+    "communication": [
+     163
+    ],
+    "within": [
+     164
+    ],
+    "distant": [
+     166
+    ],
+    "laboratory": [
+     167
+    ],
+    "paradigm": [
+     168
+    ],
+    "stressed,": [
+     170
+    ],
+    "peculiarities": [
+     173
+    ],
+    "such": [
+     174
+    ],
+    "irreversibility": [
+     177
+    ],
+    "manipulations": [
+     180
+    ],
+    "also": [
+     182
+    ],
+    "discussed": [
+     183
+    ],
+    "extremal": [
+     186
+    ],
+    "form---the": [
+     187
+    ],
+    "bound": [
+     188
+    ],
+    "phenomenon.": [
+     190
+    ],
+    "witnesses": [
+     196
+    ],
+    "detection": [
+     198
+    ],
+    "emphasized.": [
+     202
+    ]
+   },
+   "primary_topic": {
+    "id": "https://openalex.org/T10020",
+    "display_name": "Quantum Information and Cryptography",
+    "score": 0.9901999831199646,
+    "subfield": {
+     "id": "https://openalex.org/subfields/1702",
+     "display_name": "Artificial Intelligence"
+    },
+    "field": {
+     "id": "https://openalex.org/fields/17",
+     "display_name": "Computer Science"
+    },
+    "domain": {
+     "id": "https://openalex.org/domains/3",
+     "display_name": "Physical Sciences"
+    }
+   },
+   "language": "en",
+   "is_retracted": false,
+   "updated_date": "2026-11-02T09:45:03.842371",
+   "created_date": "2020-07-02T00:00:00"
+  },
+  {
+   "id": "https://openalex.org/W2084652510",
+   "doi": "https://doi.org/10.1145/237814.237866",
+   "title": "A fast quantum mechanical algorithm for database search",
+   "display_name": "A fast quantum mechanical algorithm for database search",
+   "publication_year": 1996,
+   "publication_date": "1996-01-01",
+   "type": "conference-paper",
+   "ids": {
+    "openalex": "https://openalex.org/W2084652510",
+    "doi": "https://doi.org/10.1145/237814.237866",
+    "mag": "2084652510"
+   },
+   "authorships": [
+    {
+     "author_position": "first",
+     "author": {
+      "id": "https://openalex.org/A5031023857",
+      "display_name": "Lov K. Grover",
+      "orcid": null,
+      "observed_orcids": []
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I1283103587",
+       "display_name": "AT&T (United States)",
+       "ror": "https://ror.org/02bbd5539",
+       "country_code": "US",
+       "type": "company",
+       "lineage": [
+        "https://openalex.org/I1283103587"
+       ]
+      }
+     ],
+     "countries": [
+      "US"
+     ],
+     "is_corresponding": true,
+     "raw_author_name": "Lov K. Grover",
+     "raw_affiliation_strings": [
+      "3C-404A, AT&T Bell Labs, 600 Mountain Avenue, Murray Hill, NJ"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "3C-404A, AT&T Bell Labs, 600 Mountain Avenue, Murray Hill, NJ",
+       "institution_ids": [
+        "https://openalex.org/I1283103587"
+       ]
+      }
+     ]
+    }
+   ],
+   "primary_location": {
+    "id": "doi:10.1145/237814.237866",
+    "doi": "https://doi.org/10.1145/237814.237866",
+    "is_oa": true,
+    "landing_page_url": "https://doi.org/10.1145/237814.237866",
+    "pdf_url": "https://dl.acm.org/doi/pdf/10.1145/237814.237866",
+    "source": {
+     "id": "https://openalex.org/S7407087723",
+     "display_name": "ACM Symposium on Theory of Computing (STOC)",
+     "issn_l": null,
+     "issn": null,
+     "is_oa": false,
+     "is_in_doaj": false,
+     "is_core": false,
+     "listed_in": [],
+     "host_organization": null,
+     "host_organization_name": null,
+     "host_organization_lineage": [],
+     "host_organization_lineage_names": [],
+     "type": "conference"
+    },
+    "license": null,
+    "license_id": null,
+    "version": "publishedVersion",
+    "is_accepted": true,
+    "is_published": true,
+    "raw_source_name": "Proceedings of the twenty-eighth annual ACM symposium on Theory of computing - STOC '96",
+    "raw_type": "proceedings-article"
+   },
+   "best_oa_location": {
+    "id": "doi:10.1145/237814.237866",
+    "doi": "https://doi.org/10.1145/237814.237866",
+    "is_oa": true,
+    "landing_page_url": "https://doi.org/10.1145/237814.237866",
+    "pdf_url": "https://dl.acm.org/doi/pdf/10.1145/237814.237866",
+    "source": {
+     "id": "https://openalex.org/S7407087723",
+     "display_name": "ACM Symposium on Theory of Computing (STOC)",
+     "issn_l": null,
+     "issn": null,
+     "is_oa": false,
+     "is_in_doaj": false,
+     "is_core": false,
+     "listed_in": [],
+     "host_organization": null,
+     "host_organization_name": null,
+     "host_organization_lineage": [],
+     "host_organization_lineage_names": [],
+     "type": "conference"
+    },
+    "license": null,
+    "license_id": null,
+    "version": "publishedVersion",
+    "is_accepted": true,
+    "is_published": true,
+    "raw_source_name": "Proceedings of the twenty-eighth annual ACM symposium on Theory of computing - STOC '96",
+    "raw_type": "proceedings-article"
+   },
+   "open_access": {
+    "is_oa": true,
+    "oa_status": "bronze",
+    "oa_url": "https://dl.acm.org/doi/pdf/10.1145/237814.237866",
+    "any_repository_has_fulltext": false
+   },
+   "cited_by_count": 8830,
+   "referenced_works_count": 24,
+   "biblio": {
+    "volume": null,
+    "issue": null,
+    "first_page": "212",
+    "last_page": "219"
+   },
+   "abstract_inverted_index": {
+    "An": [
+     0
+    ],
+    "unsorted": [
+     1
+    ],
+    "database": [
+     2
+    ],
+    "contains": [
+     3
+    ],
+    "N": [
+     4,
+     46
+    ],
+    "records,": [
+     5
+    ],
+    "of": [
+     6,
+     44,
+     80
+    ],
+    "which": [
+     7
+    ],
+    "just": [
+     8
+    ],
+    "one": [
+     9,
+     19
+    ],
+    "satisfies": [
+     10
+    ],
+    "a": [
+     11,
+     41,
+     77
+    ],
+    "particular": [
+     12
+    ],
+    "property.The": [
+     13
+    ],
+    "problem": [
+     14
+    ],
+    "is": [
+     15,
+     75
+    ],
+    "to": [
+     16,
+     39,
+     56
+    ],
+    "identify": [
+     17
+    ],
+    "that": [
+     18,
+     73
+    ],
+    "record.Any": [
+     20
+    ],
+    "classical": [
+     21
+    ],
+    "algorithm,": [
+     22
+    ],
+    "deterministic": [
+     23
+    ],
+    "or": [
+     24
+    ],
+    "probabilistic,": [
+     25
+    ],
+    "will": [
+     26,
+     37
+    ],
+    "clearly": [
+     27
+    ],
+    "take": [
+     28
+    ],
+    "O": [
+     29,
+     64
+    ],
+    "(N)": [
+     30
+    ],
+    "steps": [
+     31
+    ],
+    "since": [
+     32
+    ],
+    "on": [
+     33
+    ],
+    "the": [
+     34,
+     45,
+     81
+    ],
+    "average": [
+     35
+    ],
+    "it": [
+     36
+    ],
+    "have": [
+     38
+    ],
+    "examine": [
+     40
+    ],
+    "large": [
+     42
+    ],
+    "fraction": [
+     43
+    ],
+    "records.Quantum": [
+     47
+    ],
+    "mechanical": [
+     48,
+     69,
+     85
+    ],
+    "systems": [
+     49
+    ],
+    "can": [
+     50
+    ],
+    "do": [
+     51
+    ],
+    "several": [
+     52
+    ],
+    "operations": [
+     53
+    ],
+    "simultaneously": [
+     54
+    ],
+    "due": [
+     55
+    ],
+    "their": [
+     57
+    ],
+    "wave": [
+     58
+    ],
+    "like": [
+     59
+    ],
+    "properties.This": [
+     60
+    ],
+    "paper": [
+     61
+    ],
+    "gives": [
+     62
+    ],
+    "an": [
+     63
+    ],
+    "(": [
+     65
+    ],
+    "JN)": [
+     66
+    ],
+    "step": [
+     67
+    ],
+    "quantum": [
+     68,
+     84
+    ],
+    "algorithm": [
+     70
+    ],
+    "for": [
+     71
+    ],
+    "identifying": [
+     72
+    ],
+    "record.It": [
+     74
+    ],
+    "within": [
+     76
+    ],
+    "constant": [
+     78
+    ],
+    "factor": [
+     79
+    ],
+    "fastest": [
+     82
+    ],
+    "possible": [
+     83
+    ],
+    "algorithm.": [
+     86
+    ]
+   },
+   "primary_topic": {
+    "id": "https://openalex.org/T10682",
+    "display_name": "Quantum Computing Algorithms and Architecture",
+    "score": 0.9980000257492065,
+    "subfield": {
+     "id": "https://openalex.org/subfields/1702",
+     "display_name": "Artificial Intelligence"
+    },
+    "field": {
+     "id": "https://openalex.org/fields/17",
+     "display_name": "Computer Science"
+    },
+    "domain": {
+     "id": "https://openalex.org/domains/3",
+     "display_name": "Physical Sciences"
+    }
+   },
+   "language": "en",
+   "is_retracted": false,
+   "updated_date": "2026-11-02T09:45:03.842371",
+   "created_date": "2016-06-24T00:00:00"
+  },
+  {
+   "id": "https://openalex.org/W3023478445",
+   "doi": "https://doi.org/10.1137/s0097539795293172",
+   "title": "Polynomial-Time Algorithms for Prime Factorization and Discrete Logarithms on a Quantum Computer",
+   "display_name": "Polynomial-Time Algorithms for Prime Factorization and Discrete Logarithms on a Quantum Computer",
+   "publication_year": 1997,
+   "publication_date": "1997-10-01",
+   "type": "article",
+   "ids": {
+    "openalex": "https://openalex.org/W3023478445",
+    "doi": "https://doi.org/10.1137/s0097539795293172",
+    "mag": "3023478445"
+   },
+   "authorships": [
+    {
+     "author_position": "first",
+     "author": {
+      "id": "https://openalex.org/A5020744800",
+      "display_name": "Peter W. Shor",
+      "orcid": "https://orcid.org/0000-0003-4626-5648",
+      "observed_orcids": [
+       "https://orcid.org/0000-0003-4626-5648"
+      ]
+     },
+     "institutions": [],
+     "countries": [],
+     "is_corresponding": true,
+     "raw_author_name": "Peter W. Shor",
+     "raw_affiliation_strings": [],
+     "raw_orcid": null,
+     "affiliations": []
+    }
+   ],
+   "primary_location": {
+    "id": "doi:10.1137/s0097539795293172",
+    "doi": "https://doi.org/10.1137/s0097539795293172",
+    "is_oa": false,
+    "landing_page_url": "https://doi.org/10.1137/s0097539795293172",
+    "pdf_url": null,
+    "source": {
+     "id": "https://openalex.org/S153560523",
+     "display_name": "SIAM Journal on Computing",
+     "issn_l": "0097-5397",
+     "issn": [
+      "0097-5397",
+      "1095-7111"
+     ],
+     "is_oa": false,
+     "is_in_doaj": false,
+     "is_core": true,
+     "listed_in": [
+      "ccf-a",
+      "cwts-core",
+      "dongbi-a",
+      "jufo-3",
+      "norway-2",
+      "poland-200",
+      "russia-white-list-1"
+     ],
+     "host_organization": "https://openalex.org/P4310320508",
+     "host_organization_name": "Society for Industrial and Applied Mathematics",
+     "host_organization_lineage": [
+      "https://openalex.org/P4310320508"
+     ],
+     "host_organization_lineage_names": [
+      "Society for Industrial and Applied Mathematics"
+     ],
+     "type": "journal"
+    },
+    "license": null,
+    "license_id": null,
+    "version": "publishedVersion",
+    "is_accepted": true,
+    "is_published": true,
+    "raw_source_name": "SIAM Journal on Computing",
+    "raw_type": "journal-article"
+   },
+   "best_oa_location": {
+    "id": "pmh:oai:arXiv.org:quant-ph/9508027",
+    "doi": null,
+    "is_oa": true,
+    "landing_page_url": "http://arxiv.org/abs/quant-ph/9508027",
+    "pdf_url": "https://arxiv.org/pdf/quant-ph/9508027",
+    "source": {
+     "id": "https://openalex.org/S4306400194",
+     "display_name": "arXiv (Cornell University)",
+     "issn_l": "2331-8422",
+     "issn": [
+      "2331-8422"
+     ],
+     "is_oa": true,
+     "is_in_doaj": false,
+     "is_core": false,
+     "listed_in": [],
+     "host_organization": "https://openalex.org/I205783295",
+     "host_organization_name": "Cornell University",
+     "host_organization_lineage": [
+      "https://openalex.org/I205783295"
+     ],
+     "host_organization_lineage_names": [],
+     "type": "repository"
+    },
+    "license": null,
+    "license_id": null,
+    "version": "submittedVersion",
+    "is_accepted": false,
+    "is_published": false,
+    "raw_source_name": null,
+    "raw_type": "text"
+   },
+   "open_access": {
+    "is_oa": true,
+    "oa_status": "green",
+    "oa_url": "https://arxiv.org/pdf/quant-ph/9508027",
+    "any_repository_has_fulltext": true
+   },
+   "cited_by_count": 8485,
+   "referenced_works_count": 45,
+   "biblio": {
+    "volume": "26",
+    "issue": "5",
+    "first_page": "1484",
+    "last_page": "1509"
+   },
+   "abstract_inverted_index": {
+    "A": [
+     0
+    ],
+    "digital": [
+     1
+    ],
+    "computer": [
+     2,
+     70
+    ],
+    "is": [
+     3,
+     16,
+     45
+    ],
+    "generally": [
+     4,
+     62
+    ],
+    "believed": [
+     5,
+     17
+    ],
+    "to": [
+     6,
+     19,
+     64,
+     117
+    ],
+    "be": [
+     7,
+     40,
+     65,
+     118
+    ],
+    "an": [
+     8,
+     26
+    ],
+    "efficient": [
+     9
+    ],
+    "universal": [
+     10
+    ],
+    "computing": [
+     11,
+     23
+    ],
+    "device;": [
+     12
+    ],
+    "that": [
+     13
+    ],
+    "is,": [
+     14
+    ],
+    "it": [
+     15
+    ],
+    "able": [
+     18
+    ],
+    "simulate": [
+     20
+    ],
+    "any": [
+     21
+    ],
+    "physical": [
+     22
+    ],
+    "device": [
+     24
+    ],
+    "with": [
+     25
+    ],
+    "increase": [
+     27
+    ],
+    "in": [
+     28,
+     105
+    ],
+    "computation": [
+     29
+    ],
+    "time": [
+     30
+    ],
+    "by": [
+     31
+    ],
+    "at": [
+     32
+    ],
+    "most": [
+     33
+    ],
+    "a": [
+     34,
+     68,
+     93,
+     100
+    ],
+    "polynomial": [
+     35,
+     104
+    ],
+    "factor.": [
+     36
+    ],
+    "This": [
+     37,
+     49
+    ],
+    "may": [
+     38
+    ],
+    "not": [
+     39
+    ],
+    "true": [
+     41
+    ],
+    "when": [
+     42
+    ],
+    "quantum": [
+     43,
+     95
+    ],
+    "mechanics": [
+     44
+    ],
+    "taken": [
+     46
+    ],
+    "into": [
+     47
+    ],
+    "consideration.": [
+     48
+    ],
+    "paper": [
+     50
+    ],
+    "considers": [
+     51
+    ],
+    "factoring": [
+     52
+    ],
+    "integers": [
+     53
+    ],
+    "and": [
+     54,
+     71
+    ],
+    "finding": [
+     55
+    ],
+    "discrete": [
+     56
+    ],
+    "logarithms,": [
+     57
+    ],
+    "two": [
+     58,
+     90
+    ],
+    "problems": [
+     59,
+     91
+    ],
+    "which": [
+     60,
+     72
+    ],
+    "are": [
+     61,
+     86
+    ],
+    "thought": [
+     63
+    ],
+    "hard": [
+     66
+    ],
+    "on": [
+     67,
+     92
+    ],
+    "classical": [
+     69
+    ],
+    "have": [
+     73
+    ],
+    "been": [
+     74
+    ],
+    "used": [
+     75
+    ],
+    "as": [
+     76
+    ],
+    "the": [
+     77,
+     106,
+     110,
+     115
+    ],
+    "basis": [
+     78
+    ],
+    "of": [
+     79,
+     102,
+     112,
+     114
+    ],
+    "several": [
+     80
+    ],
+    "proposed": [
+     81
+    ],
+    "cryptosystems.": [
+     82
+    ],
+    "Efficient": [
+     83
+    ],
+    "randomized": [
+     84
+    ],
+    "algorithms": [
+     85,
+     98
+    ],
+    "given": [
+     87
+    ],
+    "for": [
+     88
+    ],
+    "these": [
+     89
+    ],
+    "hypothetical": [
+     94
+    ],
+    "computer.": [
+     96
+    ],
+    "These": [
+     97
+    ],
+    "take": [
+     99
+    ],
+    "number": [
+     101,
+     111
+    ],
+    "steps": [
+     103
+    ],
+    "input": [
+     107
+    ],
+    "size,": [
+     108
+    ],
+    "e.g.,": [
+     109
+    ],
+    "digits": [
+     113
+    ],
+    "integer": [
+     116
+    ],
+    "factored.": [
+     119
+    ]
+   },
+   "primary_topic": {
+    "id": "https://openalex.org/T10682",
+    "display_name": "Quantum Computing Algorithms and Architecture",
+    "score": 0.9907000064849854,
+    "subfield": {
+     "id": "https://openalex.org/subfields/1702",
+     "display_name": "Artificial Intelligence"
+    },
+    "field": {
+     "id": "https://openalex.org/fields/17",
+     "display_name": "Computer Science"
+    },
+    "domain": {
+     "id": "https://openalex.org/domains/3",
+     "display_name": "Physical Sciences"
+    }
+   },
+   "language": "en",
+   "is_retracted": false,
+   "updated_date": "2026-11-02T09:45:03.842371",
+   "created_date": "2020-05-13T00:00:00"
+  }
+ ],
+ "group_by": []
+}

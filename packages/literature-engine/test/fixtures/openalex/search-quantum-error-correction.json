@@ -1,0 +1,1972 @@
+{
+ "meta": {
+  "notice": "No API key, so this request shares one free daily budget ($0.10) with everyone on your network's IP address. Get a free key with its own $1/day at https://openalex.org/settings/api and add api_key=YOUR_KEY to your requests. An AI agent can get one for its user in one call: POST https://api.openalex.org/api-keys with {\"email\": \"<your user's email>\"}; we email them a link, and the key works once they click it. Docs for agents: https://help.openalex.org/llms.txt",
+  "count": 264717,
+  "db_response_time_ms": 284,
+  "page": 1,
+  "per_page": 3,
+  "groups_count": null,
+  "x_query": {
+   "oql": "get works with (quantum error correction) in the full text",
+   "x_new_oql": "get works with (quantum error correction) in the full text",
+   "oqo": {
+    "get_rows": "works",
+    "filter_rows": [
+     {
+      "column_id": "fulltext.search",
+      "value": "quantum error correction",
+      "operator": "has"
+     }
+    ]
+   },
+   "url": "/works?filter=fulltext.search:quantum error correction&per_page=3&page=1",
+   "order": "best matches first",
+   "order_default": true
+  },
+  "cost_usd": 0.001
+ },
+ "results": [
+  {
+   "id": "https://openalex.org/W4301287831",
+   "doi": "https://doi.org/10.1017/cbo9781139034807",
+   "title": "Quantum Error Correction",
+   "display_name": "Quantum Error Correction",
+   "publication_year": 2013,
+   "publication_date": "2013-09-05",
+   "type": "book",
+   "ids": {
+    "openalex": "https://openalex.org/W4301287831",
+    "doi": "https://doi.org/10.1017/cbo9781139034807"
+   },
+   "authorships": [
+    {
+     "author_position": "first",
+     "author": {
+      "id": "https://openalex.org/A5048968523",
+      "display_name": "Ciarán Ryan-Anderson",
+      "orcid": "https://orcid.org/0009-0000-2678-2926",
+      "observed_orcids": [
+       "https://orcid.org/0009-0000-2678-2926"
+      ]
+     },
+     "institutions": [],
+     "countries": [],
+     "is_corresponding": true,
+     "raw_author_name": "Ryan-Anderson, Ciaran",
+     "raw_affiliation_strings": [],
+     "raw_orcid": null,
+     "affiliations": []
+    }
+   ],
+   "primary_location": {
+    "id": "doi:10.1017/cbo9781139034807",
+    "doi": "https://doi.org/10.1017/cbo9781139034807",
+    "is_oa": false,
+    "landing_page_url": "https://doi.org/10.1017/cbo9781139034807",
+    "pdf_url": null,
+    "source": {
+     "id": "https://openalex.org/S4306462995",
+     "display_name": "Cambridge University Press eBooks",
+     "issn_l": null,
+     "issn": null,
+     "is_oa": false,
+     "is_in_doaj": false,
+     "is_core": false,
+     "listed_in": [],
+     "host_organization": "https://openalex.org/P4310311721",
+     "host_organization_name": "Cambridge University Press",
+     "host_organization_lineage": [
+      "https://openalex.org/P4310311721",
+      "https://openalex.org/P4310311702"
+     ],
+     "host_organization_lineage_names": [
+      "Cambridge University Press",
+      "University of Cambridge"
+     ],
+     "type": "ebook platform"
+    },
+    "license": null,
+    "license_id": null,
+    "version": "publishedVersion",
+    "is_accepted": true,
+    "is_published": true,
+    "raw_source_name": null,
+    "raw_type": "edited-book"
+   },
+   "best_oa_location": {
+    "id": "pmh:oai:osti.gov:1456543",
+    "doi": null,
+    "is_oa": true,
+    "landing_page_url": "https://www.osti.gov/biblio/1456543",
+    "pdf_url": null,
+    "source": {
+     "id": "https://openalex.org/S4306402487",
+     "display_name": "OSTI OAI (U.S. Department of Energy Office of Scientific and Technical Information)",
+     "issn_l": null,
+     "issn": null,
+     "is_oa": false,
+     "is_in_doaj": false,
+     "is_core": false,
+     "listed_in": [],
+     "host_organization": "https://openalex.org/I139351228",
+     "host_organization_name": "Office of Scientific and Technical Information",
+     "host_organization_lineage": [
+      "https://openalex.org/I139351228"
+     ],
+     "host_organization_lineage_names": [],
+     "type": "repository"
+    },
+    "license": null,
+    "license_id": null,
+    "version": "submittedVersion",
+    "is_accepted": false,
+    "is_published": false,
+    "raw_source_name": null,
+    "raw_type": null
+   },
+   "open_access": {
+    "is_oa": true,
+    "oa_status": "green",
+    "oa_url": "https://www.osti.gov/biblio/1456543",
+    "any_repository_has_fulltext": true
+   },
+   "cited_by_count": 655,
+   "referenced_works_count": 0,
+   "biblio": {
+    "volume": null,
+    "issue": null,
+    "first_page": null,
+    "last_page": null
+   },
+   "abstract_inverted_index": {
+    "Quantum": [
+     0
+    ],
+    "computation": [
+     1
+    ],
+    "and": [
+     2,
+     13,
+     26,
+     74,
+     83,
+     109,
+     119,
+     140
+    ],
+    "information": [
+     3,
+     148
+    ],
+    "is": [
+     4,
+     30,
+     88
+    ],
+    "one": [
+     5
+    ],
+    "of": [
+     6,
+     15,
+     55,
+     122
+    ],
+    "the": [
+     7,
+     16,
+     67,
+     77,
+     137
+    ],
+    "most": [
+     8
+    ],
+    "exciting": [
+     9
+    ],
+    "developments": [
+     10
+    ],
+    "in": [
+     11,
+     37,
+     43,
+     66,
+     146
+    ],
+    "science": [
+     12
+    ],
+    "technology": [
+     14
+    ],
+    "last": [
+     17
+    ],
+    "twenty": [
+     18
+    ],
+    "years.": [
+     19
+    ],
+    "To": [
+     20
+    ],
+    "achieve": [
+     21
+    ],
+    "large": [
+     22
+    ],
+    "scale": [
+     23
+    ],
+    "quantum": [
+     24,
+     39,
+     46,
+     49,
+     57,
+     71,
+     102,
+     147
+    ],
+    "computers": [
+     25,
+     50
+    ],
+    "communication": [
+     27
+    ],
+    "networks": [
+     28
+    ],
+    "it": [
+     29
+    ],
+    "essential": [
+     31
+    ],
+    "not": [
+     32,
+     89
+    ],
+    "only": [
+     33
+    ],
+    "to": [
+     34,
+     91,
+     100
+    ],
+    "overcome": [
+     35
+    ],
+    "noise": [
+     36
+    ],
+    "stored": [
+     38
+    ],
+    "information,": [
+     40
+    ],
+    "but": [
+     41,
+     95
+    ],
+    "also": [
+     42
+    ],
+    "general": [
+     44
+    ],
+    "faulty": [
+     45
+    ],
+    "operations.": [
+     47
+    ],
+    "Scalable": [
+     48
+    ],
+    "require": [
+     51
+    ],
+    "a": [
+     52,
+     92,
+     120,
+     133,
+     142
+    ],
+    "far-reaching": [
+     53
+    ],
+    "theory": [
+     54,
+     78,
+     118
+    ],
+    "fault-tolerant": [
+     56
+    ],
+    "computation.": [
+     58
+    ],
+    "This": [
+     59
+    ],
+    "comprehensive": [
+     60
+    ],
+    "text,": [
+     61
+    ],
+    "written": [
+     62
+    ],
+    "by": [
+     63
+    ],
+    "leading": [
+     64
+    ],
+    "experts": [
+     65,
+     145
+    ],
+    "field,": [
+     68
+    ],
+    "focuses": [
+     69
+    ],
+    "on": [
+     70
+    ],
+    "error": [
+     72
+    ],
+    "correction": [
+     73
+    ],
+    "thoroughly": [
+     75
+    ],
+    "covers": [
+     76
+    ],
+    "as": [
+     79,
+     81,
+     114,
+     116,
+     132,
+     141
+    ],
+    "well": [
+     80,
+     115
+    ],
+    "experimental": [
+     82
+    ],
+    "practical": [
+     84
+    ],
+    "issues.": [
+     85
+    ],
+    "The": [
+     86
+    ],
+    "book": [
+     87,
+     129
+    ],
+    "limited": [
+     90
+    ],
+    "single": [
+     93
+    ],
+    "approach,": [
+     94
+    ],
+    "reviews": [
+     96
+    ],
+    "many": [
+     97
+    ],
+    "different": [
+     98
+    ],
+    "methods": [
+     99
+    ],
+    "control": [
+     101
+    ],
+    "errors,": [
+     103
+    ],
+    "including": [
+     104
+    ],
+    "topological": [
+     105
+    ],
+    "codes,": [
+     106
+    ],
+    "dynamical": [
+     107
+    ],
+    "decoupling": [
+     108
+    ],
+    "decoherence-free": [
+     110
+    ],
+    "subspaces.": [
+     111
+    ],
+    "Basic": [
+     112
+    ],
+    "subjects": [
+     113
+    ],
+    "advanced": [
+     117
+    ],
+    "survey": [
+     121
+    ],
+    "topics": [
+     123
+    ],
+    "from": [
+     124
+    ],
+    "cutting-edge": [
+     125
+    ],
+    "research": [
+     126
+    ],
+    "make": [
+     127
+    ],
+    "this": [
+     128
+    ],
+    "invaluable": [
+     130
+    ],
+    "both": [
+     131
+    ],
+    "pedagogical": [
+     134
+    ],
+    "introduction": [
+     135
+    ],
+    "at": [
+     136
+    ],
+    "graduate": [
+     138
+    ],
+    "level": [
+     139
+    ],
+    "reference": [
+     143
+    ],
+    "for": [
+     144
+    ],
+    "science.": [
+     149
+    ]
+   },
+   "primary_topic": {
+    "id": "https://openalex.org/T10682",
+    "display_name": "Quantum Computing Algorithms and Architecture",
+    "score": 0.9945999979972839,
+    "subfield": {
+     "id": "https://openalex.org/subfields/1702",
+     "display_name": "Artificial Intelligence"
+    },
+    "field": {
+     "id": "https://openalex.org/fields/17",
+     "display_name": "Computer Science"
+    },
+    "domain": {
+     "id": "https://openalex.org/domains/3",
+     "display_name": "Physical Sciences"
+    }
+   },
+   "language": "en",
+   "is_retracted": false,
+   "updated_date": "2026-10-31T12:09:11.096373",
+   "created_date": "2022-10-05T00:00:00"
+  },
+  {
+   "id": "https://openalex.org/W2097527197",
+   "doi": "https://doi.org/10.1088/0034-4885/76/7/076001",
+   "title": "Quantum error correction for beginners",
+   "display_name": "Quantum error correction for beginners",
+   "publication_year": 2013,
+   "publication_date": "2013-06-20",
+   "type": "article",
+   "ids": {
+    "openalex": "https://openalex.org/W2097527197",
+    "doi": "https://doi.org/10.1088/0034-4885/76/7/076001",
+    "mag": "2097527197",
+    "pmid": "https://pubmed.ncbi.nlm.nih.gov/23787909"
+   },
+   "authorships": [
+    {
+     "author_position": "first",
+     "author": {
+      "id": "https://openalex.org/A5060217854",
+      "display_name": "Simon J. Devitt",
+      "orcid": "https://orcid.org/0000-0002-5901-1391",
+      "observed_orcids": [
+       "https://orcid.org/0000-0002-5901-1391"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I184597095",
+       "display_name": "National Institute of Informatics",
+       "ror": "https://ror.org/04ksd4g47",
+       "country_code": "JP",
+       "type": "facility",
+       "lineage": [
+        "https://openalex.org/I1319490839",
+        "https://openalex.org/I184597095",
+        "https://openalex.org/I4210158934"
+       ]
+      }
+     ],
+     "countries": [
+      "JP"
+     ],
+     "is_corresponding": true,
+     "raw_author_name": "Simon J Devitt",
+     "raw_affiliation_strings": [
+      "National Institute of Informatics, 2-1-2 Hitotsubashi Chiyoda-ku Tokyo, 101-8340, Japan. devitt@nii.ac.jp",
+      "National Institute of Informatics, 2-1-2 Hitotsubashi Chiyoda-ku Tokyo, 101-8340, Japan"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "National Institute of Informatics, 2-1-2 Hitotsubashi Chiyoda-ku Tokyo, 101-8340, Japan. devitt@nii.ac.jp",
+       "institution_ids": [
+        "https://openalex.org/I184597095"
+       ]
+      },
+      {
+       "raw_affiliation_string": "National Institute of Informatics, 2-1-2 Hitotsubashi Chiyoda-ku Tokyo, 101-8340, Japan",
+       "institution_ids": [
+        "https://openalex.org/I184597095"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": "https://openalex.org/A5022295690",
+      "display_name": "William J. Munro",
+      "orcid": "https://orcid.org/0000-0003-1835-2250",
+      "observed_orcids": [
+       "https://orcid.org/0000-0003-1835-2250"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I2251713219",
+       "display_name": "NTT (Japan)",
+       "ror": "https://ror.org/00berct97",
+       "country_code": "JP",
+       "type": "company",
+       "lineage": [
+        "https://openalex.org/I2251713219"
+       ]
+      },
+      {
+       "id": "https://openalex.org/I4210105847",
+       "display_name": "NTT Basic Research Laboratories",
+       "ror": "https://ror.org/01m2pas06",
+       "country_code": "JP",
+       "type": "facility",
+       "lineage": [
+        "https://openalex.org/I4210105847"
+       ]
+      }
+     ],
+     "countries": [
+      "JP"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "William J Munro",
+     "raw_affiliation_strings": [
+      "NTT Basic Research Laboratories, NTT Corporation, 3‐1 Morinosato Wakamiya, Atsugi, Kanagawa 243‐0198, Japan"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "NTT Basic Research Laboratories, NTT Corporation, 3‐1 Morinosato Wakamiya, Atsugi, Kanagawa 243‐0198, Japan",
+       "institution_ids": [
+        "https://openalex.org/I2251713219",
+        "https://openalex.org/I4210105847"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "last",
+     "author": {
+      "id": "https://openalex.org/A5081979382",
+      "display_name": "Kae Nemoto",
+      "orcid": "https://orcid.org/0000-0003-3938-0808",
+      "observed_orcids": [
+       "https://orcid.org/0000-0003-3938-0808"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I184597095",
+       "display_name": "National Institute of Informatics",
+       "ror": "https://ror.org/04ksd4g47",
+       "country_code": "JP",
+       "type": "facility",
+       "lineage": [
+        "https://openalex.org/I1319490839",
+        "https://openalex.org/I184597095",
+        "https://openalex.org/I4210158934"
+       ]
+      }
+     ],
+     "countries": [
+      "JP"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Kae Nemoto",
+     "raw_affiliation_strings": [
+      "National Institute of Informatics, 2-1-2 Hitotsubashi Chiyoda-ku Tokyo, 101-8340, Japan"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "National Institute of Informatics, 2-1-2 Hitotsubashi Chiyoda-ku Tokyo, 101-8340, Japan",
+       "institution_ids": [
+        "https://openalex.org/I184597095"
+       ]
+      }
+     ]
+    }
+   ],
+   "primary_location": {
+    "id": "doi:10.1088/0034-4885/76/7/076001",
+    "doi": "https://doi.org/10.1088/0034-4885/76/7/076001",
+    "is_oa": true,
+    "landing_page_url": "https://doi.org/10.1088/0034-4885/76/7/076001",
+    "pdf_url": "https://iopscience.iop.org/article/10.1088/0034-4885/76/7/076001/pdf",
+    "source": {
+     "id": "https://openalex.org/S105282323",
+     "display_name": "Reports on Progress in Physics",
+     "issn_l": "0034-4885",
+     "issn": [
+      "0034-4885",
+      "1361-6633"
+     ],
+     "is_oa": false,
+     "is_in_doaj": false,
+     "is_core": true,
+     "listed_in": [
+      "anvur-scientific",
+      "cwts-core",
+      "dongbi-b",
+      "jufo-3",
+      "medline",
+      "norway-2",
+      "poland-200",
+      "russia-white-list-1"
+     ],
+     "host_organization": "https://openalex.org/P4310320083",
+     "host_organization_name": "IOP Publishing",
+     "host_organization_lineage": [
+      "https://openalex.org/P4310320083",
+      "https://openalex.org/P4310311669"
+     ],
+     "host_organization_lineage_names": [
+      "IOP Publishing",
+      "Institute of Physics"
+     ],
+     "type": "journal"
+    },
+    "license": null,
+    "license_id": null,
+    "version": "publishedVersion",
+    "is_accepted": true,
+    "is_published": true,
+    "raw_source_name": "Reports on Progress in Physics",
+    "raw_type": "journal-article"
+   },
+   "best_oa_location": {
+    "id": "doi:10.1088/0034-4885/76/7/076001",
+    "doi": "https://doi.org/10.1088/0034-4885/76/7/076001",
+    "is_oa": true,
+    "landing_page_url": "https://doi.org/10.1088/0034-4885/76/7/076001",
+    "pdf_url": "https://iopscience.iop.org/article/10.1088/0034-4885/76/7/076001/pdf",
+    "source": {
+     "id": "https://openalex.org/S105282323",
+     "display_name": "Reports on Progress in Physics",
+     "issn_l": "0034-4885",
+     "issn": [
+      "0034-4885",
+      "1361-6633"
+     ],
+     "is_oa": false,
+     "is_in_doaj": false,
+     "is_core": true,
+     "listed_in": [
+      "anvur-scientific",
+      "cwts-core",
+      "dongbi-b",
+      "jufo-3",
+      "medline",
+      "norway-2",
+      "poland-200",
+      "russia-white-list-1"
+     ],
+     "host_organization": "https://openalex.org/P4310320083",
+     "host_organization_name": "IOP Publishing",
+     "host_organization_lineage": [
+      "https://openalex.org/P4310320083",
+      "https://openalex.org/P4310311669"
+     ],
+     "host_organization_lineage_names": [
+      "IOP Publishing",
+      "Institute of Physics"
+     ],
+     "type": "journal"
+    },
+    "license": null,
+    "license_id": null,
+    "version": "publishedVersion",
+    "is_accepted": true,
+    "is_published": true,
+    "raw_source_name": "Reports on Progress in Physics",
+    "raw_type": "journal-article"
+   },
+   "open_access": {
+    "is_oa": true,
+    "oa_status": "bronze",
+    "oa_url": "https://iopscience.iop.org/article/10.1088/0034-4885/76/7/076001/pdf",
+    "any_repository_has_fulltext": true
+   },
+   "cited_by_count": 770,
+   "referenced_works_count": 191,
+   "biblio": {
+    "volume": "76",
+    "issue": "7",
+    "first_page": "076001",
+    "last_page": "076001"
+   },
+   "abstract_inverted_index": {
+    "Quantum": [
+     0
+    ],
+    "error": [
+     1,
+     55,
+     73,
+     96,
+     114,
+     199
+    ],
+    "correction": [
+     2,
+     56,
+     74,
+     97,
+     115,
+     200
+    ],
+    "(QEC)": [
+     3
+    ],
+    "and": [
+     4,
+     75,
+     84,
+     89,
+     116,
+     177,
+     192,
+     201,
+     214
+    ],
+    "fault-tolerant": [
+     5,
+     76
+    ],
+    "quantum": [
+     6,
+     17,
+     37,
+     49,
+     54,
+     72,
+     100,
+     113,
+     144,
+     152,
+     164
+    ],
+    "computation": [
+     7,
+     77
+    ],
+    "represent": [
+     8
+    ],
+    "one": [
+     9
+    ],
+    "of": [
+     10,
+     16,
+     28,
+     35,
+     47,
+     53,
+     112,
+     143
+    ],
+    "the": [
+     11,
+     25,
+     33,
+     45,
+     109,
+     141,
+     158,
+     174,
+     216
+    ],
+    "most": [
+     12
+    ],
+    "vital": [
+     13
+    ],
+    "theoretical": [
+     14
+    ],
+    "aspects": [
+     15,
+     111
+    ],
+    "information": [
+     18,
+     153
+    ],
+    "processing.": [
+     19
+    ],
+    "It": [
+     20
+    ],
+    "was": [
+     21
+    ],
+    "well": [
+     22
+    ],
+    "known": [
+     23
+    ],
+    "from": [
+     24,
+     188
+    ],
+    "early": [
+     26
+    ],
+    "developments": [
+     27
+    ],
+    "this": [
+     29,
+     68,
+     132,
+     181
+    ],
+    "exciting": [
+     30
+    ],
+    "field": [
+     31,
+     83,
+     142
+    ],
+    "that": [
+     32,
+     60,
+     138
+    ],
+    "fragility": [
+     34
+    ],
+    "coherent": [
+     36
+    ],
+    "systems": [
+     38
+    ],
+    "would": [
+     39
+    ],
+    "be": [
+     40,
+     64
+    ],
+    "a": [
+     41,
+     80,
+     120,
+     126,
+     189
+    ],
+    "catastrophic": [
+     42
+    ],
+    "obstacle": [
+     43
+    ],
+    "to": [
+     44,
+     66,
+     94,
+     107,
+     151,
+     170,
+     211
+    ],
+    "development": [
+     46,
+     130
+    ],
+    "large-scale": [
+     48,
+     99
+    ],
+    "computers.": [
+     50
+    ],
+    "The": [
+     51,
+     129
+    ],
+    "introduction": [
+     52
+    ],
+    "in": [
+     57,
+     131,
+     140,
+     163,
+     180,
+     215
+    ],
+    "1995": [
+     58
+    ],
+    "showed": [
+     59
+    ],
+    "active": [
+     61
+    ],
+    "techniques": [
+     62
+    ],
+    "could": [
+     63
+    ],
+    "employed": [
+     65,
+     179
+    ],
+    "mitigate": [
+     67
+    ],
+    "fatal": [
+     69
+    ],
+    "problem.": [
+     70
+    ],
+    "However,": [
+     71
+    ],
+    "is": [
+     78
+    ],
+    "now": [
+     79
+    ],
+    "much": [
+     81
+    ],
+    "larger": [
+     82
+    ],
+    "many": [
+     85,
+     139,
+     159
+    ],
+    "new": [
+     86,
+     150
+    ],
+    "codes,": [
+     87
+    ],
+    "techniques,": [
+     88
+    ],
+    "methodologies": [
+     90,
+     178
+    ],
+    "have": [
+     91,
+     105,
+     166
+    ],
+    "been": [
+     92,
+     135
+    ],
+    "developed": [
+     93
+    ],
+    "implement": [
+     95
+    ],
+    "for": [
+     98
+    ],
+    "algorithms.": [
+     101
+    ],
+    "In": [
+     102
+    ],
+    "response,": [
+     103
+    ],
+    "we": [
+     104,
+     196
+    ],
+    "attempted": [
+     106
+    ],
+    "summarize": [
+     108
+    ],
+    "basic": [
+     110,
+     127
+    ],
+    "fault-tolerance,": [
+     117
+    ],
+    "not": [
+     118
+    ],
+    "as": [
+     119,
+     125
+    ],
+    "detailed": [
+     121,
+     205
+    ],
+    "guide,": [
+     122
+    ],
+    "but": [
+     123
+    ],
+    "rather": [
+     124
+    ],
+    "introduction.": [
+     128
+    ],
+    "area": [
+     133
+    ],
+    "has": [
+     134
+    ],
+    "so": [
+     136
+    ],
+    "pronounced": [
+     137
+    ],
+    "information,": [
+     145
+    ],
+    "specifically": [
+     146
+    ],
+    "researchers": [
+     147
+    ],
+    "who": [
+     148
+    ],
+    "are": [
+     149,
+     208
+    ],
+    "or": [
+     154
+    ],
+    "people": [
+     155
+    ],
+    "focused": [
+     156
+    ],
+    "on": [
+     157
+    ],
+    "other": [
+     160
+    ],
+    "important": [
+     161
+    ],
+    "issues": [
+     162
+    ],
+    "computation,": [
+     165
+    ],
+    "found": [
+     167
+    ],
+    "it": [
+     168
+    ],
+    "difficult": [
+     169
+    ],
+    "keep": [
+     171
+    ],
+    "up": [
+     172
+    ],
+    "with": [
+     173
+    ],
+    "general": [
+     175
+    ],
+    "formalisms": [
+     176
+    ],
+    "area.": [
+     182
+    ],
+    "Rather": [
+     183
+    ],
+    "than": [
+     184
+    ],
+    "introducing": [
+     185
+    ],
+    "these": [
+     186
+    ],
+    "concepts": [
+     187
+    ],
+    "rigorous": [
+     190
+    ],
+    "mathematical": [
+     191
+    ],
+    "computer": [
+     193
+    ],
+    "science": [
+     194
+    ],
+    "framework,": [
+     195
+    ],
+    "instead": [
+     197
+    ],
+    "examine": [
+     198
+    ],
+    "fault-tolerance": [
+     202
+    ],
+    "largely": [
+     203
+    ],
+    "through": [
+     204
+    ],
+    "examples,": [
+     206
+    ],
+    "which": [
+     207
+    ],
+    "more": [
+     209
+    ],
+    "relevant": [
+     210
+    ],
+    "experimentalists": [
+     212
+    ],
+    "today": [
+     213
+    ],
+    "near": [
+     217
+    ],
+    "future.": [
+     218
+    ]
+   },
+   "primary_topic": {
+    "id": "https://openalex.org/T10682",
+    "display_name": "Quantum Computing Algorithms and Architecture",
+    "score": 0.9984999895095825,
+    "subfield": {
+     "id": "https://openalex.org/subfields/1702",
+     "display_name": "Artificial Intelligence"
+    },
+    "field": {
+     "id": "https://openalex.org/fields/17",
+     "display_name": "Computer Science"
+    },
+    "domain": {
+     "id": "https://openalex.org/domains/3",
+     "display_name": "Physical Sciences"
+    }
+   },
+   "language": "en",
+   "is_retracted": false,
+   "updated_date": "2026-10-31T12:09:11.096373",
+   "created_date": "2016-06-24T00:00:00"
+  },
+  {
+   "id": "https://openalex.org/W1980856895",
+   "doi": "https://doi.org/10.1103/physrevlett.81.2152",
+   "title": "Experimental Quantum Error Correction",
+   "display_name": "Experimental Quantum Error Correction",
+   "publication_year": 1998,
+   "publication_date": "1998-09-07",
+   "type": "article",
+   "ids": {
+    "openalex": "https://openalex.org/W1980856895",
+    "doi": "https://doi.org/10.1103/physrevlett.81.2152",
+    "mag": "1980856895"
+   },
+   "authorships": [
+    {
+     "author_position": "first",
+     "author": {
+      "id": "https://openalex.org/A5033501753",
+      "display_name": "David G. Cory",
+      "orcid": "https://orcid.org/0000-0002-1270-6268",
+      "observed_orcids": [
+       "https://orcid.org/0000-0002-1270-6268"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I63966007",
+       "display_name": "Massachusetts Institute of Technology",
+       "ror": "https://ror.org/042nb2s44",
+       "country_code": "US",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I63966007"
+       ]
+      }
+     ],
+     "countries": [
+      "US"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "D. G. Cory",
+     "raw_affiliation_strings": [
+      "Department of Nuclear Engineering, Massachusetts Institute of Technology, Cambridge, Massachusetts 02139"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Department of Nuclear Engineering, Massachusetts Institute of Technology, Cambridge, Massachusetts 02139",
+       "institution_ids": [
+        "https://openalex.org/I63966007"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": null,
+      "display_name": "M. D. Price",
+      "orcid": null,
+      "observed_orcids": []
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I136199984",
+       "display_name": "Harvard University",
+       "ror": "https://ror.org/03vek6s52",
+       "country_code": "US",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I136199984"
+       ]
+      },
+      {
+       "id": "https://openalex.org/I4210092658",
+       "display_name": "Harvard–MIT Division of Health Sciences and Technology",
+       "ror": "https://ror.org/00jjeh629",
+       "country_code": "US",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I4210092658"
+       ]
+      }
+     ],
+     "countries": [
+      "US"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "M. D. Price",
+     "raw_affiliation_strings": [
+      "Harvard-MIT Division of Health Sciences and Technology, Cambridge, Massachusetts 02139"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Harvard-MIT Division of Health Sciences and Technology, Cambridge, Massachusetts 02139",
+       "institution_ids": [
+        "https://openalex.org/I136199984",
+        "https://openalex.org/I4210092658"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": "https://openalex.org/A5110530688",
+      "display_name": "Werner E. Maas",
+      "orcid": null,
+      "observed_orcids": []
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I193170854",
+       "display_name": "Bruker (United States)",
+       "ror": "https://ror.org/04r739x86",
+       "country_code": "US",
+       "type": "company",
+       "lineage": [
+        "https://openalex.org/I193170854"
+       ]
+      }
+     ],
+     "countries": [
+      "US"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "W. Maas",
+     "raw_affiliation_strings": [
+      "Bruker Instruments Inc., 19 Fortune Drive, Billerica, Massachusetts 01821"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Bruker Instruments Inc., 19 Fortune Drive, Billerica, Massachusetts 01821",
+       "institution_ids": [
+        "https://openalex.org/I193170854"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": "https://openalex.org/A5041610548",
+      "display_name": "Emanuel H. Knill",
+      "orcid": "https://orcid.org/0009-0002-4494-5025",
+      "observed_orcids": [
+       "https://orcid.org/0009-0002-4494-5025",
+       "https://orcid.org/0009-0008-1522-664X"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I1343871089",
+       "display_name": "Los Alamos National Laboratory",
+       "ror": "https://ror.org/01e41cf67",
+       "country_code": "US",
+       "type": "facility",
+       "lineage": [
+        "https://openalex.org/I1330989302",
+        "https://openalex.org/I1343871089",
+        "https://openalex.org/I198811213",
+        "https://openalex.org/I4210120050"
+       ]
+      }
+     ],
+     "countries": [
+      "US"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "E. Knill",
+     "raw_affiliation_strings": [
+      "Los Alamos National Laboratory, Los Alamos, New Mexico 87545"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Los Alamos National Laboratory, Los Alamos, New Mexico 87545",
+       "institution_ids": [
+        "https://openalex.org/I1343871089"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": "https://openalex.org/A5078255491",
+      "display_name": "Raymond Laflamme",
+      "orcid": "https://orcid.org/0000-0002-4755-4006",
+      "observed_orcids": [
+       "https://orcid.org/0000-0002-4755-4006"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I1343871089",
+       "display_name": "Los Alamos National Laboratory",
+       "ror": "https://ror.org/01e41cf67",
+       "country_code": "US",
+       "type": "facility",
+       "lineage": [
+        "https://openalex.org/I1330989302",
+        "https://openalex.org/I1343871089",
+        "https://openalex.org/I198811213",
+        "https://openalex.org/I4210120050"
+       ]
+      }
+     ],
+     "countries": [
+      "US"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "R. Laflamme",
+     "raw_affiliation_strings": [
+      "Los Alamos National Laboratory, Los Alamos, New Mexico 87545"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Los Alamos National Laboratory, Los Alamos, New Mexico 87545",
+       "institution_ids": [
+        "https://openalex.org/I1343871089"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": "https://openalex.org/A5019959492",
+      "display_name": "Wojciech Hubert Zurek",
+      "orcid": "https://orcid.org/0000-0002-6505-7345",
+      "observed_orcids": [
+       "https://orcid.org/0000-0002-6505-7345"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I1343871089",
+       "display_name": "Los Alamos National Laboratory",
+       "ror": "https://ror.org/01e41cf67",
+       "country_code": "US",
+       "type": "facility",
+       "lineage": [
+        "https://openalex.org/I1330989302",
+        "https://openalex.org/I1343871089",
+        "https://openalex.org/I198811213",
+        "https://openalex.org/I4210120050"
+       ]
+      }
+     ],
+     "countries": [
+      "US"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "W. H. Zurek",
+     "raw_affiliation_strings": [
+      "Los Alamos National Laboratory, Los Alamos, New Mexico 87545"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Los Alamos National Laboratory, Los Alamos, New Mexico 87545",
+       "institution_ids": [
+        "https://openalex.org/I1343871089"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": "https://openalex.org/A5084924917",
+      "display_name": "Timothy F. Havel",
+      "orcid": "https://orcid.org/0000-0001-7939-2091",
+      "observed_orcids": [
+       "https://orcid.org/0000-0001-7939-2091"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I136199984",
+       "display_name": "Harvard University",
+       "ror": "https://ror.org/03vek6s52",
+       "country_code": "US",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I136199984"
+       ]
+      }
+     ],
+     "countries": [
+      "US"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "T. F. Havel",
+     "raw_affiliation_strings": [
+      "BCMP, Harvard Medical School, 240 Longwood Avenue, Boston, Massachusetts 02115"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "BCMP, Harvard Medical School, 240 Longwood Avenue, Boston, Massachusetts 02115",
+       "institution_ids": [
+        "https://openalex.org/I136199984"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "last",
+     "author": {
+      "id": "https://openalex.org/A5032346196",
+      "display_name": "Shyamal S. Somaroo",
+      "orcid": null,
+      "observed_orcids": []
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I136199984",
+       "display_name": "Harvard University",
+       "ror": "https://ror.org/03vek6s52",
+       "country_code": "US",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I136199984"
+       ]
+      }
+     ],
+     "countries": [
+      "US"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "S. S. Somaroo",
+     "raw_affiliation_strings": [
+      "BCMP, Harvard Medical School, 240 Longwood Avenue, Boston, Massachusetts 02115"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "BCMP, Harvard Medical School, 240 Longwood Avenue, Boston, Massachusetts 02115",
+       "institution_ids": [
+        "https://openalex.org/I136199984"
+       ]
+      }
+     ]
+    }
+   ],
+   "primary_location": {
+    "id": "doi:10.1103/physrevlett.81.2152",
+    "doi": "https://doi.org/10.1103/physrevlett.81.2152",
+    "is_oa": false,
+    "landing_page_url": "https://doi.org/10.1103/physrevlett.81.2152",
+    "pdf_url": null,
+    "source": {
+     "id": "https://openalex.org/S24807848",
+     "display_name": "Physical Review Letters",
+     "issn_l": "0031-9007",
+     "issn": [
+      "0031-9007",
+      "1079-7114",
+      "1092-0145"
+     ],
+     "is_oa": false,
+     "is_in_doaj": false,
+     "is_core": true,
+     "listed_in": [
+      "anvur-scientific",
+      "cwts-core",
+      "dongbi-a",
+      "jufo-3",
+      "ki-jl-2",
+      "medline",
+      "norway-2",
+      "poland-200",
+      "russia-white-list-1",
+      "vabb-shw"
+     ],
+     "host_organization": "https://openalex.org/P4310320261",
+     "host_organization_name": "American Physical Society",
+     "host_organization_lineage": [
+      "https://openalex.org/P4310320261"
+     ],
+     "host_organization_lineage_names": [
+      "American Physical Society"
+     ],
+     "type": "journal"
+    },
+    "license": null,
+    "license_id": null,
+    "version": "publishedVersion",
+    "is_accepted": true,
+    "is_published": true,
+    "raw_source_name": "Physical Review Letters",
+    "raw_type": "journal-article"
+   },
+   "best_oa_location": {
+    "id": "pmh:oai:arXiv.org:quant-ph/9802018",
+    "doi": null,
+    "is_oa": true,
+    "landing_page_url": "http://arxiv.org/abs/quant-ph/9802018",
+    "pdf_url": "https://arxiv.org/pdf/quant-ph/9802018",
+    "source": {
+     "id": "https://openalex.org/S4306400194",
+     "display_name": "arXiv (Cornell University)",
+     "issn_l": "2331-8422",
+     "issn": [
+      "2331-8422"
+     ],
+     "is_oa": true,
+     "is_in_doaj": false,
+     "is_core": false,
+     "listed_in": [],
+     "host_organization": "https://openalex.org/I205783295",
+     "host_organization_name": "Cornell University",
+     "host_organization_lineage": [
+      "https://openalex.org/I205783295"
+     ],
+     "host_organization_lineage_names": [],
+     "type": "repository"
+    },
+    "license": null,
+    "license_id": null,
+    "version": "submittedVersion",
+    "is_accepted": false,
+    "is_published": false,
+    "raw_source_name": null,
+    "raw_type": "text"
+   },
+   "open_access": {
+    "is_oa": true,
+    "oa_status": "green",
+    "oa_url": "https://arxiv.org/pdf/quant-ph/9802018",
+    "any_repository_has_fulltext": true
+   },
+   "cited_by_count": 581,
+   "referenced_works_count": 28,
+   "biblio": {
+    "volume": "81",
+    "issue": "10",
+    "first_page": "2152",
+    "last_page": "2155"
+   },
+   "abstract_inverted_index": {
+    "Quantum": [
+     0
+    ],
+    "error": [
+     1,
+     25,
+     50
+    ],
+    "correction": [
+     2,
+     26,
+     51
+    ],
+    "is": [
+     3,
+     40,
+     53
+    ],
+    "required": [
+     4
+    ],
+    "to": [
+     5,
+     67
+    ],
+    "compensate": [
+     6
+    ],
+    "for": [
+     7,
+     80
+    ],
+    "the": [
+     8,
+     11,
+     19,
+     29,
+     37,
+     49,
+     65,
+     77
+    ],
+    "fragility": [
+     9
+    ],
+    "of": [
+     10,
+     13,
+     23,
+     36,
+     48
+    ],
+    "state": [
+     12,
+     31,
+     85
+    ],
+    "a": [
+     14,
+     45,
+     61
+    ],
+    "quantum": [
+     15,
+     24
+    ],
+    "computer.": [
+     16
+    ],
+    "We": [
+     17
+    ],
+    "report": [
+     18
+    ],
+    "first": [
+     20
+    ],
+    "experimental": [
+     21
+    ],
+    "implementations": [
+     22
+    ],
+    "and": [
+     27,
+     44
+    ],
+    "confirm": [
+     28
+    ],
+    "expected": [
+     30
+    ],
+    "stabilization.": [
+     32
+    ],
+    "A": [
+     33
+    ],
+    "precise": [
+     34
+    ],
+    "analysis": [
+     35
+    ],
+    "decay": [
+     38
+    ],
+    "behavior": [
+     39
+    ],
+    "performed": [
+     41
+    ],
+    "in": [
+     42,
+     55,
+     64
+    ],
+    "alanine": [
+     43
+    ],
+    "full": [
+     46
+    ],
+    "implementation": [
+     47
+    ],
+    "procedure": [
+     52
+    ],
+    "realized": [
+     54
+    ],
+    "trichloroethylene.": [
+     56
+    ],
+    "In": [
+     57
+    ],
+    "NMR": [
+     58
+    ],
+    "computing,": [
+     59
+    ],
+    "however,": [
+     60
+    ],
+    "net": [
+     62
+    ],
+    "improvement": [
+     63
+    ],
+    "signal": [
+     66
+    ],
+    "noise": [
+     68
+    ],
+    "would": [
+     69
+    ],
+    "require": [
+     70
+    ],
+    "very": [
+     71
+    ],
+    "high": [
+     72
+    ],
+    "polarization.": [
+     73
+    ],
+    "The": [
+     74
+    ],
+    "experiment": [
+     75
+    ],
+    "implemented": [
+     76
+    ],
+    "three-bit": [
+     78
+    ],
+    "code": [
+     79
+    ],
+    "phase": [
+     81
+    ],
+    "errors": [
+     82
+    ],
+    "using": [
+     83
+    ],
+    "liquid": [
+     84
+    ],
+    "NMR.": [
+     86
+    ]
+   },
+   "primary_topic": {
+    "id": "https://openalex.org/T10682",
+    "display_name": "Quantum Computing Algorithms and Architecture",
+    "score": 0.9922000169754028,
+    "subfield": {
+     "id": "https://openalex.org/subfields/1702",
+     "display_name": "Artificial Intelligence"
+    },
+    "field": {
+     "id": "https://openalex.org/fields/17",
+     "display_name": "Computer Science"
+    },
+    "domain": {
+     "id": "https://openalex.org/domains/3",
+     "display_name": "Physical Sciences"
+    }
+   },
+   "language": "en",
+   "is_retracted": false,
+   "updated_date": "2026-10-30T12:39:25.321706",
+   "created_date": "2016-06-24T00:00:00"
+  }
+ ],
+ "group_by": []
+}

@@ -1,0 +1,20 @@
+{
+  "name": "@research-studio/agent-adapters",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@research-studio/ai-core": "workspace:*",
+    "@research-studio/shared-types": "workspace:*",
+    "zod": "^4.6.7",
+    "@research-studio/document-engine": "workspace:*"
+  }
+}

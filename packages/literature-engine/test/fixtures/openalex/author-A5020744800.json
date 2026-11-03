@@ -1,0 +1,41 @@
+{
+ "id": "https://openalex.org/A5020744800",
+ "display_name": "Peter W. Shor",
+ "orcid": "https://orcid.org/0000-0003-4626-5648",
+ "works_count": 305,
+ "cited_by_count": 57424,
+ "summary_stats": {
+  "2yr_mean_citedness": 29.0,
+  "h_index": 71,
+  "i10_index": 168
+ },
+ "last_known_institutions": [
+  {
+   "id": "https://openalex.org/I1283103587",
+   "ror": "https://ror.org/02bbd5539",
+   "display_name": "AT&T (United States)",
+   "country_code": "US",
+   "type": "company",
+   "lineage": [
+    "https://openalex.org/I1283103587"
+   ]
+  },
+  {
+   "id": "https://openalex.org/I63966007",
+   "ror": "https://ror.org/042nb2s44",
+   "display_name": "Massachusetts Institute of Technology",
+   "country_code": "US",
+   "type": "education",
+   "lineage": [
+    "https://openalex.org/I63966007"
+   ]
+  }
+ ],
+ "ids": {
+  "openalex": "https://openalex.org/A5020744800",
+  "orcid": "https://orcid.org/0000-0003-4626-5648",
+  "observed_orcids": [
+   "https://orcid.org/0000-0003-4626-5648"
+  ]
+ }
+}

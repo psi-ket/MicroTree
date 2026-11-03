@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/I7mGHQ/92AhKJ38ViZSifDLnyxM</id>
+  <title>arXiv Query: search_query=ti:"surface code" AND cat:quant-ph&amp;id_list=&amp;start=0&amp;max_results=3</title>
+  <updated>2026-11-02T22:22:57Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=ti:%22surface+code%22+AND+cat:quant-ph&amp;start=0&amp;max_results=3&amp;id_list=" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>3</opensearch:itemsPerPage>
+  <opensearch:totalResults>373</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2507.06201v3</id>
+    <title>Surface-Code Hardware Hamiltonian</title>
+    <updated>2026-07-20T06:26:34Z</updated>
+    <link href="https://arxiv.org/abs/2507.06201v3" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2507.06201v3" rel="related" type="application/pdf" title="pdf"/>
+    <summary>We present a scalable framework for accurately modeling many-body interactions in surface-code quantum processor units (QPUs). Combining a concise diagrammatic formalism with high-precision numerical methods, our approach efficiently evaluates high-order, long-range Pauli string couplings and maps complete chip layouts onto exact effective Hamiltonians. Applying this method to surface-code architectures, such as Google's Sycamore lattice, we identify three distinct operational regimes: computationally stable, error-dominated, and hierarchy-inverted. Our analysis reveals that even modest increases in residual qubit-qubit crosstalk can invert the interaction hierarchy, driving the system from a computationally favorable phase into a topologically ordered regime. This framework thus serves as a powerful guide for optimizing next-generation high-fidelity surface-code hardware and provides a pathway to investigate emergent quantum many-body phenomena.</summary>
+    <category term="quant-ph" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cond-mat.mes-hall" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2025-07-08T17:27:32Z</published>
+    <arxiv:comment>33 pages, 12 figures</arxiv:comment>
+    <arxiv:primary_category term="quant-ph"/>
+    <arxiv:journal_ref>npj Quantum Inf 12, 71 (2026)</arxiv:journal_ref>
+    <author>
+      <name>Xuexin Xu</name>
+    </author>
+    <author>
+      <name>Kuljeet Kaur</name>
+    </author>
+    <author>
+      <name>Chloé Vignes</name>
+    </author>
+    <author>
+      <name>John M. Martinis</name>
+    </author>
+    <author>
+      <name>Mohammad H. Ansari</name>
+    </author>
+    <arxiv:doi>10.1038/s41534-026-01241-y</arxiv:doi>
+    <link rel="related" href="https://doi.org/10.1038/s41534-026-01241-y" title="doi"/>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2009.07851v3</id>
+    <title>The XZZX Surface Code</title>
+    <updated>2021-04-19T05:45:01Z</updated>
+    <link href="https://arxiv.org/abs/2009.07851v3" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2009.07851v3" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Performing large calculations with a quantum computer will likely require a fault-tolerant architecture based on quantum error-correcting codes. The challenge is to design practical quantum error-correcting codes that perform well against realistic noise using modest resources. Here we show that a variant of the surface code -- the XZZX code -- offers remarkable performance for fault-tolerant quantum computation. The error threshold of this code matches what can be achieved with random codes (hashing) for every single-qubit Pauli noise channel; it is the first explicit code shown to have this universal property. We present numerical evidence that the threshold even exceeds this hashing bound for an experimentally relevant range of noise parameters. Focusing on the common situation where qubit dephasing is the dominant noise, we show that this code has a practical, high-performance decoder and surpasses all previously known thresholds in the realistic setting where syndrome measurements are unreliable. We go on to demonstrate the favourable sub-threshold resource scaling that can be obtained by specialising a code to exploit structure in the noise. We show that it is possible to maintain all of these advantages when we perform fault-tolerant quantum computation.</summary>
+    <category term="quant-ph" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2020-09-16T18:00:01Z</published>
+    <arxiv:comment>10+6 pages, 11 figures; v2 - minor clarifying changes; v3 - final author version. Data and code used to produce our results available at https://bitbucket.org/qecsim/qsdxzzx/. The available software extends and uses services from the quantum error correction simulation package qecsim</arxiv:comment>
+    <arxiv:primary_category term="quant-ph"/>
+    <arxiv:journal_ref>Nat. Commun. 12, 2172 (2021)</arxiv:journal_ref>
+    <author>
+      <name>J. Pablo Bonilla Ataides</name>
+    </author>
+    <author>
+      <name>David K. Tuckett</name>
+    </author>
+    <author>
+      <name>Stephen D. Bartlett</name>
+    </author>
+    <author>
+      <name>Steven T. Flammia</name>
+    </author>
+    <author>
+      <name>Benjamin J. Brown</name>
+    </author>
+    <arxiv:doi>10.1038/s41467-021-22274-1</arxiv:doi>
+    <link rel="related" href="https://doi.org/10.1038/s41467-021-22274-1" title="doi"/>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/0910.4074v3</id>
+    <title>Surface code quantum communication</title>
+    <updated>2010-02-05T03:42:05Z</updated>
+    <link href="https://arxiv.org/abs/0910.4074v3" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/0910.4074v3" rel="related" type="application/pdf" title="pdf"/>
+    <summary>  Quantum communication typically involves a linear chain of repeater stations, each capable of reliable local quantum computation and connected to their nearest neighbors by unreliable communication links. The communication rate in existing protocols is low as two-way classical communication is used. We show that, if Bell pairs are generated between neighboring stations with a probability of heralded success greater than 0.65 and fidelity greater than 0.96, two-way classical communication can be entirely avoided and quantum information can be sent over arbitrary distances with arbitrarily low error at a rate limited only by the local gate speed. The number of qubits per repeater scales logarithmically with the communication distance. If the probability of heralded success is less than 0.65 and Bell pairs between neighboring stations with fidelity no less than 0.92 are generated only every T_B seconds, the logarithmic resource scaling remains and the communication rate through N links is proportional to 1/(T_B log^2 N).</summary>
+    <category term="quant-ph" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2009-10-21T12:57:01Z</published>
+    <arxiv:comment>4 pages, 7 figures, 35% loss and 5% error sufficiently low to permit quantum data to be efficiently transmitted arbitrarily far and reliably at a rate limited only by the local gate speed</arxiv:comment>
+    <arxiv:primary_category term="quant-ph"/>
+    <arxiv:journal_ref>Phys. Rev. Lett. 104, 180503 (2010)</arxiv:journal_ref>
+    <author>
+      <name>Austin G. Fowler</name>
+    </author>
+    <author>
+      <name>David S. Wang</name>
+    </author>
+    <author>
+      <name>Charles D. Hill</name>
+    </author>
+    <author>
+      <name>Thaddeus D. Ladd</name>
+    </author>
+    <author>
+      <name>Rodney Van Meter</name>
+    </author>
+    <author>
+      <name>Lloyd C. L. Hollenberg</name>
+    </author>
+    <arxiv:doi>10.1103/PhysRevLett.104.180503</arxiv:doi>
+    <link rel="related" href="https://doi.org/10.1103/PhysRevLett.104.180503" title="doi"/>
+  </entry>
+</feed>

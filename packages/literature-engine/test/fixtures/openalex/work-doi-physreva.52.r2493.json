@@ -1,0 +1,404 @@
+{
+ "id": "https://openalex.org/W1999706070",
+ "doi": "https://doi.org/10.1103/physreva.52.r2493",
+ "title": "Scheme for reducing decoherence in quantum computer memory",
+ "display_name": "Scheme for reducing decoherence in quantum computer memory",
+ "publication_year": 1995,
+ "publication_date": "1995-10-01",
+ "type": "article",
+ "ids": {
+  "openalex": "https://openalex.org/W1999706070",
+  "doi": "https://doi.org/10.1103/physreva.52.r2493",
+  "mag": "1999706070",
+  "pmid": "https://pubmed.ncbi.nlm.nih.gov/9912632"
+ },
+ "authorships": [
+  {
+   "author_position": "first",
+   "author": {
+    "id": "https://openalex.org/A5020744800",
+    "display_name": "Peter W. Shor",
+    "orcid": "https://orcid.org/0000-0003-4626-5648",
+    "observed_orcids": [
+     "https://orcid.org/0000-0003-4626-5648"
+    ]
+   },
+   "institutions": [
+    {
+     "id": "https://openalex.org/I1283103587",
+     "display_name": "AT&T (United States)",
+     "ror": "https://ror.org/02bbd5539",
+     "country_code": "US",
+     "type": "company",
+     "lineage": [
+      "https://openalex.org/I1283103587"
+     ]
+    }
+   ],
+   "countries": [
+    "US"
+   ],
+   "is_corresponding": true,
+   "raw_author_name": "Peter W. Shor",
+   "raw_affiliation_strings": [
+    "AT&T Bell Laboratories, Room 2D-149, 600 Mountain Avenue, Murray Hill, New Jersey 07974"
+   ],
+   "raw_orcid": null,
+   "affiliations": [
+    {
+     "raw_affiliation_string": "AT&T Bell Laboratories, Room 2D-149, 600 Mountain Avenue, Murray Hill, New Jersey 07974",
+     "institution_ids": [
+      "https://openalex.org/I1283103587"
+     ]
+    }
+   ]
+  }
+ ],
+ "primary_location": {
+  "id": "doi:10.1103/physreva.52.r2493",
+  "doi": "https://doi.org/10.1103/physreva.52.r2493",
+  "is_oa": false,
+  "landing_page_url": "https://doi.org/10.1103/physreva.52.r2493",
+  "pdf_url": null,
+  "source": {
+   "id": "https://openalex.org/S164566984",
+   "display_name": "Physical Review A",
+   "issn_l": "0556-2791",
+   "issn": [
+    "0556-2791",
+    "1050-2947",
+    "1094-1622",
+    "1538-4446",
+    "2469-9926",
+    "2469-9934",
+    "2469-9942"
+   ],
+   "is_oa": false,
+   "is_in_doaj": false,
+   "is_core": true,
+   "listed_in": [
+    "anvur-scientific",
+    "cwts-core",
+    "dongbi-a",
+    "jufo-2",
+    "ki-jl-1",
+    "norway-2",
+    "poland-100",
+    "poland-70",
+    "russia-white-list-1",
+    "vabb-shw"
+   ],
+   "host_organization": "https://openalex.org/P4310320261",
+   "host_organization_name": "American Physical Society",
+   "host_organization_lineage": [
+    "https://openalex.org/P4310320261"
+   ],
+   "host_organization_lineage_names": [
+    "American Physical Society"
+   ],
+   "type": "journal"
+  },
+  "license": null,
+  "license_id": null,
+  "version": "publishedVersion",
+  "is_accepted": true,
+  "is_published": true,
+  "raw_source_name": "Physical Review A",
+  "raw_type": "journal-article"
+ },
+ "best_oa_location": null,
+ "open_access": {
+  "is_oa": false,
+  "oa_status": "closed",
+  "oa_url": null,
+  "any_repository_has_fulltext": false
+ },
+ "cited_by_count": 4475,
+ "referenced_works_count": 9,
+ "biblio": {
+  "volume": "52",
+  "issue": "4",
+  "first_page": "R2493",
+  "last_page": "R2496"
+ },
+ "abstract_inverted_index": {
+  "Recently,": [
+   0
+  ],
+  "it": [
+   1
+  ],
+  "was": [
+   2
+  ],
+  "realized": [
+   3
+  ],
+  "that": [
+   4,
+   38,
+   75
+  ],
+  "use": [
+   5,
+   92
+  ],
+  "of": [
+   6,
+   9,
+   26,
+   30,
+   34,
+   46,
+   66,
+   83,
+   93,
+   97
+  ],
+  "the": [
+   7,
+   24,
+   31,
+   41,
+   64,
+   76,
+   84,
+   91
+  ],
+  "properties": [
+   8
+  ],
+  "quantum": [
+   10,
+   27,
+   35,
+   51,
+   72,
+   95
+  ],
+  "mechanics": [
+   11
+  ],
+  "might": [
+   12
+  ],
+  "speed": [
+   13
+  ],
+  "up": [
+   14
+  ],
+  "certain": [
+   15
+  ],
+  "computations": [
+   16,
+   56
+  ],
+  "dramatically.": [
+   17
+  ],
+  "Interest": [
+   18
+  ],
+  "has": [
+   19
+  ],
+  "since": [
+   20
+  ],
+  "been": [
+   21
+  ],
+  "growing": [
+   22
+  ],
+  "in": [
+   23,
+   43,
+   49,
+   71,
+   87
+  ],
+  "area": [
+   25
+  ],
+  "computation.": [
+   28
+  ],
+  "One": [
+   29
+  ],
+  "main": [
+   32
+  ],
+  "difficulties": [
+   33
+  ],
+  "computation": [
+   36
+  ],
+  "is": [
+   37,
+   59
+  ],
+  "decoherence": [
+   39,
+   67,
+   77
+  ],
+  "destroys": [
+   40
+  ],
+  "information": [
+   42,
+   69
+  ],
+  "a": [
+   44,
+   50,
+   94
+  ],
+  "superposition": [
+   45
+  ],
+  "states": [
+   47
+  ],
+  "contained": [
+   48
+  ],
+  "computer,": [
+   52
+  ],
+  "thus": [
+   53
+  ],
+  "making": [
+   54
+  ],
+  "long": [
+   55
+  ],
+  "impossible.": [
+   57
+  ],
+  "It": [
+   58
+  ],
+  "shown": [
+   60
+  ],
+  "how": [
+   61
+  ],
+  "to": [
+   62
+  ],
+  "reduce": [
+   63
+  ],
+  "effects": [
+   65
+  ],
+  "for": [
+   68
+  ],
+  "stored": [
+   70,
+   86
+  ],
+  "memory,": [
+   73
+  ],
+  "assuming": [
+   74
+  ],
+  "process": [
+   78
+  ],
+  "acts": [
+   79
+  ],
+  "independently": [
+   80
+  ],
+  "on": [
+   81
+  ],
+  "each": [
+   82
+  ],
+  "bits": [
+   85
+  ],
+  "memory.": [
+   88
+  ],
+  "This": [
+   89
+  ],
+  "involves": [
+   90
+  ],
+  "analog": [
+   96
+  ],
+  "errorcorrecting": [
+   98
+  ],
+  "codes.Received": [
+   99
+  ],
+  "17": [
+   100
+  ],
+  "May": [
+   101
+  ],
+  "1995DOI:https://doi.org/10.1103/PhysRevA.52.R2493©1995": [
+   102
+  ],
+  "American": [
+   103
+  ],
+  "Physical": [
+   104
+  ],
+  "Society": [
+   105
+  ]
+ },
+ "primary_topic": {
+  "id": "https://openalex.org/T10682",
+  "display_name": "Quantum Computing Algorithms and Architecture",
+  "score": 0.9477999806404114,
+  "subfield": {
+   "id": "https://openalex.org/subfields/1702",
+   "display_name": "Artificial Intelligence"
+  },
+  "field": {
+   "id": "https://openalex.org/fields/17",
+   "display_name": "Computer Science"
+  },
+  "domain": {
+   "id": "https://openalex.org/domains/3",
+   "display_name": "Physical Sciences"
+  }
+ },
+ "language": "en",
+ "is_retracted": false,
+ "updated_date": "2026-11-01T11:40:01.658920",
+ "created_date": "2016-06-24T00:00:00",
+ "referenced_works": [
+  "https://openalex.org/W1967045838",
+  "https://openalex.org/W1993248778",
+  "https://openalex.org/W2025187617",
+  "https://openalex.org/W2099111195",
+  "https://openalex.org/W2101088258",
+  "https://openalex.org/W2148132004",
+  "https://openalex.org/W2595959570",
+  "https://openalex.org/W4230665353",
+  "https://openalex.org/W4231127907"
+ ]
+}

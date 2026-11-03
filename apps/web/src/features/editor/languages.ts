@@ -1,0 +1,221 @@
+import type * as Monaco from 'monaco-editor';
+
+/** Monarch grammar for LaTeX: commands, environments, math, comments, braces. */
+export const latexLanguage: Monaco.languages.IMonarchLanguage = {
+  defaultToken: '',
+  tokenPostfix: '.latex',
+  brackets: [
+    { open: '{', close: '}', token: 'delimiter.curly' },
+    { open: '[', close: ']', token: 'delimiter.square' },
+  ],
+  sectioning: ['part', 'chapter', 'section', 'subsection', 'subsubsection', 'paragraph', 'subparagraph'],
+  tokenizer: {
+    root: [
+      [/%.*$/, 'comment'],
+      [/(\\(?:begin|end))(\s*)(\{)([a-zA-Z*]+)(\})/, ['keyword.env', '', 'delimiter.curly', 'type.env', 'delimiter.curly']],
+      [/(\\(?:part|chapter|section|subsection|subsubsection|paragraph|subparagraph)\*?)(\s*)(\{)/, ['keyword.section', '', { token: 'delimiter.curly', next: '@heading' }]],
+      [/(\\(?:label|ref|eqref|pageref|autoref|cref|Cref|nameref))(\s*)(\{)([^}]*)(\})/, ['keyword', '', 'delimiter.curly', 'string.label', 'delimiter.curly']],
+      [/(\\[a-zA-Z]*cite[a-zA-Z]*\*?)((?:\s*\[[^\]]*\])*)(\s*)(\{)([^}]*)(\})/, ['keyword', 'attribute', '', 'delimiter.curly', 'string.cite', 'delimiter.curly']],
+      [/\\\[/, { token: 'delimiter.math', next: '@displaymath' }],
+      [/\\\(/, { token: 'delimiter.math', next: '@inlinemath2' }],
+      [/\$\$/, { token: 'delimiter.math', next: '@dollardisplay' }],
+      [/\$/, { token: 'delimiter.math', next: '@inlinemath' }],
+      [/\\[a-zA-Z@]+\*?/, 'keyword'],
+      [/\\./, 'keyword.escape'],
+      [/[{}]/, 'delimiter.curly'],
+      [/[[\]]/, 'delimiter.square'],
+      [/&/, 'operator'],
+      [/~/, 'operator'],
+    ],
+    heading: [
+      [/[^{}\\]+/, 'markup.heading'],
+      [/\\[a-zA-Z@]+/, 'keyword'],
+      [/\{/, { token: 'delimiter.curly', next: '@heading' }],
+      [/\}/, { token: 'delimiter.curly', next: '@pop' }],
+    ],
+    inlinemath: [
+      [/\$/, { token: 'delimiter.math', next: '@pop' }],
+      { include: '@mathcontent' },
+    ],
+    inlinemath2: [
+      [/\\\)/, { token: 'delimiter.math', next: '@pop' }],
+      { include: '@mathcontent' },
+    ],
+    displaymath: [
+      [/\\\]/, { token: 'delimiter.math', next: '@pop' }],
+      { include: '@mathcontent' },
+    ],
+    dollardisplay: [
+      [/\$\$/, { token: 'delimiter.math', next: '@pop' }],
+      { include: '@mathcontent' },
+    ],
+    mathcontent: [
+      [/%.*$/, 'comment'],
+      [/\\[a-zA-Z@]+/, 'keyword.math'],
+      [/\\./, 'keyword.math'],
+      [/[{}]/, 'delimiter.curly'],
+      [/[_^]/, 'operator.math'],
+      [/\d+(\.\d+)?/, 'number.math'],
+      [/[^\\$%{}_^\d]+/, 'variable.math'],
+    ],
+  },
+} as Monaco.languages.IMonarchLanguage;
+
+export const latexConfiguration: Monaco.languages.LanguageConfiguration = {
+  comments: { lineComment: '%' },
+  brackets: [
+    ['{', '}'],
+    ['[', ']'],
+    ['(', ')'],
+  ],
+  autoClosingPairs: [
+    { open: '{', close: '}' },
+    { open: '[', close: ']' },
+    { open: '(', close: ')' },
+    { open: '$', close: '$', notIn: ['comment'] },
+    { open: '`', close: "'", notIn: ['comment'] },
+  ],
+  surroundingPairs: [
+    { open: '{', close: '}' },
+    { open: '[', close: ']' },
+    { open: '(', close: ')' },
+    { open: '$', close: '$' },
+  ],
+  wordPattern: /(-?\d*\.\d\w*)|([^`~!@#%^&*()\-=+[{\]}\\|;:'",.<>/?\s]+)/g,
+  folding: {
+    markers: { start: /^\s*\\begin\{/, end: /^\s*\\end\{/ },
+  },
+};
+
+export const bibtexLanguage: Monaco.languages.IMonarchLanguage = {
+  defaultToken: '',
+  tokenPostfix: '.bibtex',
+  ignoreCase: true,
+  tokenizer: {
+    root: [
+      [/%.*$/, 'comment'],
+      [/(@[a-zA-Z]+)(\s*)([{(])(\s*)([^,\s]*)(,?)/, ['keyword.entry', '', 'delimiter.curly', '', 'string.cite', 'delimiter']],
+      [/([a-zA-Z_-]+)(\s*)(=)/, ['attribute.field', '', 'operator']],
+      [/\{/, { token: 'string.value', next: '@braced' }],
+      [/"/, { token: 'string.value', next: '@quoted' }],
+      [/\d+/, 'number'],
+      [/[{}(),#]/, 'delimiter'],
+    ],
+    braced: [
+      [/[^{}\\]+/, 'string.value'],
+      [/\\[a-zA-Z]+|\\./, 'keyword'],
+      [/\{/, { token: 'string.value', next: '@braced' }],
+      [/\}/, { token: 'string.value', next: '@pop' }],
+    ],
+    quoted: [
+      [/[^"\\{}]+/, 'string.value'],
+      [/\\./, 'keyword'],
+      [/[{}]/, 'string.value'],
+      [/"/, { token: 'string.value', next: '@pop' }],
+    ],
+  },
+};
+
+export const bibtexConfiguration: Monaco.languages.LanguageConfiguration = {
+  comments: { lineComment: '%' },
+  brackets: [
+    ['{', '}'],
+    ['(', ')'],
+  ],
+  autoClosingPairs: [
+    { open: '{', close: '}' },
+    { open: '"', close: '"' },
+  ],
+};
+
+/** Editor themes derived from the design tokens in packages/ui/src/theme.css. */
+export const editorThemes: Record<'rs-light' | 'rs-dark', Monaco.editor.IStandaloneThemeData> = {
+  'rs-light': {
+    base: 'vs',
+    inherit: true,
+    rules: [
+      { token: 'comment', foreground: '8a93a3', fontStyle: 'italic' },
+      { token: 'keyword', foreground: '24508f' },
+      { token: 'keyword.escape', foreground: '24508f' },
+      { token: 'keyword.env', foreground: '24508f', fontStyle: 'bold' },
+      { token: 'keyword.section', foreground: '24508f', fontStyle: 'bold' },
+      { token: 'type.env', foreground: '2a7f6d' },
+      { token: 'markup.heading', foreground: '18202d', fontStyle: 'bold' },
+      { token: 'string.label', foreground: '9a6a12' },
+      { token: 'string.cite', foreground: '9a6a12' },
+      { token: 'string.value', foreground: '2a5a3f' },
+      { token: 'attribute', foreground: '556072' },
+      { token: 'attribute.field', foreground: '24508f' },
+      { token: 'keyword.entry', foreground: 'b8382a', fontStyle: 'bold' },
+      { token: 'delimiter.math', foreground: 'a0457a' },
+      { token: 'keyword.math', foreground: 'a0457a' },
+      { token: 'variable.math', foreground: '6b3a5c' },
+      { token: 'number.math', foreground: '6b3a5c' },
+      { token: 'operator.math', foreground: 'a0457a' },
+      { token: 'delimiter.curly', foreground: '8a93a3' },
+      { token: 'delimiter.square', foreground: '8a93a3' },
+      { token: 'operator', foreground: 'b8382a' },
+    ],
+    colors: {
+      'editor.background': '#fbfcfd',
+      'editor.foreground': '#18202d',
+      'editor.lineHighlightBackground': '#eef1f5',
+      'editor.lineHighlightBorder': '#00000000',
+      'editorLineNumber.foreground': '#b3bac6',
+      'editorLineNumber.activeForeground': '#556072',
+      'editor.selectionBackground': '#cfdcf0',
+      'editor.inactiveSelectionBackground': '#e1e8f2',
+      'editorCursor.foreground': '#24508f',
+      'editorIndentGuide.background1': '#e4e8ee',
+      'editorWidget.background': '#ffffff',
+      'editorWidget.border': '#d7dce4',
+      'editorSuggestWidget.selectedBackground': '#dfe8f5',
+      'editorGutter.background': '#fbfcfd',
+      'scrollbarSlider.background': '#bcc4d055',
+    },
+  },
+  'rs-dark': {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [
+      { token: 'comment', foreground: '667185', fontStyle: 'italic' },
+      { token: 'keyword', foreground: '8fb3e8' },
+      { token: 'keyword.escape', foreground: '8fb3e8' },
+      { token: 'keyword.env', foreground: '8fb3e8', fontStyle: 'bold' },
+      { token: 'keyword.section', foreground: '8fb3e8', fontStyle: 'bold' },
+      { token: 'type.env', foreground: '6cc3ad' },
+      { token: 'markup.heading', foreground: 'eef2f8', fontStyle: 'bold' },
+      { token: 'string.label', foreground: 'e0b459' },
+      { token: 'string.cite', foreground: 'e0b459' },
+      { token: 'string.value', foreground: '9fd3a8' },
+      { token: 'attribute', foreground: '96a1b4' },
+      { token: 'attribute.field', foreground: '8fb3e8' },
+      { token: 'keyword.entry', foreground: 'ec7d6d', fontStyle: 'bold' },
+      { token: 'delimiter.math', foreground: 'd99ac4' },
+      { token: 'keyword.math', foreground: 'd99ac4' },
+      { token: 'variable.math', foreground: 'e6bcd8' },
+      { token: 'number.math', foreground: 'e6bcd8' },
+      { token: 'operator.math', foreground: 'd99ac4' },
+      { token: 'delimiter.curly', foreground: '667185' },
+      { token: 'delimiter.square', foreground: '667185' },
+      { token: 'operator', foreground: 'ec7d6d' },
+    ],
+    colors: {
+      'editor.background': '#131822',
+      'editor.foreground': '#dce3ee',
+      'editor.lineHighlightBackground': '#1a2130',
+      'editor.lineHighlightBorder': '#00000000',
+      'editorLineNumber.foreground': '#3d4859',
+      'editorLineNumber.activeForeground': '#96a1b4',
+      'editor.selectionBackground': '#2a3d5e',
+      'editor.inactiveSelectionBackground': '#222e44',
+      'editorCursor.foreground': '#8fb3e8',
+      'editorIndentGuide.background1': '#1f2633',
+      'editorWidget.background': '#1a2130',
+      'editorWidget.border': '#323d50',
+      'editorSuggestWidget.selectedBackground': '#1b2a43',
+      'editorGutter.background': '#131822',
+      'scrollbarSlider.background': '#323d5066',
+    },
+  },
+};

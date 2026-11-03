@@ -1,0 +1,27 @@
+{
+  "name": "@research-studio/research-library",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@research-studio/database": "workspace:*",
+    "@research-studio/document-engine": "workspace:*",
+    "@research-studio/literature-engine": "workspace:*",
+    "@research-studio/shared-types": "workspace:*",
+    "better-sqlite3": "^13.0.3",
+    "drizzle-orm": "^0.45.4",
+    "pdfjs-dist": "6.5.438",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0"
+  }
+}

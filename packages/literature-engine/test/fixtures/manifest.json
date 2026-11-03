@@ -1,0 +1,222 @@
+{
+  "arxiv/error-bad-id.xml": {
+    "headers": {
+      "content-type": "application/atom+xml; charset=utf-8"
+    },
+    "retrievedAt": "2026-11-02T22:23:10Z",
+    "status": 400,
+    "url": "https://export.arxiv.org/api/query?id_list=not-an-id&max_results=1"
+  },
+  "arxiv/id-1706.03762v5.xml": {
+    "headers": {
+      "content-type": "application/atom+xml; charset=utf-8"
+    },
+    "retrievedAt": "2026-11-02T22:23:02Z",
+    "status": 200,
+    "url": "https://export.arxiv.org/api/query?id_list=1706.03762v5&max_results=1"
+  },
+  "arxiv/id-quant-ph-9605011.xml": {
+    "headers": {
+      "content-type": "application/atom+xml; charset=utf-8"
+    },
+    "retrievedAt": "2026-11-02T22:23:06Z",
+    "status": 200,
+    "url": "https://export.arxiv.org/api/query?id_list=quant-ph/9605011&max_results=1"
+  },
+  "arxiv/search-surface-code.xml": {
+    "headers": {
+      "content-type": "application/atom+xml; charset=utf-8"
+    },
+    "retrievedAt": "2026-11-02T22:22:57Z",
+    "status": 200,
+    "url": "https://export.arxiv.org/api/query?search_query=ti%3A%22surface%20code%22%20AND%20cat%3Aquant-ph&start=0&max_results=3&sortBy=relevance&sortOrder=descending"
+  },
+  "crossref/not-found.json": {
+    "headers": {
+      "content-type": "text/plain",
+      "x-rate-limit-interval": "1s",
+      "x-rate-limit-limit": "5"
+    },
+    "retrievedAt": "2026-11-02T22:22:55Z",
+    "status": 404,
+    "url": "https://api.crossref.org/works/10.5555/does-not-exist-research-studio"
+  },
+  "crossref/search-decoherence-shor.json": {
+    "headers": {
+      "content-type": "application/json",
+      "x-rate-limit-interval": "1s",
+      "x-rate-limit-limit": "1"
+    },
+    "retrievedAt": "2026-11-02T22:22:50Z",
+    "status": 200,
+    "url": "https://api.crossref.org/works?query.bibliographic=scheme%20for%20reducing%20decoherence&query.author=Shor&rows=3&offset=0"
+  },
+  "crossref/select-validation-failure.json": {
+    "headers": {
+      "content-type": "application/json"
+    },
+    "retrievedAt": "2026-11-02T23:03:55Z",
+    "status": 400,
+    "url": "https://api.crossref.org/works?rows=0&select=subtype"
+  },
+  "crossref/work-10.1103-physreva.52.r2493.json": {
+    "headers": {
+      "content-type": "application/json",
+      "x-rate-limit-interval": "1s",
+      "x-rate-limit-limit": "5"
+    },
+    "retrievedAt": "2026-11-02T22:22:52Z",
+    "status": 200,
+    "url": "https://api.crossref.org/works/10.1103/PhysRevA.52.R2493"
+  },
+  "openalex/author-A5020744800.json": {
+    "headers": {
+      "content-type": "application/json",
+      "x-ratelimit-cost-usd": "0",
+      "x-ratelimit-credits-used": "0",
+      "x-ratelimit-limit": "1000",
+      "x-ratelimit-limit-usd": "0.1",
+      "x-ratelimit-onetime-remaining": "0",
+      "x-ratelimit-prepaid-remaining-usd": "0",
+      "x-ratelimit-remaining": "940",
+      "x-ratelimit-remaining-usd": "0.094",
+      "x-ratelimit-reset": "5835"
+    },
+    "retrievedAt": "2026-11-02T22:22:45Z",
+    "status": 200,
+    "url": "https://api.openalex.org/authors/A5020744800?select=id,display_name,orcid,works_count,cited_by_count,summary_stats,last_known_institutions,ids"
+  },
+  "openalex/cites-W1999706070.json": {
+    "headers": {
+      "content-type": "application/json",
+      "x-ratelimit-cost-usd": "0.0001",
+      "x-ratelimit-credits-used": "1",
+      "x-ratelimit-limit": "1000",
+      "x-ratelimit-limit-usd": "0.1",
+      "x-ratelimit-onetime-remaining": "0",
+      "x-ratelimit-prepaid-remaining-usd": "0",
+      "x-ratelimit-remaining": "939",
+      "x-ratelimit-remaining-usd": "0.0939",
+      "x-ratelimit-reset": "5834"
+    },
+    "retrievedAt": "2026-11-02T22:22:46Z",
+    "status": 200,
+    "url": "https://api.openalex.org/works?filter=cites:W1999706070&per_page=3&select=id,doi,title,display_name,publication_year,publication_date,type,ids,authorships,primary_location,best_oa_location,open_access,cited_by_count,referenced_works_count,biblio,abstract_inverted_index,primary_topic,language,is_retracted,updated_date,created_date"
+  },
+  "openalex/not-found.json": {
+    "headers": {
+      "content-type": "text/html; charset=utf-8",
+      "x-ratelimit-cost-usd": "0",
+      "x-ratelimit-credits-used": "0",
+      "x-ratelimit-limit": "1000",
+      "x-ratelimit-limit-usd": "0.1",
+      "x-ratelimit-onetime-remaining": "0",
+      "x-ratelimit-prepaid-remaining-usd": "0",
+      "x-ratelimit-remaining": "939",
+      "x-ratelimit-remaining-usd": "0.0939",
+      "x-ratelimit-reset": "5833"
+    },
+    "retrievedAt": "2026-11-02T22:22:47Z",
+    "status": 404,
+    "url": "https://api.openalex.org/works/W0000000000"
+  },
+  "openalex/search-quantum-error-correction.json": {
+    "headers": {
+      "content-type": "application/json",
+      "x-ratelimit-cost-usd": "0.001",
+      "x-ratelimit-credits-used": "10",
+      "x-ratelimit-limit": "1000",
+      "x-ratelimit-limit-usd": "0.1",
+      "x-ratelimit-onetime-remaining": "0",
+      "x-ratelimit-prepaid-remaining-usd": "0",
+      "x-ratelimit-remaining": "929",
+      "x-ratelimit-remaining-usd": "0.0929",
+      "x-ratelimit-reset": "5290"
+    },
+    "retrievedAt": "2026-11-02T22:31:50Z",
+    "status": 200,
+    "url": "https://api.openalex.org/works?search=quantum%20error%20correction&per_page=3&page=1&select=id,doi,title,display_name,publication_year,publication_date,type,ids,authorships,primary_location,best_oa_location,open_access,cited_by_count,referenced_works_count,biblio,abstract_inverted_index,primary_topic,language,is_retracted,updated_date,created_date"
+  },
+  "openalex/work-doi-arxiv-1706.03762.json": {
+    "headers": {
+      "content-type": "application/json",
+      "x-ratelimit-cost-usd": "0",
+      "x-ratelimit-credits-used": "0",
+      "x-ratelimit-limit": "1000",
+      "x-ratelimit-limit-usd": "0.1",
+      "x-ratelimit-onetime-remaining": "0",
+      "x-ratelimit-prepaid-remaining-usd": "0",
+      "x-ratelimit-remaining": "940",
+      "x-ratelimit-remaining-usd": "0.094",
+      "x-ratelimit-reset": "5836"
+    },
+    "retrievedAt": "2026-11-02T22:22:43Z",
+    "status": 200,
+    "url": "https://api.openalex.org/works/doi:10.48550/arXiv.1706.03762?select=id,doi,title,display_name,publication_year,publication_date,type,ids,authorships,primary_location,best_oa_location,open_access,cited_by_count,referenced_works_count,biblio,abstract_inverted_index,primary_topic,language,is_retracted,updated_date,created_date"
+  },
+  "openalex/work-doi-physreva.52.r2493.json": {
+    "headers": {
+      "content-type": "application/json",
+      "x-ratelimit-cost-usd": "0",
+      "x-ratelimit-credits-used": "0",
+      "x-ratelimit-limit": "1000",
+      "x-ratelimit-limit-usd": "0.1",
+      "x-ratelimit-onetime-remaining": "0",
+      "x-ratelimit-prepaid-remaining-usd": "0",
+      "x-ratelimit-remaining": "940",
+      "x-ratelimit-remaining-usd": "0.094",
+      "x-ratelimit-reset": "5838"
+    },
+    "retrievedAt": "2026-11-02T22:22:42Z",
+    "status": 200,
+    "url": "https://api.openalex.org/works/doi:10.1103/PhysRevA.52.R2493?select=id,doi,title,display_name,publication_year,publication_date,type,ids,authorships,primary_location,best_oa_location,open_access,cited_by_count,referenced_works_count,biblio,abstract_inverted_index,primary_topic,language,is_retracted,updated_date,created_date,referenced_works"
+  },
+  "semantic-scholar/author-1741101.json": {
+    "headers": {
+      "content-type": "application/json"
+    },
+    "retrievedAt": "2026-11-02T22:30:51Z",
+    "status": 200,
+    "url": "https://api.semanticscholar.org/graph/v1/author/1741101?fields=name,affiliations,homepage,paperCount,citationCount,hIndex,externalIds,url"
+  },
+  "semantic-scholar/citations-physreva.52.r2493.json": {
+    "headers": {
+      "content-type": "application/json"
+    },
+    "retrievedAt": "2026-11-02T22:30:45Z",
+    "status": 200,
+    "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1103/PhysRevA.52.R2493/citations?limit=3&fields=title,year,externalIds,authors,venue,citationCount"
+  },
+  "semantic-scholar/not-found.json": {
+    "headers": {
+      "content-type": "application/json"
+    },
+    "retrievedAt": "2026-11-02T22:31:27Z",
+    "status": 404,
+    "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.5555/does-not-exist-research-studio?fields=title"
+  },
+  "semantic-scholar/paper-arxiv-1706.03762.json": {
+    "headers": {
+      "content-type": "application/json"
+    },
+    "retrievedAt": "2026-11-02T22:59:03Z",
+    "status": 200,
+    "url": "https://api.semanticscholar.org/graph/v1/paper/ARXIV:1706.03762?fields=paperId,externalIds,url,title,abstract,venue,publicationVenue,year,publicationDate,publicationTypes,journal,authors,citationCount,referenceCount,isOpenAccess,openAccessPdf,fieldsOfStudy"
+  },
+  "semantic-scholar/paper-doi-physreva.52.r2493.json": {
+    "headers": {
+      "content-type": "application/json"
+    },
+    "retrievedAt": "2026-11-02T22:27:02Z",
+    "status": 200,
+    "url": "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1103/PhysRevA.52.R2493?fields=paperId,externalIds,url,title,abstract,venue,publicationVenue,year,publicationDate,publicationTypes,journal,authors,citationCount,referenceCount,isOpenAccess,openAccessPdf,fieldsOfStudy"
+  },
+  "semantic-scholar/rate-limited.json": {
+    "headers": {
+      "content-type": "application/json"
+    },
+    "retrievedAt": "2026-11-02T22:26:46Z",
+    "status": 429,
+    "url": "https://api.semanticscholar.org/graph/v1/paper/search?query=quantum%20error%20correction&offset=0&limit=3&fields=paperId,externalIds,url,title,abstract,venue,publicationVenue,year,publicationDate,publicationTypes,journal,authors,citationCount,referenceCount,isOpenAccess,openAccessPdf,fieldsOfStudy"
+  }
+}
