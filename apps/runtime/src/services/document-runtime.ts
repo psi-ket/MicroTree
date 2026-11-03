@@ -793,7 +793,7 @@ export class DocumentRuntime {
 
   private semanticBackend(): SemanticBackend | null {
     const space = this.activeSpace();
-    let provider: EmbeddingProvider | null = null;
+    let provider: EmbeddingProvider | null;
     try {
       provider = this.embeddingProvider();
     } catch {

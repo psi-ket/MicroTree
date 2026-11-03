@@ -10,7 +10,7 @@
  * words hyphenated across line breaks are joined, and whitespace collapses.
  */
 
-const INVISIBLE = /[­​-‏⁠﻿]/g;
+const INVISIBLE = /[\u00ad\u200b-\u200f\u2060\ufeff]/g;
 const DASHES = /[‐‑‒–−]/g;
 
 /** Repair "entan- glement" left by line-break hyphenation (lower-case continuation only). */

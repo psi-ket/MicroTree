@@ -9,7 +9,7 @@ import { useCompile } from '../stores/compile';
 import { isDirty, useEditor } from '../stores/editor';
 import { dropSession, onUnauthorized, reconnectWithRememberedToken, runtime, useConnection } from './connection';
 import { upsertLibraryJob } from '../features/library/jobs';
-import { invalidateLibrary, keys, queryClient } from './queries';
+import { invalidateDocuments, invalidateLibrary, keys, queryClient } from './queries';
 import { RuntimeSocket } from './socket';
 
 let recovering: Promise<void> | null = null;
@@ -117,6 +117,15 @@ function handle(event: ServerEvent) {
       break;
     case 'library.changed':
       invalidateLibrary();
+      break;
+    case 'documents.job':
+      if (['completed', 'partial', 'needs_ocr', 'failed', 'cancelled'].includes(event.job.status)) invalidateDocuments(event.job.attachmentId);
+      else queryClient.setQueryData(keys.documents.status(event.job.attachmentId), (old: unknown) => (old && typeof old === 'object' ? { ...old, job: event.job } : old));
+      void queryClient.invalidateQueries({ queryKey: keys.documents.jobs });
+      void queryClient.invalidateQueries({ queryKey: keys.documents.index });
+      break;
+    case 'retrieval.changed':
+      void queryClient.invalidateQueries({ queryKey: keys.documents.index });
       break;
     case 'hello':
     case 'pong':

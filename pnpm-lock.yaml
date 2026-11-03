@@ -159,6 +159,9 @@ importers:
       '@research-studio/document-engine':
         specifier: workspace:*
         version: link:../../packages/document-engine
+      '@research-studio/document-intelligence':
+        specifier: workspace:*
+        version: link:../../packages/document-intelligence
       '@research-studio/literature-engine':
         specifier: workspace:*
         version: link:../../packages/literature-engine
