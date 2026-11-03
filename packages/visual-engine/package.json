@@ -1,0 +1,23 @@
+{
+  "name": "@research-studio/visual-engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@research-studio/ai-core": "workspace:*",
+    "@research-studio/document-engine": "workspace:*",
+    "@research-studio/latex-engine": "workspace:*",
+    "@research-studio/paper-ingestion": "workspace:*",
+    "@research-studio/shared-types": "workspace:*",
+    "sharp": "0.34.4",
+    "zod": "^4.6.7"
+  }
+}

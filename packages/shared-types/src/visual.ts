@@ -65,6 +65,9 @@ export type VisualProvenance =
 
 /** One preprocessing step; a variant stores the ordered list applied to its parent. */
 export type PreprocessOperation =
+  /** Apply the camera's EXIF orientation (photos of notes and whiteboards). */
+  | { op: 'auto-orient' }
+  /** Any angle; small angles straighten a skewed photo (manual deskew). */
   | { op: 'rotate'; degrees: number }
   | { op: 'crop'; left: number; top: number; width: number; height: number }
   | { op: 'resize'; maxWidth: number; maxHeight: number }

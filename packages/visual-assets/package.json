@@ -1,0 +1,24 @@
+{
+  "name": "@research-studio/visual-assets",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@research-studio/database": "workspace:*",
+    "@research-studio/research-library": "workspace:*",
+    "@research-studio/shared-types": "workspace:*",
+    "@research-studio/visual-engine": "workspace:*",
+    "drizzle-orm": "^0.45.4"
+  },
+  "devDependencies": {
+    "sharp": "0.34.4"
+  }
+}
