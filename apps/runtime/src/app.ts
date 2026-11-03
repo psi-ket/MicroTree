@@ -13,6 +13,7 @@ import { registerRoutes } from './routes';
 import { AgentService } from './services/ai/agent-service';
 import { StagingLifecycle } from './services/ai/staging-lifecycle';
 import { FileWatchService } from './services/file-watch-service';
+import { DocumentRuntime, type DocumentRuntimeOptions } from './services/document-runtime';
 import { LibraryRuntime, type LibraryRuntimeOptions } from './services/library-runtime';
 import { AssistantService } from './services/ai/assistant-service';
 import { ProposalService } from './services/ai/proposal-service';
@@ -45,6 +46,8 @@ export interface AppDeps {
   literature?: LiteratureServiceOptions;
   /** The research library (M3.2) keeps its tables in the studio database. */
   library: { db: StudioDb } & LibraryRuntimeOptions;
+  /** Test seams for document processing and retrieval (M3.3). */
+  documents?: DocumentRuntimeOptions;
 }
 
 export interface RuntimeApp {
@@ -61,6 +64,7 @@ export interface RuntimeApp {
   watcher: FileWatchService;
   literature: LiteratureService;
   library: LibraryRuntime;
+  documents: DocumentRuntime;
 }
 
 /** Strip query strings from logged URLs (WebSocket tickets travel in the query). */
@@ -99,12 +103,15 @@ export async function buildApp(deps: AppDeps): Promise<RuntimeApp> {
   const { db: libraryDb, ...libraryOptions } = deps.library;
   const library = new LibraryRuntime(libraryDb, deps.repos, deps.ai.secrets, projects, literature, deps.config, audit, events, app.log, libraryOptions);
 
+  const documents = new DocumentRuntime(libraryDb, deps.repos, library, deps.config, audit, events, app.log, deps.documents);
+
   const sweeper = setInterval(() => sessions.sweep(), 60_000);
   sweeper.unref();
 
   await projects.ensureWorkspace();
   staging.start();
   await library.start();
+  await documents.start();
   registerErrorHandling(app, audit);
   registerRequestGuards(app, { allowedOrigins: deps.config.allowedOrigins, sessions, audit });
 
@@ -136,10 +143,12 @@ export async function buildApp(deps: AppDeps): Promise<RuntimeApp> {
     ai: { config: deps.config, secrets: deps.ai.secrets, providers, agents, assistant, proposals },
     literature,
     library,
+    documents,
   });
 
   app.addHook('onClose', async () => {
     clearInterval(sweeper);
+    await documents.stop();
     await library.stop();
     literature.dispose();
     await assistant.shutdown();
@@ -150,5 +159,5 @@ export async function buildApp(deps: AppDeps): Promise<RuntimeApp> {
     await compile.shutdown();
   });
 
-  return { app, events, sessions, projects, compile, hub, assistant, proposals, agents, staging, watcher, literature, library };
+  return { app, events, sessions, projects, compile, hub, assistant, proposals, agents, staging, watcher, literature, library, documents };
 }

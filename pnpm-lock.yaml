@@ -77,6 +77,9 @@ importers:
       '@research-studio/document-engine':
         specifier: workspace:*
         version: link:../../packages/document-engine
+      '@research-studio/document-intelligence':
+        specifier: workspace:*
+        version: link:../../packages/document-intelligence
       '@research-studio/latex-engine':
         specifier: workspace:*
         version: link:../../packages/latex-engine
@@ -86,9 +89,15 @@ importers:
       '@research-studio/model-adapters':
         specifier: workspace:*
         version: link:../../packages/model-adapters
+      '@research-studio/paper-ingestion':
+        specifier: workspace:*
+        version: link:../../packages/paper-ingestion
       '@research-studio/research-library':
         specifier: workspace:*
         version: link:../../packages/research-library
+      '@research-studio/research-retrieval':
+        specifier: workspace:*
+        version: link:../../packages/research-retrieval
       '@research-studio/shared-types':
         specifier: workspace:*
         version: link:../../packages/shared-types
@@ -111,6 +120,9 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
     devDependencies:
+      '@types/better-sqlite3':
+        specifier: ^9.6.0
+        version: 9.6.0
       '@types/ws':
         specifier: ^8.18.2
         version: 8.18.2
@@ -147,6 +159,9 @@ importers:
       '@research-studio/document-engine':
         specifier: workspace:*
         version: link:../../packages/document-engine
+      '@research-studio/document-intelligence':
+        specifier: workspace:*
+        version: link:../../packages/document-intelligence
       '@research-studio/literature-engine':
         specifier: workspace:*
         version: link:../../packages/literature-engine
@@ -278,6 +293,9 @@ importers:
 
   packages/api-contracts:
     dependencies:
+      '@research-studio/document-intelligence':
+        specifier: workspace:*
+        version: link:../document-intelligence
       '@research-studio/shared-types':
         specifier: workspace:*
         version: link:../shared-types
@@ -287,6 +305,9 @@ importers:
 
   packages/database:
     dependencies:
+      '@research-studio/document-intelligence':
+        specifier: workspace:*
+        version: link:../document-intelligence
       '@research-studio/shared-types':
         specifier: workspace:*
         version: link:../shared-types
@@ -312,6 +333,12 @@ importers:
       '@research-studio/shared-types':
         specifier: workspace:*
         version: link:../shared-types
+
+  packages/document-intelligence:
+    devDependencies:
+      pdfjs-dist:
+        specifier: 6.5.438
+        version: 6.5.438
 
   packages/latex-engine:
     dependencies:
@@ -352,6 +379,28 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
 
+  packages/paper-ingestion:
+    dependencies:
+      '@research-studio/database':
+        specifier: workspace:*
+        version: link:../database
+      '@research-studio/document-intelligence':
+        specifier: workspace:*
+        version: link:../document-intelligence
+      better-sqlite3:
+        specifier: ^13.0.3
+        version: 13.0.3
+      drizzle-orm:
+        specifier: ^0.45.4
+        version: 0.45.4(@opentelemetry/api@1.10.0)(@types/better-sqlite3@9.6.0)(better-sqlite3@13.0.3)
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
+    devDependencies:
+      '@types/better-sqlite3':
+        specifier: ^9.6.0
+        version: 9.6.0
+
   packages/research-library:
     dependencies:
       '@research-studio/database':
@@ -382,6 +431,28 @@ importers:
       '@types/better-sqlite3':
         specifier: ^9.6.0
         version: 9.6.0
+
+  packages/research-retrieval:
+    dependencies:
+      '@research-studio/document-intelligence':
+        specifier: workspace:*
+        version: link:../document-intelligence
+      better-sqlite3:
+        specifier: ^13.0.3
+        version: 13.0.3
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
+    devDependencies:
+      '@research-studio/database':
+        specifier: workspace:*
+        version: link:../database
+      '@types/better-sqlite3':
+        specifier: ^9.6.0
+        version: 9.6.0
+      tsx:
+        specifier: ^4.23.15
+        version: 4.23.15
 
   packages/shared-types: {}
 

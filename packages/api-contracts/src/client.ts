@@ -115,6 +115,25 @@ import {
   type ZoteroImportPreviewRequest,
   type ZoteroImportRequest,
 } from './library';
+import {
+  DocumentElementsResponse,
+  DocumentJobListResponse,
+  DocumentJobResponse,
+  DocumentPassagesResponse,
+  DocumentReferencesResponse,
+  DocumentSectionsResponse,
+  DocumentStatusResponse,
+  DocumentStructureResponse,
+  IndexStatusResponse,
+  PassageDetailResponse,
+  PassageLocationResponse,
+  ProcessAllResponse,
+  ResearchSearchResponse,
+  RetrievalProvidersResponse,
+  type ResearchSearchRequest,
+  type SimilarPassagesRequest,
+  type UpdateRetrievalSettingsRequest,
+} from './documents';
 import type { LibraryItemQuery, LiteratureProviderId, ProposalStatus } from '@research-studio/shared-types';
 
 export class RuntimeApiError extends Error {
@@ -214,6 +233,7 @@ export function createRuntimeClient(options: RuntimeClientOptions) {
   const item = (itemId: string) => `/library/items/${encodeURIComponent(itemId)}`;
   const attachment = (attachmentId: string) => `/library/attachments/${encodeURIComponent(attachmentId)}`;
   const collection = (collectionId: string) => `/library/collections/${encodeURIComponent(collectionId)}`;
+  const doc = (attachmentId: string) => `/documents/${encodeURIComponent(attachmentId)}`;
   /** DOIs and old-style arXiv IDs contain `/`; each segment is encoded on its own. */
   const segments = (id: string) => id.split('/').map(encodeURIComponent).join('/');
 
@@ -426,6 +446,35 @@ export function createRuntimeClient(options: RuntimeClientOptions) {
         resolveConflict: (itemId: string, keep: 'local' | 'remote') =>
           json(LibraryItemResponse, 'POST', `${item(itemId)}/zotero-conflict`, { body: { keep } }),
       },
+    },
+
+    documents: {
+      status: (attachmentId: string) => json(DocumentStatusResponse, 'GET', `${doc(attachmentId)}/status`),
+      process: (attachmentId: string) => json(DocumentJobResponse, 'POST', `${doc(attachmentId)}/process`),
+      reprocess: (attachmentId: string) => json(DocumentJobResponse, 'POST', `${doc(attachmentId)}/reprocess`),
+      cancel: (attachmentId: string) => json(DocumentStatusResponse, 'POST', `${doc(attachmentId)}/cancel`),
+      structure: (attachmentId: string, signal?: AbortSignal) => json(DocumentStructureResponse, 'GET', `${doc(attachmentId)}/structure`, { signal }),
+      sections: (attachmentId: string) => json(DocumentSectionsResponse, 'GET', `${doc(attachmentId)}/sections`),
+      passages: (attachmentId: string, offset = 0, limit = 100) => json(DocumentPassagesResponse, 'GET', `${doc(attachmentId)}/passages`, { query: { offset, limit } }),
+      references: (attachmentId: string) => json(DocumentReferencesResponse, 'GET', `${doc(attachmentId)}/references`),
+      elements: (attachmentId: string) => json(DocumentElementsResponse, 'GET', `${doc(attachmentId)}/elements`),
+      jobs: (status: 'active' | 'failed' | 'all' = 'all', limit = 100) => json(DocumentJobListResponse, 'GET', '/documents/jobs', { query: { status, limit } }),
+      processAll: () => json(ProcessAllResponse, 'POST', '/documents/process-all'),
+    },
+
+    research: {
+      search: (input: z.input<typeof ResearchSearchRequest>, signal?: AbortSignal) => json(ResearchSearchResponse, 'POST', '/research/search', { body: input, signal }),
+      similar: (input: z.input<typeof SimilarPassagesRequest>, signal?: AbortSignal) => json(ResearchSearchResponse, 'POST', '/research/search/passage', { body: input, signal }),
+      passage: (passageId: string) => json(PassageDetailResponse, 'GET', `/research/passages/${encodeURIComponent(passageId)}`),
+      location: (passageId: string) => json(PassageLocationResponse, 'GET', `/research/passages/${encodeURIComponent(passageId)}/location`),
+    },
+
+    retrieval: {
+      providers: (probe = false) => json(RetrievalProvidersResponse, 'GET', '/retrieval/providers', { query: { probe: probe ? '1' : undefined } }),
+      updateSettings: (patch: z.input<typeof UpdateRetrievalSettingsRequest>) => json(RetrievalProvidersResponse, 'PATCH', '/retrieval/settings', { body: patch }),
+      status: () => json(IndexStatusResponse, 'GET', '/retrieval/index/status'),
+      reindex: (rebuild = false) => json(IndexStatusResponse, 'POST', '/retrieval/reindex', { body: { rebuild } }),
+      cancelReindex: () => json(IndexStatusResponse, 'POST', '/retrieval/reindex/cancel'),
     },
 
     references: {

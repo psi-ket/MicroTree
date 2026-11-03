@@ -1,5 +1,23 @@
 import { sql } from 'drizzle-orm';
-import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { blob, index, integer, primaryKey, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import {
+  BLOCK_TYPES,
+  DOCUMENT_JOB_KINDS,
+  DOCUMENT_JOB_STATUSES,
+  ELEMENT_TYPES,
+  EXTRACTION_STATUSES,
+  EXTRACTORS,
+  PASSAGE_KINDS,
+  REFERENCE_RESOLUTION,
+  SECTION_TYPES,
+  type DocumentCoordinate,
+  type ExtractedMetadata,
+  type ExtractionQuality,
+  type InlineSpan,
+  type JobError,
+  type PageGeometry,
+  type ReferenceMetadata,
+} from '@research-studio/document-intelligence';
 import {
   ATTACHMENT_SOURCES,
   ATTACHMENT_TYPES,
@@ -383,4 +401,291 @@ export const libraryImportJobs = sqliteTable(
     finishedAt: text('finished_at'),
   },
   (t) => [index('library_import_jobs_created_idx').on(t.createdAt)],
+);
+
+// ------------------------------------------------------------------------
+// Scientific document intelligence and retrieval (M3.3, migration 0003)
+// ------------------------------------------------------------------------
+
+/**
+ * One extraction run over one library attachment (its PDF). Several runs of
+ * the same attachment can exist (new extractor version, new settings); at
+ * most one is active. A failed run never replaces an active one.
+ */
+export const documentExtractions = sqliteTable(
+  'document_extractions',
+  {
+    id: text('id').primaryKey(),
+    attachmentId: text('attachment_id')
+      .notNull()
+      .references(() => libraryAttachments.id, { onDelete: 'cascade' }),
+    libraryItemId: text('library_item_id')
+      .notNull()
+      .references(() => libraryItems.id, { onDelete: 'cascade' }),
+    /** The work the item had when this run started (a snapshot; joins use the item). */
+    scholarlyWorkId: text('scholarly_work_id').notNull(),
+    sourceSha256: text('source_sha256').notNull(),
+    extractor: text('extractor', { enum: EXTRACTORS }).notNull(),
+    extractorVersion: text('extractor_version'),
+    parserVersion: text('parser_version').notNull(),
+    segmenterVersion: text('segmenter_version').notNull(),
+    config: text('config', { mode: 'json' }).$type<Record<string, unknown>>().notNull(),
+    configHash: text('config_hash').notNull(),
+    status: text('status', { enum: EXTRACTION_STATUSES }).notNull(),
+    isActive: integer('is_active', { mode: 'boolean' }).notNull().default(false),
+    language: text('language'),
+    pageCount: integer('page_count'),
+    pages: text('pages', { mode: 'json' }).$type<PageGeometry[]>().notNull().default([]),
+    metadata: text('metadata', { mode: 'json' }).$type<ExtractedMetadata>().notNull(),
+    quality: text('quality', { mode: 'json' }).$type<ExtractionQuality>().notNull(),
+    warnings: text('warnings', { mode: 'json' }).$type<string[]>().notNull().default([]),
+    processingStartedAt: text('processing_started_at').notNull(),
+    processingCompletedAt: text('processing_completed_at'),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (t) => [
+    uniqueIndex('document_extractions_active_uq').on(t.attachmentId).where(sql`${t.isActive} = 1`),
+    index('document_extractions_attachment_idx').on(t.attachmentId),
+    index('document_extractions_item_idx').on(t.libraryItemId),
+    index('document_extractions_sha_idx').on(t.sourceSha256),
+  ],
+);
+
+/** The extractor's original output (GROBID TEI, PyMuPDF JSON), gzip-compressed, kept for debugging and reprocessing. */
+export const documentRawOutputs = sqliteTable('document_raw_outputs', {
+  extractionId: text('extraction_id')
+    .primaryKey()
+    .references(() => documentExtractions.id, { onDelete: 'cascade' }),
+  format: text('format', { enum: ['tei-xml', 'pymupdf-json'] }).notNull(),
+  encoding: text('encoding', { enum: ['gzip'] }).notNull(),
+  content: blob('content', { mode: 'buffer' }).notNull(),
+  sizeBytes: integer('size_bytes').notNull(),
+});
+
+export const documentSections = sqliteTable(
+  'document_sections',
+  {
+    id: text('id').primaryKey(),
+    extractionId: text('extraction_id')
+      .notNull()
+      .references(() => documentExtractions.id, { onDelete: 'cascade' }),
+    parentSectionId: text('parent_section_id'),
+    heading: text('heading').notNull(),
+    headingNumber: text('heading_number'),
+    sectionLevel: integer('section_level').notNull(),
+    sectionOrder: integer('section_order').notNull(),
+    sectionPath: text('section_path').notNull(),
+    sectionType: text('section_type', { enum: SECTION_TYPES }).notNull(),
+    pageStart: integer('page_start'),
+    pageEnd: integer('page_end'),
+    coordinates: text('coordinates', { mode: 'json' }).$type<DocumentCoordinate[]>().notNull().default([]),
+  },
+  (t) => [uniqueIndex('document_sections_order_uq').on(t.extractionId, t.sectionOrder)],
+);
+
+export const documentBlocks = sqliteTable(
+  'document_blocks',
+  {
+    id: text('id').primaryKey(),
+    extractionId: text('extraction_id')
+      .notNull()
+      .references(() => documentExtractions.id, { onDelete: 'cascade' }),
+    sectionId: text('section_id'),
+    blockType: text('block_type', { enum: BLOCK_TYPES }).notNull(),
+    blockOrder: integer('block_order').notNull(),
+    /** Inline spans (text, citation and figure markers, inline formulas). */
+    content: text('content', { mode: 'json' }).$type<InlineSpan[]>().notNull(),
+    plainText: text('plain_text').notNull(),
+    sourceXmlId: text('source_xml_id'),
+    elementId: text('element_id'),
+    sentenceSource: text('sentence_source', { enum: ['extractor', 'segmenter', 'none'] }).notNull(),
+    pageStart: integer('page_start'),
+    pageEnd: integer('page_end'),
+    coordinates: text('coordinates', { mode: 'json' }).$type<DocumentCoordinate[]>().notNull().default([]),
+  },
+  (t) => [uniqueIndex('document_blocks_order_uq').on(t.extractionId, t.blockOrder), index('document_blocks_section_idx').on(t.sectionId)],
+);
+
+export const documentPassages = sqliteTable(
+  'document_passages',
+  {
+    id: text('id').primaryKey(),
+    extractionId: text('extraction_id')
+      .notNull()
+      .references(() => documentExtractions.id, { onDelete: 'cascade' }),
+    sectionId: text('section_id'),
+    parentBlockId: text('parent_block_id'),
+    /** All blocks that contributed text, in order. */
+    blockIds: text('block_ids', { mode: 'json' }).$type<string[]>().notNull().default([]),
+    passageOrder: integer('passage_order').notNull(),
+    kind: text('kind', { enum: PASSAGE_KINDS }).notNull(),
+    sectionPath: text('section_path').notNull(),
+    sectionType: text('section_type', { enum: SECTION_TYPES }).notNull(),
+    text: text('text').notNull(),
+    normalizedText: text('normalized_text').notNull(),
+    textHash: text('text_hash').notNull(),
+    /** Same value for the same text at the same place of the same PDF across reprocessing. */
+    stableKey: text('stable_key').notNull(),
+    pageStart: integer('page_start'),
+    pageEnd: integer('page_end'),
+    coordinates: text('coordinates', { mode: 'json' }).$type<DocumentCoordinate[]>().notNull().default([]),
+    tokenCount: integer('token_count').notNull(),
+    language: text('language'),
+    createdAt: text('created_at').notNull(),
+  },
+  (t) => [
+    uniqueIndex('document_passages_order_uq').on(t.extractionId, t.passageOrder),
+    index('document_passages_hash_idx').on(t.textHash),
+    index('document_passages_stable_idx').on(t.stableKey),
+  ],
+);
+
+/** Sentences, kept for later evidence work (M5); not used for claims in M3.3. */
+export const documentSentences = sqliteTable(
+  'document_sentences',
+  {
+    id: text('id').primaryKey(),
+    extractionId: text('extraction_id')
+      .notNull()
+      .references(() => documentExtractions.id, { onDelete: 'cascade' }),
+    blockId: text('block_id').notNull(),
+    passageId: text('passage_id'),
+    sentenceOrder: integer('sentence_order').notNull(),
+    text: text('text').notNull(),
+    textHash: text('text_hash').notNull(),
+    pageStart: integer('page_start'),
+    pageEnd: integer('page_end'),
+    coordinates: text('coordinates', { mode: 'json' }).$type<DocumentCoordinate[]>().notNull().default([]),
+  },
+  (t) => [index('document_sentences_block_idx').on(t.blockId, t.sentenceOrder), index('document_sentences_passage_idx').on(t.passageId)],
+);
+
+/** Bibliography entries as extracted. Never treated as verified; links to works need an exact identifier. */
+export const documentReferences = sqliteTable(
+  'document_references',
+  {
+    id: text('id').primaryKey(),
+    extractionId: text('extraction_id')
+      .notNull()
+      .references(() => documentExtractions.id, { onDelete: 'cascade' }),
+    referenceOrder: integer('reference_order').notNull(),
+    rawReference: text('raw_reference'),
+    parsedMetadata: text('parsed_metadata', { mode: 'json' }).$type<ReferenceMetadata>().notNull(),
+    doi: text('doi'),
+    arxivId: text('arxiv_id'),
+    sourceXmlId: text('source_xml_id'),
+    linkedScholarlyWorkId: text('linked_scholarly_work_id').references(() => scholarlyWorks.id, { onDelete: 'set null' }),
+    resolutionStatus: text('resolution_status', { enum: REFERENCE_RESOLUTION }).notNull().default('unresolved'),
+    pageStart: integer('page_start'),
+    pageEnd: integer('page_end'),
+    coordinates: text('coordinates', { mode: 'json' }).$type<DocumentCoordinate[]>().notNull().default([]),
+  },
+  (t) => [
+    uniqueIndex('document_references_order_uq').on(t.extractionId, t.referenceOrder),
+    index('document_references_doi_idx').on(t.doi),
+    index('document_references_arxiv_idx').on(t.arxivId),
+  ],
+);
+
+/** Equations, figures and tables. `content` is the extracted text, not a faithful rendering. */
+export const documentElements = sqliteTable(
+  'document_elements',
+  {
+    id: text('id').primaryKey(),
+    extractionId: text('extraction_id')
+      .notNull()
+      .references(() => documentExtractions.id, { onDelete: 'cascade' }),
+    sectionId: text('section_id'),
+    elementType: text('element_type', { enum: ELEMENT_TYPES }).notNull(),
+    elementOrder: integer('element_order').notNull(),
+    label: text('label'),
+    caption: text('caption'),
+    content: text('content'),
+    sourceXmlId: text('source_xml_id'),
+    pageStart: integer('page_start'),
+    pageEnd: integer('page_end'),
+    coordinates: text('coordinates', { mode: 'json' }).$type<DocumentCoordinate[]>().notNull().default([]),
+  },
+  (t) => [uniqueIndex('document_elements_order_uq').on(t.extractionId, t.elementOrder)],
+);
+
+/** Persistent processing jobs; unfinished ones resume after a restart. */
+export const documentJobs = sqliteTable(
+  'document_jobs',
+  {
+    id: text('id').primaryKey(),
+    kind: text('kind', { enum: DOCUMENT_JOB_KINDS }).notNull(),
+    attachmentId: text('attachment_id')
+      .notNull()
+      .references(() => libraryAttachments.id, { onDelete: 'cascade' }),
+    libraryItemId: text('library_item_id').notNull(),
+    configHash: text('config_hash').notNull(),
+    status: text('status', { enum: DOCUMENT_JOB_STATUSES }).notNull(),
+    /** Measured progress of the current stage, 0..1, when it can be measured. */
+    progress: real('progress'),
+    error: text('error', { mode: 'json' }).$type<JobError>(),
+    retryCount: integer('retry_count').notNull().default(0),
+    attempts: integer('attempts').notNull().default(0),
+    previousExtractionId: text('previous_extraction_id'),
+    extractionId: text('extraction_id'),
+    /** Free-form notes for the user (fallback used, warnings). */
+    notes: text('notes', { mode: 'json' }).$type<string[]>().notNull().default([]),
+    createdAt: text('created_at').notNull(),
+    startedAt: text('started_at'),
+    finishedAt: text('finished_at'),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (t) => [
+    uniqueIndex('document_jobs_unfinished_uq')
+      .on(t.attachmentId, t.configHash)
+      .where(sql`${t.status} NOT IN ('completed', 'partial', 'needs_ocr', 'failed', 'cancelled')`),
+    index('document_jobs_status_idx').on(t.status),
+    index('document_jobs_created_idx').on(t.createdAt),
+  ],
+);
+
+/** One embedding model configuration. Vectors of different spaces are never compared. */
+export const embeddingSpaces = sqliteTable(
+  'embedding_spaces',
+  {
+    id: text('id').primaryKey(),
+    provider: text('provider').notNull(),
+    model: text('model').notNull(),
+    dimensions: integer('dimensions').notNull(),
+    modelVersion: text('model_version').notNull().default(''),
+    createdAt: text('created_at').notNull(),
+  },
+  (t) => [uniqueIndex('embedding_spaces_uq').on(t.provider, t.model, t.dimensions, t.modelVersion)],
+);
+
+/** Embedding cache: one unit-length float32 vector per (space, text hash). */
+export const embeddingVectors = sqliteTable(
+  'embedding_vectors',
+  {
+    spaceId: text('space_id')
+      .notNull()
+      .references(() => embeddingSpaces.id, { onDelete: 'cascade' }),
+    textHash: text('text_hash').notNull(),
+    vector: blob('vector', { mode: 'buffer' }).notNull(),
+    createdAt: text('created_at').notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.spaceId, t.textHash] })],
+);
+
+/** Which passages are indexed in which space (and with which text). */
+export const passageEmbeddings = sqliteTable(
+  'passage_embeddings',
+  {
+    spaceId: text('space_id')
+      .notNull()
+      .references(() => embeddingSpaces.id, { onDelete: 'cascade' }),
+    passageId: text('passage_id')
+      .notNull()
+      .references(() => documentPassages.id, { onDelete: 'cascade' }),
+    extractionId: text('extraction_id').notNull(),
+    textHash: text('text_hash').notNull(),
+    embeddedAt: text('embedded_at').notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.spaceId, t.passageId] }), index('passage_embeddings_extraction_idx').on(t.spaceId, t.extractionId)],
 );

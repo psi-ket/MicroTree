@@ -19,6 +19,7 @@
     "@research-studio/ai-core": "workspace:*",
     "@research-studio/api-contracts": "workspace:*",
     "@research-studio/document-engine": "workspace:*",
+    "@research-studio/document-intelligence": "workspace:*",
     "@research-studio/literature-engine": "workspace:*",
     "@research-studio/shared-types": "workspace:*",
     "@research-studio/ui": "workspace:*",

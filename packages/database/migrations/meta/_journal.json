@@ -22,6 +22,13 @@
       "when": 1793698182284,
       "tag": "0002_library",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1793745831325,
+      "tag": "0003_documents",
+      "breakpoints": true
     }
   ]
 }

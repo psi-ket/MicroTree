@@ -335,3 +335,66 @@ Behaviour is described in [`LIBRARY.md`](LIBRARY.md).
 | `RS_LIBRARY_MAX_PDF_BYTES` | 100 MB (1 MB–2 GB) | Size limit per file |
 | `RS_ZOTERO_URL` | `https://api.zotero.org` | Zotero Web API base |
 | `RS_ZOTERO_LOCAL_URL` | `http://localhost:23119/api` | Zotero local API base |
+
+## Document and retrieval routes (M3.3)
+
+Same rules as above (session, Host/Origin checks, JSON, Zod validation).
+Schemas: `packages/api-contracts/src/documents.ts`; client:
+`client.documents.*`, `client.research.*`, `client.retrieval.*`. Documents
+are addressed by **library attachment ID**; no response contains a
+file-system path. Job progress is pushed as `documents.job`; index changes as
+`retrieval.changed`. Behaviour: [`PAPER_INGESTION.md`](PAPER_INGESTION.md),
+[`RESEARCH_RETRIEVAL.md`](RESEARCH_RETRIEVAL.md),
+[`EMBEDDING_PROVIDERS.md`](EMBEDDING_PROVIDERS.md).
+
+### Documents
+
+| Route | Body / query | Response |
+| --- | --- | --- |
+| `POST /documents/:attachmentId/process` | | 202 `{ job, created: true }`, or 200 with the unfinished job already running for it |
+| `POST /documents/:attachmentId/reprocess` | | same; the active extraction stays until the new one is indexed |
+| `POST /documents/:attachmentId/cancel` | | the document status |
+| `GET /documents/:attachmentId/status` | | `{ attachmentId, extraction, job, embeddings: { indexedPassages, embeddablePassages, spaceId } }`; `extraction` has status, extractor and version, parser and segmenter versions, config hash, PDF SHA-256, pages, metadata, quality, warnings, counts and `stale` reasons |
+| `GET /documents/:attachmentId/structure` | | `{ extraction, pages, sections, blocks, elements, references }` (404 `{ processed: false }` before processing) |
+| `GET /documents/:attachmentId/sections` · `/references` · `/elements` | | the part named |
+| `GET /documents/:attachmentId/passages` | `offset`, `limit` (≤ 500) | `{ extractionId, passages, total, offset, limit }` |
+| `GET /documents/jobs` | `status` (`active`, `failed`, `all`), `limit` | `{ jobs }` |
+| `POST /documents/process-all` | | `{ queued, alreadyQueued }`: every PDF without an extraction or an unfinished job |
+
+### Research search
+
+| Route | Body | Response |
+| --- | --- | --- |
+| `POST /research/search` | `{ query (1–1000), mode: "keyword"\|"semantic"\|"hybrid" (default hybrid), scope: { kind: "library" } \| { kind: "collections", collectionIds } \| { kind: "papers", libraryItemIds }, filters: { author?, yearFrom?, yearTo?, venue?, sectionTypes?, publicationTypes?, includeReferences? }, limit (≤ 50), offset (≤ 450) }` | `{ query, understood, mode, results, total, offset, limit, relaxed, semantic: { used, reason, model }, warnings, papersSearched }`; each result has `passageId`, `position`, `score`, `keywordRank`, `semanticRank`, `keywordScore`, `semanticScore`, `matchedBy`, `documentId`, `attachmentId`, `kind`, `sectionPath`, `sectionType`, `pageStart`, `pageEnd`, `hasCoordinates`, the exact `text`, `paper` and `provenance` |
+| `POST /research/search/passage` | `{ passageId, scope, limit }` | same shape: passages near the given one in the active embedding space (409 `NOT_CONFIGURED` without one) |
+| `GET /research/passages/:passageId` | | `{ passage, paper, provenance, before, after, sentences }` |
+| `GET /research/passages/:passageId/location` | | `{ passageId, attachmentId, pageNumber, pageEnd, coordinates, pages }`; `coordinates` empty when the extractor reported none |
+
+The `score` orders results. It is a rank-fusion or BM25/cosine value, not a
+probability of relevance or correctness.
+
+### Retrieval settings and index
+
+| Route | Body | Response |
+| --- | --- | --- |
+| `GET /retrieval/providers` | `probe=1` to check again | `{ grobid: { status, version, message, host, remote, consolidation }, pymupdf: { status, version, message, python }, embeddings: { status, version, message, enabled, provider, model, host, remote, dimensions }, settings }` |
+| `PATCH /retrieval/settings` | `{ autoProcess?, embeddingsEnabled?, embeddingModel?, embeddingBaseUrl? }` | the providers response; a base URL on another computer is 400 unless `RS_EMBEDDINGS_ALLOW_REMOTE=1` |
+| `GET /retrieval/index/status` | | `{ documents: { pdfAttachments, processed, partial, needsOcr, failed, waiting, queued, running, stale }, keyword: { passages }, embeddings: { activeSpace, indexedPassages, embeddablePassages, reindex }, lastIndexedAt }` |
+| `POST /retrieval/reindex` | `{ rebuild? }` | 202 with the index status; 409 `NOT_CONFIGURED` when embeddings are off |
+| `POST /retrieval/reindex/cancel` | | the index status |
+
+### Configuration
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `RS_GROBID` | `on` | GROBID on or off |
+| `RS_GROBID_URL` | `http://127.0.0.1:8070` | GROBID service |
+| `RS_GROBID_ALLOW_REMOTE` | `0` | allow a GROBID host other than this computer |
+| `RS_GROBID_TIMEOUT_MS` | `180000` | per request |
+| `RS_GROBID_CONSOLIDATION` | `0` | let GROBID consolidate metadata with external services |
+| `RS_PYMUPDF` | `auto` | PyMuPDF on (`auto`) or `off` |
+| `RS_PYTHON` | `python3` / `python` | Python with PyMuPDF |
+| `RS_INGESTION_CONCURRENCY` | `2` | documents processed at once (1–8) |
+| `RS_INGESTION_MAX_PAGES` | `500` | page limit |
+| `RS_OLLAMA_URL` | `http://127.0.0.1:11434` | default embedding endpoint |
+| `RS_EMBEDDINGS_ALLOW_REMOTE` | `0` | allow an embedding base URL on another computer |

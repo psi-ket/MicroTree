@@ -75,6 +75,21 @@ control applied at each.
 | T39 | Zotero credentials exposed. | The key is sent once, checked, stored in the secret store as `zotero:web`, sent only in the `Zotero-API-Key` header to the configured Zotero URL, never returned, and audited without its value; tests check responses, audit rows and settings. The web page clears the field after sending and keeps nothing in browser storage. CI uses a mock Zotero server only. |
 | T40 | Wrong metadata attached to a paper. | Only exact DOI/arXiv matches are applied automatically; ambiguous results (two equally good candidates) are downgraded to `possible`; everything else waits for the user. Missing values stay empty. |
 
+## Document intelligence and retrieval (M3.3)
+
+| # | Threat | Mitigation |
+| --- | --- | --- |
+| T41 | XML attacks through GROBID output (external entities, entity expansion, deep nesting). | TEI is read by a dedicated parser that refuses `<!DOCTYPE` and `<!ENTITY`, knows only the five predefined entities and numeric references, and enforces size (64 MB), depth (256) and element (2 000 000) limits (`paper-ingestion/security/xml-security.ts`, tested with XXE and entity-expansion payloads). |
+| T42 | Hostile PDFs in the extractors. | PDFs were validated at import (T35) and are checked again. PyMuPDF runs in its own Python process with `-E`, the current folder removed from `sys.path` before any import, an allowlisted environment, the PDF on stdin (no temporary file, no path), a timeout, an output cap and an address-space limit; its output is validated with a schema. GROBID runs in its own process (Docker). Nothing in a PDF is executed. |
+| T43 | Resource exhaustion by large or complex documents. | Size and page limits, per-stage timeouts, bounded concurrency (`RS_INGESTION_CONCURRENCY`), caps on structures per document, capped response sizes, at most three attempts for a job that keeps crashing the runtime. |
+| T44 | PDFs or passage text leaving the machine. | GROBID's URL comes from the operator's environment only and must be loopback unless `RS_GROBID_ALLOW_REMOTE=1`; then the dashboard warns. GROBID consolidation (external metadata calls from the GROBID server) is off unless `RS_GROBID_CONSOLIDATION=1`. Embedding base URLs set in the app must be loopback unless `RS_EMBEDDINGS_ALLOW_REMOTE=1`. No hosted embedding provider exists in M3.3. |
+| T45 | Server-side requests to arbitrary addresses. | No URL from a document or from the browser is fetched by ingestion; service URLs with credentials or other schemes are refused; redirects from GROBID and Ollama are refused. |
+| T46 | Script or markup in extracted text. | Extracted text, TEI content and passages are rendered as React text only; query highlighting splits text and wraps matches in `<mark>` without HTML. |
+| T47 | Extracted text treated as instructions. | Retrieval returns source data only; nothing in M3.3 sends passages to a chat model or acts on their content. The source panel says the text is data, not an instruction, and is unchecked. |
+| T48 | Mistaking extracted references or metadata for verified facts. | References are stored as extracted with `resolution_status`; a library link is shown only for an identical DOI or arXiv ID and is labelled as such. Scores are labelled as ordering, not correctness. |
+| T49 | Losing a usable extraction. | New extractions are written inactive and activated only after indexing; a failed or cancelled run deletes only its own rows. |
+| T50 | Mixing vectors of different models. | Vectors live in embedding spaces keyed by provider, model, dimensions and version; searches name one space; dimensions are checked on write and on query; a changed model needs an explicit reindex, and the old space stays active until the new one is complete. |
+
 ## Residual risks / accepted trade-offs
 
 - Loopback HTTP is not encrypted; other software running as the same OS user is
@@ -139,6 +154,17 @@ control applied at each.
   an IPv6 loopback with a port wildcard, so a runtime bound to `::1` is not
   reachable from the production web build.
 
+- GROBID is a separate service the operator runs (normally a Docker
+  container). Its own parsing of hostile PDFs is outside the runtime's
+  control; binding it to `127.0.0.1` (as documented) keeps it off the
+  network. A GROBID allowed on another computer receives the user's PDFs.
+- The PyMuPDF memory cap uses `RLIMIT_AS` and applies on Linux and macOS
+  only; on Windows only the timeout and output cap apply. The process runs
+  as the user, without an OS sandbox.
+- Text extraction is imperfect: columns, equations and tables can be misread
+  even with GROBID. Every result links back to the PDF, which remains the
+  source.
+
 ## Audit trail
 
 `audit_events` records: auth success/failure, project create/delete, file
@@ -160,6 +186,11 @@ Literature events: `literature.provider.update` (`enabled`, and `apiKey:
 "stored" | "removed"`, never the key), `literature.history.clear` and
 `literature.cache.clear`. Search queries are not audited; they are kept in the
 search history only while it is turned on.
+
+Document events: `documents.process`, `documents.reprocess`,
+`documents.cancel` (attachment ID), `retrieval.settings` (the changed
+settings) and `retrieval.reindex` (model, rebuild). Search queries are not
+audited.
 
 Library events: `library.import` (job kind and counts), `library.items.delete`,
 `library.items.merge`, `library.citation-key` (old and new key),

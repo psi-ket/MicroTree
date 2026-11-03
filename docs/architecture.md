@@ -1,7 +1,9 @@
 # Research Studio — Architecture
 
-Status: M0 (foundation), M1 (LaTeX workspace) and M2 (AI integration, §6)
-implemented. Later milestones are described only as extension points.
+Status: M0 (foundation), M1 (LaTeX workspace), M2 (AI integration, §6),
+M3.1 (literature, §7), M3.2 (library, §8) and M3.3 (document intelligence
+and retrieval, §9) implemented. Later milestones are described only as
+extension points.
 
 ## 1. System overview
 
@@ -61,6 +63,12 @@ packages/
                        normalisation, deduplication, merging, ranking, paging, BibTeX (M3.1)
   research-library/    Personal library: items, PDF store, imports (PDF, BibTeX, RIS),
                        metadata resolution, collections, exports, project .bib sync, Zotero (M3.2)
+  document-intelligence/ Extractor-independent document model, coordinates and their
+                       transforms, sentences, search-text normalisation, versions (M3.3)
+  paper-ingestion/     GROBID and PyMuPDF adapters, secure TEI parsing, normalisers,
+                       document store, persistent job pipeline (M3.3)
+  research-retrieval/  Passage segmentation, embedding providers (Ollama), FTS5 keyword
+                       search, SQLite vector store, RRF hybrid search, metrics (M3.3)
 docs/                  architecture, security model, ADRs, checklist, API, reviews
 e2e/                   Playwright end-to-end tests (spins up runtime + web) and mock
                        model / scholarly API servers
@@ -85,6 +93,9 @@ shared-types ◄── literature-engine ◄── runtime
                  literature-engine/format ◄── web (BibTeX, citations, safe URLs only)
 
 database, document-engine, literature-engine ◄── research-library ◄── runtime
+
+document-intelligence ◄── database, paper-ingestion, research-retrieval, api-contracts, web
+database ◄── paper-ingestion ◄── runtime;  research-retrieval ◄── runtime
 ```
 
 `document-engine` has two entry points: `@research-studio/document-engine`
@@ -371,6 +382,44 @@ web #/library, References panel ──/api/v1/library/*──▶ LibraryRuntime 
   `features/references/` (`ReferencesPanel`, `BibReviewDialog`).
 
 Details: [`LIBRARY.md`](LIBRARY.md), [`DATABASE_SCHEMA.md`](DATABASE_SCHEMA.md).
+
+## 9. Document intelligence and retrieval (M3.3)
+
+```
+web Library → Search text / Full text, paper details → Full text
+   │  /api/v1/documents/*, /research/*, /retrieval/*        ▲ documents.job, retrieval.changed
+   ▼                                                        │
+DocumentRuntime (apps/runtime) ── IngestionQueue (≤ RS_INGESTION_CONCURRENCY, persistent jobs, resume)
+   │   reads PDFs only through the library's AttachmentService (by attachment ID)
+   ├─ paper-ingestion: GrobidClient ──HTTP──▶ local GROBID (TEI + coords)
+   │                   PyMuPdfClient ─stdin/stdout─▶ python -E (geometry, fallback text)
+   │                   TEI parser/normaliser, layout normaliser ──▶ document-intelligence model
+   │                   DocumentStore (inactive write → index → activate → drop the old)
+   └─ research-retrieval: segmentDocument → FTS5 (passage_fts) + EmbeddingIndexer → SqliteVectorStore
+                          HybridSearchEngine (BM25, cosine, RRF) ◀── OllamaEmbeddingProvider (optional)
+```
+
+- **One library.** Extractions belong to library attachments and are
+  deleted with them; search results are hydrated with the corrected library
+  record. Library filters (collections, author, year, venue, type) become a
+  list of extraction IDs before the retrieval engine runs.
+- **Local first.** GROBID and Ollama default to loopback; remote hosts need
+  operator switches and are flagged in the UI. Nothing needs an AI chat
+  model, and results are always exact source passages.
+- **Coordinates.** One canonical system (CropBox-relative points, top-left,
+  unrotated); explicit conversions from GROBID, PyMuPDF and PDF user space,
+  and to PDF.js viewports. Highlights are drawn only from reported boxes.
+- **Reprocessing.** Extractions record the PDF hash, extractor and version,
+  parser and segmenter versions and configuration; out-of-date ones keep
+  working until a reprocess succeeds.
+- **Embedding spaces.** Vectors never mix across models; the active space
+  changes only when a reindex completes.
+
+Details: [`PAPER_INGESTION.md`](PAPER_INGESTION.md),
+[`DOCUMENT_INTELLIGENCE.md`](DOCUMENT_INTELLIGENCE.md),
+[`RESEARCH_RETRIEVAL.md`](RESEARCH_RETRIEVAL.md),
+[`EMBEDDING_PROVIDERS.md`](EMBEDDING_PROVIDERS.md),
+[`RETRIEVAL_EVALUATION.md`](RETRIEVAL_EVALUATION.md).
 
 See `docs/decisions/` for the reasoning behind each choice and
 `docs/security.md` for the threat model.

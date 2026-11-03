@@ -27,8 +27,10 @@ import { z } from 'zod';
 import { RUNTIME_VERSION, type RuntimeConfig } from './config';
 import { actorOf, parse, RAW_CSP } from './http';
 import { registerAiRoutes, type AiRouteDeps } from './routes-ai';
+import { registerDocumentRoutes } from './routes-documents';
 import { registerLibraryRoutes } from './routes-library';
 import { registerLiteratureRoutes } from './routes-literature';
+import type { DocumentRuntime } from './services/document-runtime';
 import type { LibraryRuntime } from './services/library-runtime';
 import type { LiteratureService } from './services/literature-service';
 import { RateLimiter, safeEqual, type SessionStore, type TicketStore } from './security/tokens';
@@ -52,6 +54,7 @@ export interface RouteDeps {
   ai: AiRouteDeps;
   literature: LiteratureService;
   library: LibraryRuntime;
+  documents: DocumentRuntime;
 }
 
 const RAW_CONTENT_TYPES: Record<string, string> = {
@@ -279,6 +282,7 @@ export function registerRoutes(app: FastifyInstance, deps: RouteDeps): void {
       registerAiRoutes(api, deps.ai);
       registerLiteratureRoutes(api, deps.literature);
       registerLibraryRoutes(api, deps.library, projects);
+      registerDocumentRoutes(api, deps.documents);
     },
     { prefix: API_PREFIX },
   );

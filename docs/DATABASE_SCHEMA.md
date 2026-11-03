@@ -10,13 +10,14 @@ Two migration histories share the file:
 
 | History | Package | Table that records it | Migrations |
 | --- | --- | --- | --- |
-| Core | `packages/database` | `__drizzle_migrations` | `0000_init`, `0001_literature`, `0002_library` |
+| Core | `packages/database` | `__drizzle_migrations` | `0000_init`, `0001_literature`, `0002_library`, `0003_documents` |
 | AI | `packages/ai-storage` | `__ai_migrations` | its own numbered files |
 
-Migrations are applied at start-up, forward only. `0002_library` has a
-hand-written reverse in `packages/database/migrations/down/0002_library.sql`
-(drops the library tables, nothing else); a test applies up → down → up. It is
-never run automatically.
+Migrations are applied at start-up, forward only. `0002_library` and
+`0003_documents` have hand-written reverses in
+`packages/database/migrations/down/` (each drops its own tables, nothing
+else; `0003` must be reversed before `0002`); tests apply up → down → up.
+They are never run automatically.
 
 Timestamps are ISO 8601 strings in UTC. JSON columns are `text`.
 
@@ -68,6 +69,36 @@ Library preferences (citation-key format, open-access download default) are in
 command) in scope `project:<id>` key `references`; Zotero status (user ID,
 write access, last error, local API switch) in scope `library.zotero`. The
 Zotero API key itself is in the secret store under `zotero:web`.
+
+## Documents and retrieval (`0003_documents`, M3.3)
+
+```
+library_attachments 1──* document_extractions 1──1 document_raw_outputs
+                              ├──* document_sections, document_blocks, document_elements, document_references
+                              └──* document_passages 1──* document_sentences
+                                         └──* passage_embeddings *──1 embedding_spaces 1──* embedding_vectors
+library_attachments 1──* document_jobs            passage_fts (FTS5, rows per passage)
+```
+
+| Table | Columns | Constraints and notes |
+| --- | --- | --- |
+| `document_extractions` | `id` PK (`dex_…`), `attachment_id` → attachments (cascade), `library_item_id` → items (cascade), `scholarly_work_id` (snapshot), `source_sha256`, `extractor` (`grobid`, `pymupdf`), `extractor_version`, `parser_version`, `segmenter_version`, `config` (JSON), `config_hash`, `status` (`completed`, `partial`, `needs_ocr`, `failed`), `is_active`, `language`, `page_count`, `pages` (JSON page geometry), `metadata` (JSON), `quality` (JSON), `warnings` (JSON), processing and row timestamps | partial unique index: one active extraction per attachment; indexes on attachment, item, SHA-256 |
+| `document_raw_outputs` | `extraction_id` PK → extractions (cascade), `format` (`tei-xml`, `pymupdf-json`), `encoding` (`gzip`), `content` (BLOB), `size_bytes` | the extractor's original output, for debugging and reprocessing |
+| `document_sections` | `id` PK (`<extraction>_s<n>`), `extraction_id` (cascade), `parent_section_id`, `heading`, `heading_number`, `section_level`, `section_order`, `section_path`, `section_type`, `page_start`, `page_end`, `coordinates` (JSON) | unique (`extraction_id`, `section_order`) |
+| `document_blocks` | `id` PK, `extraction_id` (cascade), `section_id`, `block_type`, `block_order`, `content` (JSON inline spans), `plain_text`, `source_xml_id`, `element_id`, `sentence_source`, pages, `coordinates` | unique (`extraction_id`, `block_order`); index on section |
+| `document_passages` | `id` PK (`<extraction>_p<n>`), `extraction_id` (cascade), `section_id`, `parent_block_id`, `block_ids` (JSON), `passage_order`, `kind` (`abstract`, `body`, `caption`, `formula`, `reference`), `section_path`, `section_type`, `text`, `normalized_text`, `text_hash`, `stable_key`, pages, `coordinates`, `token_count`, `language`, `created_at` | unique (`extraction_id`, `passage_order`); indexes on text hash and stable key; a delete trigger removes the passage's `passage_fts` rows |
+| `document_sentences` | `id` PK, `extraction_id` (cascade), `block_id`, `passage_id`, `sentence_order`, `text`, `text_hash`, pages, `coordinates` | kept for M5; indexes on (block, order) and passage |
+| `document_references` | `id` PK, `extraction_id` (cascade), `reference_order`, `raw_reference`, `parsed_metadata` (JSON), `doi`, `arxiv_id`, `source_xml_id`, `linked_scholarly_work_id` → works (set null), `resolution_status`, pages, `coordinates` | unique (`extraction_id`, `reference_order`); indexes on DOI and arXiv ID |
+| `document_elements` | `id` PK, `extraction_id` (cascade), `section_id`, `element_type` (`equation`, `figure`, `table`), `element_order`, `label`, `caption`, `content`, `source_xml_id`, pages, `coordinates` | unique (`extraction_id`, `element_order`) |
+| `document_jobs` | `id` PK (`djb_…`), `kind` (`process`, `reprocess`, `reindex`), `attachment_id` → attachments (cascade), `library_item_id`, `config_hash`, `status` (13 states), `progress`, `error` (JSON code, message, retryable, source), `retry_count`, `attempts`, `previous_extraction_id`, `extraction_id`, `notes` (JSON), timestamps | partial unique index: one unfinished job per (attachment, config hash); indexes on status and creation |
+| `passage_fts` | FTS5 (`body`, `heading`; `passage_id`, `extraction_id`, `kind`, `section_type` unindexed), tokenizer `porter unicode61 remove_diacritics 2 tokenchars '_'` | the normalised search text; five shadow tables `passage_fts_*` |
+| `embedding_spaces` | `id` PK (`esp_…`), `provider`, `model`, `dimensions`, `model_version`, `created_at` | unique (provider, model, dimensions, version) |
+| `embedding_vectors` | PK (`space_id`, `text_hash`), `vector` (float32 BLOB, unit length), `created_at` | the embedding cache; cascades with the space |
+| `passage_embeddings` | PK (`space_id`, `passage_id`), `extraction_id`, `text_hash`, `embedded_at` | cascades with the passage and the space; index (space, extraction) |
+
+Retrieval settings (auto-process, embeddings on/off, model, base URL), the
+active embedding space and the reindex state are in `settings` scope
+`retrieval`.
 
 ## AI (`packages/ai-storage`)
 

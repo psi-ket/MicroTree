@@ -13,6 +13,7 @@ import { DeleteDialog } from './DeleteDialog';
 import { EditDetailsDialog } from './EditDetailsDialog';
 import { upsertLibraryJob } from './jobs';
 import { CONFIDENCE_LABEL, formatBytes, METADATA_HINT, ORIGIN_LABEL, STATUS_LABEL } from './model';
+import { DocumentPanel } from '../documents/DocumentPanel';
 import { PdfViewer } from './PdfViewer';
 
 function ReadingStatusPicker({ item }: { item: LibraryItem }) {
@@ -463,7 +464,17 @@ function ZoteroLink({ item }: { item: LibraryItem }) {
   );
 }
 
-export function ItemDetails({ itemId, onBack, onDeleted }: { itemId: string; onBack: (() => void) | null; onDeleted: () => void }) {
+export function ItemDetails({
+  itemId,
+  onBack,
+  onDeleted,
+  onSearchPaper,
+}: {
+  itemId: string;
+  onBack: (() => void) | null;
+  onDeleted: () => void;
+  onSearchPaper?: (itemId: string, title: string) => void;
+}) {
   const { data: item, error, isLoading } = useLibraryItem(itemId);
   const [viewing, setViewing] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
@@ -529,6 +540,7 @@ export function ItemDetails({ itemId, onBack, onDeleted }: { itemId: string; onB
 
       <MatchReview item={item} />
       <Attachments item={item} onOpen={(id) => setViewing(id)} />
+      <DocumentPanel itemId={item.id} title={work.title} attachments={item.attachments} {...(onSearchPaper ? { onSearchPaper: () => onSearchPaper(item.id, work.title) } : {})} />
       <CitationKey item={item} />
       <TagsEditor item={item} />
       <Collections item={item} />

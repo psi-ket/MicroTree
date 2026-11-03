@@ -51,6 +51,14 @@ export const keys = {
     zotero: ['library', 'zotero'] as const,
   },
   references: (projectId: string) => ['references', projectId] as const,
+  documents: {
+    all: ['documents'] as const,
+    status: (attachmentId: string) => ['documents', 'status', attachmentId] as const,
+    structure: (attachmentId: string) => ['documents', 'structure', attachmentId] as const,
+    index: ['documents', 'index'] as const,
+    providers: ['documents', 'providers'] as const,
+    jobs: ['documents', 'jobs'] as const,
+  },
 };
 
 export const useRuntimeInfo = () => useQuery({ queryKey: keys.info, queryFn: () => runtime().runtimeInfo(), staleTime: 5 * 60_000 });
@@ -200,6 +208,37 @@ export function useUpdateLibraryPreferences() {
 
 export const useProjectReferences = (projectId: string) =>
   useQuery({ queryKey: keys.references(projectId), queryFn: () => runtime().references.get(projectId), staleTime: 5_000 });
+
+// ------------------------------------------------------------- documents
+
+export const useDocumentStatus = (attachmentId: string | null) =>
+  useQuery({ queryKey: keys.documents.status(attachmentId ?? ''), queryFn: () => runtime().documents.status(attachmentId!), enabled: attachmentId !== null, staleTime: 5_000 });
+
+export const useDocumentStructure = (attachmentId: string | null, enabled = true) =>
+  useQuery({
+    queryKey: keys.documents.structure(attachmentId ?? ''),
+    queryFn: ({ signal }) => runtime().documents.structure(attachmentId!, signal),
+    enabled: attachmentId !== null && enabled,
+    staleTime: 60_000,
+  });
+
+export const useIndexStatus = () => useQuery({ queryKey: keys.documents.index, queryFn: () => runtime().retrieval.status(), staleTime: 5_000 });
+
+export const useRetrievalProviders = (probe = false) =>
+  useQuery({ queryKey: [...keys.documents.providers, probe], queryFn: () => runtime().retrieval.providers(probe), staleTime: 15_000 });
+
+export const useDocumentJobs = (status: 'active' | 'failed' | 'all' = 'all') =>
+  useQuery({ queryKey: [...keys.documents.jobs, status], queryFn: async () => (await runtime().documents.jobs(status, 50)).jobs, staleTime: 5_000 });
+
+/** After processing or index changes: document views refetch when next shown. */
+export function invalidateDocuments(attachmentId?: string): void {
+  if (attachmentId) {
+    void queryClient.invalidateQueries({ queryKey: keys.documents.status(attachmentId) });
+    void queryClient.invalidateQueries({ queryKey: keys.documents.structure(attachmentId) });
+  }
+  void queryClient.invalidateQueries({ queryKey: keys.documents.index });
+  void queryClient.invalidateQueries({ queryKey: keys.documents.jobs });
+}
 
 /** After a library change: everything that shows library data refetches when next shown. */
 export function invalidateLibrary(): void {

@@ -2,6 +2,8 @@ import { BookMarked, ChevronLeft, Search, SlidersHorizontal } from 'lucide-react
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Button, cn, Input, Kbd } from '@research-studio/ui';
 import { useLibraryJobs } from '../../lib/queries';
+import { DashboardView } from '../documents/DashboardView';
+import { SearchView } from '../documents/SearchView';
 import { CollectionsView } from './CollectionsView';
 import { ImportView } from './ImportView';
 import { ItemDetails } from './ItemDetails';
@@ -23,11 +25,13 @@ function useWide(): boolean {
   );
 }
 
-type Tab = 'overview' | 'papers' | 'collections' | 'import';
+type Tab = 'overview' | 'papers' | 'search' | 'collections' | 'fulltext' | 'import';
 const TABS: { id: Tab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
   { id: 'papers', label: 'Papers' },
+  { id: 'search', label: 'Search text' },
   { id: 'collections', label: 'Collections' },
+  { id: 'fulltext', label: 'Full text' },
   { id: 'import', label: 'Import' },
 ];
 
@@ -38,6 +42,7 @@ export function LibraryScreen({ backLabel, onBack }: { backLabel: string; onBack
   const [filters, setFilters] = useState<PaperFilters>(NO_FILTERS);
   const [selected, setSelected] = useState<string | null>(null);
   const [railOpen, setRailOpen] = useState(false);
+  const [paperScope, setPaperScope] = useState<{ id: string; title: string } | null>(null);
   const input = useRef<HTMLInputElement>(null);
   const { data: jobs } = useLibraryJobs();
   const running = jobs?.filter(isActiveJob).length ?? 0;
@@ -70,7 +75,13 @@ export function LibraryScreen({ backLabel, onBack }: { backLabel: string; onBack
     setTab('papers');
   };
 
-  const details = selected ? <ItemDetails key={selected} itemId={selected} onBack={wide ? null : () => setSelected(null)} onDeleted={() => setSelected(null)} /> : null;
+  const searchPaper = (id: string, title: string) => {
+    setPaperScope({ id, title });
+    setTab('search');
+  };
+  const details = selected ? (
+    <ItemDetails key={selected} itemId={selected} onBack={wide ? null : () => setSelected(null)} onDeleted={() => setSelected(null)} onSearchPaper={searchPaper} />
+  ) : null;
 
   return (
     <main className="flex h-dvh flex-col bg-paper" data-testid="library">
@@ -82,7 +93,7 @@ export function LibraryScreen({ backLabel, onBack }: { backLabel: string; onBack
           <BookMarked className="size-[18px] text-accent" aria-hidden />
           Library
         </h1>
-        <nav aria-label="Library sections" className="flex items-center gap-0.5 sm:ml-3">
+        <nav aria-label="Library sections" className="flex flex-wrap items-center gap-0.5 sm:ml-3 sm:flex-nowrap">
           {TABS.map((t) => (
             <button
               key={t.id}
@@ -90,7 +101,7 @@ export function LibraryScreen({ backLabel, onBack }: { backLabel: string; onBack
               aria-current={tab === t.id ? 'page' : undefined}
               onClick={() => setTab(t.id)}
               className={cn(
-                'relative h-8 rounded-ctl px-2.5 text-ui text-ink-muted hover:bg-sunken hover:text-ink',
+                'relative h-8 whitespace-nowrap rounded-ctl px-2.5 text-ui text-ink-muted hover:bg-sunken hover:text-ink',
                 tab === t.id && 'text-ink after:absolute after:inset-x-2.5 after:-bottom-[9px] after:h-0.5 after:bg-accent sm:after:-bottom-[13px]',
               )}
             >
@@ -154,6 +165,10 @@ export function LibraryScreen({ backLabel, onBack }: { backLabel: string; onBack
           <CollectionsView onOpen={(collectionId) => showPapers({ collectionId })} />
         ) : tab === 'import' ? (
           <ImportView />
+        ) : tab === 'search' ? (
+          <SearchView paperScope={paperScope} onClearPaperScope={() => setPaperScope(null)} />
+        ) : tab === 'fulltext' ? (
+          <DashboardView />
         ) : !wide && details ? (
           <div className="min-w-0 flex-1 overflow-y-auto bg-panel">{details}</div>
         ) : (
