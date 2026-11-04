@@ -14,6 +14,8 @@ export const E2E_MOCK_AI_URL = `http://127.0.0.1:${MOCK_AI_PORT}/v1`;
 export const E2E_MOCK_AI_KEY = 'e2e-mock-key-0123456789';
 const MOCK_LITERATURE_PORT = 4498;
 export const E2E_MOCK_LITERATURE_URL = `http://127.0.0.1:${MOCK_LITERATURE_PORT}`;
+const MOCK_OLLAMA_PORT = 4497;
+export const E2E_MOCK_OLLAMA_URL = `http://127.0.0.1:${MOCK_OLLAMA_PORT}`;
 
 export default defineConfig({
   testDir: './e2e',
@@ -67,6 +69,13 @@ export default defineConfig({
       reuseExistingServer: false,
       timeout: 30_000,
       env: { MOCK_AI_PORT: String(MOCK_AI_PORT), MOCK_AI_KEY: E2E_MOCK_AI_KEY },
+    },
+    {
+      command: 'node e2e/mock-ollama-server.mjs',
+      url: `${E2E_MOCK_OLLAMA_URL}/__stats`,
+      reuseExistingServer: false,
+      timeout: 30_000,
+      env: { MOCK_OLLAMA_PORT: String(MOCK_OLLAMA_PORT) },
     },
     {
       command: 'pnpm --filter @research-studio/web dev',

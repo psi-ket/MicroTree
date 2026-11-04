@@ -6,6 +6,7 @@
  * insertion and rollback.
  */
 import { PROVIDER_KINDS, ProviderError, validateRequestContent, type ModelProvider, type ModelRequest, type StructuredOutputSpec } from '@research-studio/ai-core';
+import { ArtifactResponse, ArtifactVersionsResponse, InsertionListResponse, InsertionPlanSchema, ServerEventSchema, VisualAssetDetailResponse, VisualAssetResponse, VisualProvidersResponse, VisualTaskResponse } from '@research-studio/api-contracts';
 import type { ArtifactVersion, InsertionPlan, ServerEvent, VisualArtifact, VisualAsset, VisualTask } from '@research-studio/api-contracts';
 import type { Project, ProviderConfigView } from '@research-studio/shared-types';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -343,6 +344,27 @@ describe('insertion into a project', () => {
     expect(rb.statusCode, rb.body).toBe(200);
     expect((await rt.request('GET', api(`/projects/${project.id}/files/content?path=main.tex`))).json<{ content: string }>().content).toBe(before);
     expect((await rt.request('GET', api(`/projects/${project.id}/files/content?path=${encodeURIComponent(plan.createdFiles[0]!.path)}`))).statusCode).toBe(404);
+  });
+});
+
+describe('contracts', () => {
+  it('every response and event matches its schema', async () => {
+    const { asset } = VisualAssetResponse.parse((await upload()).json());
+    VisualAssetDetailResponse.parse((await rt.request('GET', api(`/visual/assets/${asset.id}`))).json());
+    VisualProvidersResponse.parse((await rt.request('GET', api('/visual/providers'))).json());
+    answer('plot_reconstruction', LINEAR_PLOT);
+    const t = await run({ taskType: 'plot', assetId: asset.id, projectId: project.id });
+    VisualTaskResponse.parse({ task: t });
+    ArtifactResponse.parse(await current(t.artifactId!));
+    ArtifactVersionsResponse.parse((await rt.request('GET', api(`/visual/artifacts/${t.artifactId}/versions`))).json());
+    InsertionListResponse.parse((await rt.request('GET', api(`/visual/insertions?projectId=${project.id}`))).json());
+    const v = (await current(t.artifactId!)).version;
+    if (v.compilationStatus === 'succeeded') {
+      await rt.request('POST', api(`/visual/artifacts/${t.artifactId}/approve`), { body: { version: v.versionNumber } });
+      const plan = (await rt.request('POST', api(`/visual/artifacts/${t.artifactId}/insert/preview`), { body: { projectId: project.id, version: v.versionNumber } })).json<{ plan: unknown }>().plan;
+      InsertionPlanSchema.parse(plan);
+    }
+    for (const e of events) if (e.type.startsWith('visual.')) ServerEventSchema.parse(e);
   });
 });
 

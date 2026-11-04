@@ -1,4 +1,4 @@
-import { BookMarked, FolderOpen, Library,MoreHorizontal, Plus, Settings2, Trash2 } from 'lucide-react';
+import { BookMarked, FolderOpen, Library,MoreHorizontal, Plus, Settings2, Shapes, Trash2 } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
 import { LATEX_ENGINES, PROJECT_TEMPLATES, type LatexEngine, type Project, type ProjectTemplate } from '@research-studio/shared-types';
@@ -21,7 +21,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { runtime } from '../../lib/connection';
 import { errorMessage, keys, useProjects, useRuntimeInfo } from '../../lib/queries';
-import { openLibrary, openLiterature } from '../../lib/routes';
+import { openLibrary, openLiterature, openVisual } from '../../lib/routes';
 import { useLayout } from '../../stores/layout';
 import { SettingsDialog } from '../settings/SettingsDialog';
 
@@ -173,6 +173,9 @@ export function ProjectsScreen({ onOpen }: { onOpen: (id: string) => void }) {
         </Button>
         <Button variant="ghost" size="sm" onClick={() => openLibrary()} data-testid="open-library">
           <BookMarked /> Library
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => openVisual()} data-testid="open-visual">
+          <Shapes /> Visual Studio
         </Button>
         <Button variant="ghost" size="icon" aria-label="Settings" onClick={() => setSettingsOpen(true)}>
           <Settings2 />
