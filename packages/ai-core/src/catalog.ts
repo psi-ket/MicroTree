@@ -116,3 +116,17 @@ export function isLoopbackHost(hostname: string): boolean {
   const h = hostname.replace(/^\[|\]$/g, '').toLowerCase();
   return h === 'localhost' || h === '::1' || /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(h);
 }
+
+/**
+ * Where a provider runs, for privacy decisions: `local` only for Ollama on a
+ * loopback address of this computer; every other provider or host is
+ * `cloud`, and sending it project text needs the user's consent.
+ */
+export function privacyModeOf(kind: ModelProviderKind, baseUrl: string | null): 'local' | 'cloud' {
+  if (kind !== 'ollama') return 'cloud';
+  try {
+    return isLoopbackHost(new URL(baseUrl ?? 'http://127.0.0.1:11434').hostname) ? 'local' : 'cloud';
+  } catch {
+    return 'cloud';
+  }
+}
