@@ -71,6 +71,12 @@ importers:
       '@research-studio/api-contracts':
         specifier: workspace:*
         version: link:../../packages/api-contracts
+      '@research-studio/citation-intelligence':
+        specifier: workspace:*
+        version: link:../../packages/citation-intelligence
+      '@research-studio/claim-anchors':
+        specifier: workspace:*
+        version: link:../../packages/claim-anchors
       '@research-studio/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -80,6 +86,9 @@ importers:
       '@research-studio/document-intelligence':
         specifier: workspace:*
         version: link:../../packages/document-intelligence
+      '@research-studio/evidence-engine':
+        specifier: workspace:*
+        version: link:../../packages/evidence-engine
       '@research-studio/latex-engine':
         specifier: workspace:*
         version: link:../../packages/latex-engine
@@ -110,6 +119,9 @@ importers:
       '@research-studio/visual-engine':
         specifier: workspace:*
         version: link:../../packages/visual-engine
+      '@research-studio/writing-intelligence':
+        specifier: workspace:*
+        version: link:../../packages/writing-intelligence
       better-sqlite3:
         specifier: ^13.0.3
         version: 13.0.3

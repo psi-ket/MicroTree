@@ -102,11 +102,15 @@ function findSpan(haystack: string, needle: string): { start: number; end: numbe
     flat += c.toLowerCase();
     map.push(i);
   }
+  const find = (n: string) => {
+    if (!n) return null;
+    const at = flat.indexOf(n);
+    if (at === -1 || flat.indexOf(n, at + 1) !== -1) return null;
+    return { start: map[at]!, end: map[at + n.length - 1]! + 1 };
+  };
   const n = needle.replace(/[\s~]+/g, ' ').trim().toLowerCase();
-  if (!n) return null;
-  const at = flat.indexOf(n);
-  if (at === -1 || flat.indexOf(n, at + 1) !== -1) return null;
-  return { start: map[at]!, end: map[at + n.length - 1]! + 1 };
+  // A citation inserted before the final full stop leaves the claim's words in place without it.
+  return find(n) ?? find(n.replace(/[.;,:]$/, ''));
 }
 
 /**
@@ -161,7 +165,7 @@ export function reconcile(stored: readonly StoredBlock[], parsed: ParsedManuscri
     };
     const decide = (loc: ReturnType<typeof located>, how: string): ClaimMapping => {
       const span = a.verbatim ? findSpan(loc.text, a.claimText) : null;
-      const sentenceChange = assessChange(a.textSnapshot, loc.text);
+      const sentenceChange = assessChange(a.textSnapshot, loc.text, { ignoreCitations: true });
       if (normalizeForIdentity(a.textSnapshot) === normalizeForIdentity(loc.text)) {
         return { claimId: a.claimId, status: 'current', ...loc, newText: loc.text, span, change: null, note: how };
       }

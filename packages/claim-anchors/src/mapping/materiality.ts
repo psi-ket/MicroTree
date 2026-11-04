@@ -46,7 +46,11 @@ const same = (a: string[], b: string[]) => a.length === b.length && a.every((x, 
  * material. Without it (for reviewing rewrites), up to two changed content
  * words in otherwise very similar text count as rewording.
  */
-export function assessChange(before: string, after: string, opts: { strictTerms?: boolean } = {}): Materiality {
+export function assessChange(beforeText: string, afterText: string, opts: { strictTerms?: boolean; ignoreCitations?: boolean } = {}): Materiality {
+  // For a claim, citations next to it are not part of what it asserts (`ignoreCitations`).
+  const strip = (s: string) => (opts.ignoreCitations ? s.replace(/~?\\[a-zA-Z]*cite[a-zA-Z]*\*?\s*(?:\[[^\]]*\]\s*){0,2}\{[^{}]*\}/g, '') : s);
+  const before = strip(beforeText);
+  const after = strip(afterText);
   if (normalizeForIdentity(before) === normalizeForIdentity(after)) return { material: false, similarity: 1, reasons: [] };
   const reasons: string[] = [];
   const checks: [string, (s: string) => string[]][] = [

@@ -31,6 +31,8 @@ import { registerDocumentRoutes } from './routes-documents';
 import { registerLibraryRoutes } from './routes-library';
 import { registerLiteratureRoutes } from './routes-literature';
 import { registerVisualRoutes } from './routes-visual';
+import { registerEvidenceRoutes } from './routes-evidence';
+import type { EvidenceRuntime } from './services/evidence-runtime';
 import type { VisualRuntime } from './services/visual-runtime';
 import type { DocumentRuntime } from './services/document-runtime';
 import type { LibraryRuntime } from './services/library-runtime';
@@ -58,6 +60,7 @@ export interface RouteDeps {
   library: LibraryRuntime;
   documents: DocumentRuntime;
   visual: VisualRuntime;
+  evidence: EvidenceRuntime;
 }
 
 const RAW_CONTENT_TYPES: Record<string, string> = {
@@ -287,6 +290,7 @@ export function registerRoutes(app: FastifyInstance, deps: RouteDeps): void {
       registerLibraryRoutes(api, deps.library, projects);
       registerDocumentRoutes(api, deps.documents);
       registerVisualRoutes(api, deps.visual, config.visual.maxImageBytes);
+      registerEvidenceRoutes(api, deps.evidence);
     },
     { prefix: API_PREFIX },
   );

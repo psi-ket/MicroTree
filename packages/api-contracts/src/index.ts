@@ -6,3 +6,4 @@ export * from './documents';
 export * from './events';
 export * from './client';
 export * from './visual';
+export * from './evidence';

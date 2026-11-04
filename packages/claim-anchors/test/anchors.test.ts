@@ -182,3 +182,14 @@ describe('reconciliation', () => {
     expect(result.removedBlocks.map((b) => b.status)).toEqual(['deleted']);
   });
 });
+
+describe('citations next to a claim', () => {
+  it('do not make the claim stale', () => {
+    const v1 = { 'main.tex': DOC('The threshold is about 1\\% for depolarising noise. Other text follows here.') };
+    const v2 = { 'main.tex': DOC('The threshold is about 1\\% for depolarising noise~\\cite{fowler2012}. Other text follows here.') };
+    const c = step(v1, v2).byClaim('The threshold is about 1\\% for depolarising noise.');
+    expect(c.status).toBe('current');
+    expect(c.span).not.toBeNull();
+    expect(assessChange('A is 1.', 'A is 1~\\cite{x}.', { ignoreCitations: true }).material).toBe(false);
+  });
+});

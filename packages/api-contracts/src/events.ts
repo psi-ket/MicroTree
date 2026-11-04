@@ -3,6 +3,7 @@ import { AgentActivitySchema, AgentRunSchema, ConversationMessageSchema, EditPro
 import { DocumentJobSchema } from './documents';
 import { ImportJobSchema } from './library';
 import { ArtifactVersionSchema, VisualTaskSchema } from './visual';
+import { EvidenceJobSchema } from './evidence';
 import { CompileJobSchema, ProjectSchema } from './schemas';
 
 /** Messages pushed by the runtime over the WebSocket. */
@@ -66,6 +67,9 @@ export const ServerEventSchema = z.discriminatedUnion('type', [
   // Visual intelligence (M4): task progress and artifact changes (new version, compile result).
   z.object({ type: z.literal('visual.task'), task: VisualTaskSchema }),
   z.object({ type: z.literal('visual.artifact'), artifactId: z.string(), version: ArtifactVersionSchema.nullable() }),
+  // Evidence-linked writing (M5): job progress, and claims whose evidence or anchors changed.
+  z.object({ type: z.literal('evidence.job'), job: EvidenceJobSchema }),
+  z.object({ type: z.literal('evidence.claims'), projectId: z.string(), claimIds: z.array(z.string()) }),
 ]);
 export type ServerEvent = z.infer<typeof ServerEventSchema>;
 export type ServerEventType = ServerEvent['type'];
