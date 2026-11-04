@@ -1,0 +1,16 @@
+export type { WritingFinding } from './analysis/finding';
+export { styleFindings } from './analysis/academic-style';
+export { analyseSentence } from './analysis/sentence-analyzer';
+export { terminologyFindings } from './analysis/terminology';
+export { flowFindings } from './analysis/logical-flow';
+export { analyseParagraph, type ParagraphAnalysis } from './analysis/paragraph-analyzer';
+export { checkPreservation, type PreservationCheck } from './rewriting/citation-preservation';
+export { checkMeaning, type MeaningCheck, type PropositionChange } from './rewriting/meaning-preservation';
+export { OPERATION_INSTRUCTIONS } from './rewriting/operations';
+export { REVIEW_FINDINGS_SPEC, REWRITE_SPEC, RewriteSchema, ReviewFindingsSchema, type RewriteAnswer } from './rewriting/schemas';
+export { validateRewrite, type RewriteValidation } from './rewriting/rewrite-validation';
+export { isReviewOnly, runWritingOperation, WRITING_PROMPT_VERSION, type FindingsOutcome, type RewriteInput, type RewriteOutcome } from './rewriting/rewrite-service';
+export { computeCoverage, type ClaimForCoverage, type Coverage, type Ratio } from './review/coverage-analysis';
+export { summariseSections, type SectionSummary } from './review/section-review';
+export { ConclusionReviewSchema, IntroductionReviewSchema, reviewConclusion, reviewIntroduction, type ConclusionReview, type IntroductionReview } from './review/manuscript-review';
+export { missingEvidenceSuggestions, wordingSuggestions } from './suggestions/suggestions';

@@ -41,7 +41,12 @@ function words(text: string, set: Set<string>): string[] {
 
 const same = (a: string[], b: string[]) => a.length === b.length && a.every((x, i) => x === b[i]);
 
-export function assessChange(before: string, after: string): Materiality {
+/**
+ * `strictTerms` (default, for evidence anchors): any change of a content word is
+ * material. Without it (for reviewing rewrites), up to two changed content
+ * words in otherwise very similar text count as rewording.
+ */
+export function assessChange(before: string, after: string, opts: { strictTerms?: boolean } = {}): Materiality {
   if (normalizeForIdentity(before) === normalizeForIdentity(after)) return { material: false, similarity: 1, reasons: [] };
   const reasons: string[] = [];
   const checks: [string, (s: string) => string[]][] = [
@@ -65,6 +70,7 @@ export function assessChange(before: string, after: string): Materiality {
   const a = content(before);
   const b = content(after);
   const changedTerms = [...a].filter((w) => !b.has(w)).length + [...b].filter((w) => !a.has(w)).length;
-  if (changedTerms > 0) reasons.push('terms changed');
+  const tolerated = opts.strictTerms === false && changedTerms <= 2 && sim >= 0.8;
+  if (changedTerms > 0 && !tolerated) reasons.push('terms changed');
   return { material: reasons.length > 0, similarity: Math.round(sim * 1000) / 1000, reasons };
 }

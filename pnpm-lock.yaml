@@ -315,6 +315,15 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
 
+  packages/citation-intelligence:
+    dependencies:
+      '@research-studio/document-engine':
+        specifier: workspace:*
+        version: link:../document-engine
+      '@research-studio/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
+
   packages/claim-anchors:
     dependencies:
       '@research-studio/document-engine':
@@ -602,6 +611,27 @@ importers:
       '@research-studio/model-adapters':
         specifier: workspace:*
         version: link:../model-adapters
+
+  packages/writing-intelligence:
+    dependencies:
+      '@research-studio/ai-core':
+        specifier: workspace:*
+        version: link:../ai-core
+      '@research-studio/citation-intelligence':
+        specifier: workspace:*
+        version: link:../citation-intelligence
+      '@research-studio/claim-anchors':
+        specifier: workspace:*
+        version: link:../claim-anchors
+      '@research-studio/evidence-engine':
+        specifier: workspace:*
+        version: link:../evidence-engine
+      '@research-studio/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
 
 packages:
 
