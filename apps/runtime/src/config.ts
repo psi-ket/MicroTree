@@ -78,6 +78,13 @@ const EnvSchema = z.object({
   /** Default embedding endpoint (Ollama). Changing it in the app is limited to this computer unless remote is allowed. */
   RS_OLLAMA_URL: z.url({ protocol: /^https?$/ }).default('http://127.0.0.1:11434'),
   RS_EMBEDDINGS_ALLOW_REMOTE: z.enum(['0', '1']).default('0'),
+  // Visual intelligence (M4)
+  /** Where images and previews are stored (default: `<data dir>/visual`). */
+  RS_VISUAL_DIR: z.string().optional(),
+  RS_VISUAL_COMPILE_TIMEOUT_MS: z.coerce.number().int().min(5_000).max(10 * 60_000).default(60_000),
+  RS_VISUAL_MAX_IMAGE_BYTES: z.coerce.number().int().min(64 * 1024).max(100 * 1024 * 1024).default(20 * 1024 * 1024),
+  RS_VISUAL_MAX_IMAGE_PIXELS: z.coerce.number().int().min(1_000_000).max(200_000_000).default(40_000_000),
+  RS_VISUAL_CONCURRENCY: z.coerce.number().int().min(1).max(8).default(2),
 });
 
 export interface RuntimeConfig {
@@ -134,6 +141,15 @@ export interface RuntimeConfig {
     maxPages: number;
     ollamaUrl: string;
     embeddingsAllowRemote: boolean;
+  };
+  visual: {
+    storageDir: string;
+    /** Throwaway compile workspaces (never inside a project). */
+    buildDir: string;
+    compileTimeoutMs: number;
+    maxImageBytes: number;
+    maxImagePixels: number;
+    concurrency: number;
   };
 }
 
@@ -223,6 +239,14 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): RuntimeConfig 
       maxPages: e.RS_INGESTION_MAX_PAGES,
       ollamaUrl: e.RS_OLLAMA_URL.replace(/\/+$/, ''),
       embeddingsAllowRemote: e.RS_EMBEDDINGS_ALLOW_REMOTE === '1',
+    },
+    visual: {
+      storageDir: path.resolve(e.RS_VISUAL_DIR ?? path.join(dataDir, 'visual')),
+      buildDir: path.join(dataDir, 'visual-builds'),
+      compileTimeoutMs: e.RS_VISUAL_COMPILE_TIMEOUT_MS,
+      maxImageBytes: e.RS_VISUAL_MAX_IMAGE_BYTES,
+      maxImagePixels: e.RS_VISUAL_MAX_IMAGE_PIXELS,
+      concurrency: e.RS_VISUAL_CONCURRENCY,
     },
   };
 }

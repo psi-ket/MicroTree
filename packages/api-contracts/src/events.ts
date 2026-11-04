@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { AgentActivitySchema, AgentRunSchema, ConversationMessageSchema, EditProposalSchema } from './ai';
 import { DocumentJobSchema } from './documents';
 import { ImportJobSchema } from './library';
+import { ArtifactVersionSchema, VisualTaskSchema } from './visual';
 import { CompileJobSchema, ProjectSchema } from './schemas';
 
 /** Messages pushed by the runtime over the WebSocket. */
@@ -62,6 +63,9 @@ export const ServerEventSchema = z.discriminatedUnion('type', [
   // search index changed (clients refetch the index status).
   z.object({ type: z.literal('documents.job'), job: DocumentJobSchema }),
   z.object({ type: z.literal('retrieval.changed') }),
+  // Visual intelligence (M4): task progress and artifact changes (new version, compile result).
+  z.object({ type: z.literal('visual.task'), task: VisualTaskSchema }),
+  z.object({ type: z.literal('visual.artifact'), artifactId: z.string(), version: ArtifactVersionSchema.nullable() }),
 ]);
 export type ServerEvent = z.infer<typeof ServerEventSchema>;
 export type ServerEventType = ServerEvent['type'];

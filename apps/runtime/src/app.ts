@@ -15,6 +15,7 @@ import { StagingLifecycle } from './services/ai/staging-lifecycle';
 import { FileWatchService } from './services/file-watch-service';
 import { DocumentRuntime, type DocumentRuntimeOptions } from './services/document-runtime';
 import { LibraryRuntime, type LibraryRuntimeOptions } from './services/library-runtime';
+import { VisualRuntime } from './services/visual-runtime';
 import { AssistantService } from './services/ai/assistant-service';
 import { ProposalService } from './services/ai/proposal-service';
 import { AiProviderService, type ModelProviderFactory } from './services/ai/provider-service';
@@ -65,6 +66,7 @@ export interface RuntimeApp {
   literature: LiteratureService;
   library: LibraryRuntime;
   documents: DocumentRuntime;
+  visual: VisualRuntime;
 }
 
 /** Strip query strings from logged URLs (WebSocket tickets travel in the query). */
@@ -105,6 +107,8 @@ export async function buildApp(deps: AppDeps): Promise<RuntimeApp> {
 
   const documents = new DocumentRuntime(libraryDb, deps.repos, library, deps.config, audit, events, app.log, deps.documents);
 
+  const visual = new VisualRuntime(libraryDb, deps.config, providers, projects, library, audit, events, app.log, deps.toolchain);
+
   const sweeper = setInterval(() => sessions.sweep(), 60_000);
   sweeper.unref();
 
@@ -112,6 +116,7 @@ export async function buildApp(deps: AppDeps): Promise<RuntimeApp> {
   staging.start();
   await library.start();
   await documents.start();
+  await visual.start();
   registerErrorHandling(app, audit);
   registerRequestGuards(app, { allowedOrigins: deps.config.allowedOrigins, sessions, audit });
 
@@ -144,10 +149,12 @@ export async function buildApp(deps: AppDeps): Promise<RuntimeApp> {
     literature,
     library,
     documents,
+    visual,
   });
 
   app.addHook('onClose', async () => {
     clearInterval(sweeper);
+    await visual.stop();
     await documents.stop();
     await library.stop();
     literature.dispose();
@@ -159,5 +166,5 @@ export async function buildApp(deps: AppDeps): Promise<RuntimeApp> {
     await compile.shutdown();
   });
 
-  return { app, events, sessions, projects, compile, hub, assistant, proposals, agents, staging, watcher, literature, library, documents };
+  return { app, events, sessions, projects, compile, hub, assistant, proposals, agents, staging, watcher, literature, library, documents, visual };
 }

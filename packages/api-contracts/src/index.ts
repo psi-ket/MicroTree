@@ -5,3 +5,4 @@ export * from './library';
 export * from './documents';
 export * from './events';
 export * from './client';
+export * from './visual';
