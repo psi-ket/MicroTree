@@ -823,8 +823,9 @@ export const visualInsertions = sqliteTable(
       .references(() => projects.id, { onDelete: 'cascade' }),
     artifactId: text('artifact_id').notNull(),
     versionNumber: integer('version_number').notNull(),
-    createdFiles: text('created_files', { mode: 'json' }).$type<{ path: string; sha256: string }[]>().notNull(),
-    modifiedFile: text('modified_file', { mode: 'json' }).$type<{ path: string; beforeSha256: string; afterSha256: string; before: string } | null>(),
+    createdFiles: text('created_files', { mode: 'json' }).$type<{ path: string; hash: string }[]>().notNull(),
+    /** Files changed in place (the target file, and the main file when a preamble change was approved), with their content before. */
+    modifiedFiles: text('modified_files', { mode: 'json' }).$type<{ path: string; beforeHash: string; afterHash: string; before: string }[]>().notNull(),
     status: text('status', { enum: INSERTION_STATUSES }).notNull(),
     createdAt: text('created_at').notNull(),
     rolledBackAt: text('rolled_back_at'),

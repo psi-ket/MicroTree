@@ -39,7 +39,7 @@ describe('visual schema', () => {
       .run();
     handle.db.insert(schema.visualArtifacts).values({ id: 'a1', artifactType: 'plot', title: 'P', currentVersion: 1, projectId: 'p1', createdAt: ts, updatedAt: ts }).run();
     handle.db.insert(schema.visualTasks).values({ id: 't1', taskType: 'plot', privacyMode: 'local', promptVersion: '1', config: {}, status: 'completed', projectId: 'p1', createdAt: ts, updatedAt: ts }).run();
-    handle.db.insert(schema.visualInsertions).values({ id: 'i1', projectId: 'p1', artifactId: 'a1', versionNumber: 1, createdFiles: [], status: 'applied', createdAt: ts }).run();
+    handle.db.insert(schema.visualInsertions).values({ id: 'i1', projectId: 'p1', artifactId: 'a1', versionNumber: 1, createdFiles: [], modifiedFiles: [], status: 'applied', createdAt: ts }).run();
     handle.sqlite.prepare("DELETE FROM projects WHERE id = 'p1'").run();
     expect([count('visual_assets'), count('visual_artifacts'), count('visual_tasks'), count('visual_insertions')]).toEqual([1, 1, 1, 0]);
     expect(handle.sqlite.prepare("SELECT project_id FROM visual_assets").get()).toEqual({ project_id: null });

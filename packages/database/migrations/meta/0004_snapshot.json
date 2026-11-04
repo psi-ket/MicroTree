@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "3d159062-118e-4a55-9783-4fb627d9fa56",
+  "id": "398ae309-178f-4c79-b532-e25907866972",
   "prevId": "aa9a2ad4-bfd1-4e11-af07-73562d878a78",
   "tables": {
     "audit_events": {
@@ -3663,11 +3663,11 @@
           "notNull": true,
           "autoincrement": false
         },
-        "modified_file": {
-          "name": "modified_file",
+        "modified_files": {
+          "name": "modified_files",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "status": {

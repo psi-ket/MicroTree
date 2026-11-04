@@ -66,7 +66,7 @@ CREATE TABLE `visual_insertions` (
 	`artifact_id` text NOT NULL,
 	`version_number` integer NOT NULL,
 	`created_files` text NOT NULL,
-	`modified_file` text,
+	`modified_files` text NOT NULL,
 	`status` text NOT NULL,
 	`created_at` text NOT NULL,
 	`rolled_back_at` text,
