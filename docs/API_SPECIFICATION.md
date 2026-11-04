@@ -1,5 +1,7 @@
 # Runtime API — literature (M3.1) and library (M3.2) routes
 
+Evidence routes (M5) are described in [Evidence routes (M5)](#evidence-routes-m5) below.
+
 Library routes are described in [Library routes (M3.2)](#library-routes-m32) below.
 
 All routes live under `/api/v1`, need a session (`Authorization: Bearer
@@ -479,3 +481,80 @@ pushed as `visual.task` (`{ task }`), new versions and compile results as
 | `RS_VISUAL_MAX_IMAGE_BYTES` | `20971520` | per image |
 | `RS_VISUAL_MAX_IMAGE_PIXELS` | `40000000` | decoded pixels |
 | `RS_VISUAL_CONCURRENCY` | `2` | tasks at once |
+
+## Evidence routes (M5)
+
+Schemas: `packages/api-contracts/src/evidence.ts`. Client:
+`client.evidence.*`. Every object is resolved to its project, which must
+exist. `ModelChoice` is `{ providerId, model, consent }`, where `consent`
+confirms a cloud call after its preview.
+
+Model and privacy errors (on every route that can call a model):
+
+| Code | HTTP | `details.reason` | When |
+| --- | --- | --- | --- |
+| `CONFLICT` | 409 | `CONSENT_REQUIRED` | A cloud model was chosen without consent. `details` holds the provider, model, task and `outgoing` (what would be sent) |
+| `CONFLICT` | 409 | `LOCAL_ONLY` | The project allows local models only |
+| `FORBIDDEN` | 403 | `CONFIDENTIAL_PROJECT` | The project is confidential |
+| `FORBIDDEN` | 403 | `PROVIDER_NOT_ALLOWED` | The provider is not in the project's allow-list |
+| `BAD_REQUEST` | 400 | `NO_STRUCTURED_OUTPUT` | The provider cannot return structured answers |
+
+### Claims
+
+| Route | Body / query | Response |
+| --- | --- | --- |
+| `POST /claims/extract` | `{ projectId, scope, method: heuristic or model, model? }` (scope kinds below) | 201 `{ claims, nonClaims, rejected, job: null }`, or 202 with `job` when the work runs as a job |
+| `GET /projects/:projectId/claims` | `status?`, `reviewState?`, `section?`, `file?`, `includeArchived?` | `{ claims, manuscript: { rootFile, revision, files, missingIncludes } }` |
+| `GET /claims/:claimId` | | `{ claim, evidence, conflicts, recommendations }`; each evidence record carries its current assessment, history and reviews |
+| `PATCH /claims/:claimId` | `{ claimText?, claimType?, requiresEvidence?, reviewState?, exclusionReason?, note?, userReviewed? }` | `{ claim }` |
+| `POST /claims/:claimId/split` | `{ parts }` (2 to 8) | 201 `{ claims }`; the original is archived |
+| `POST /claims/merge` | `{ projectId, claimIds }` | 201 `{ claim }`; the originals are archived |
+| `POST /claims/:claimId/anchors/reconcile` | | `{ revision, summary, changedClaimIds, claim }` |
+| `POST /projects/:projectId/anchors/reconcile` | | `{ revision, summary (count per anchor status), changedClaimIds }` |
+
+Extraction scopes: `{ kind: 'selection', file, startLine, startColumn, endLine, endColumn }`, `{ kind: 'blocks', blockIds }`, `{ kind: 'section', sectionPath }` and `{ kind: 'manuscript' }`.
+
+### Evidence
+
+| Route | Body / query | Response |
+| --- | --- | --- |
+| `POST /claims/:claimId/retrieve-evidence` | `{ scope (library, collections or papers), limit, perPaper, abstracts, external }` | `{ evidence, conflicts, warnings, queries }`; cancelled with the request |
+| `GET /claims/:claimId/evidence` | | `{ evidence, conflicts }` |
+| `POST /evidence/:recordId/assess` | `ModelChoice` + `{ force }` | 202 `{ job }` |
+| `POST /claims/:claimId/assess-all` | `ModelChoice` + `{ retrieve?, conflicts, conflictModel?, force }` | 202 `{ job }`; 409 `NO_EVIDENCE` when nothing was retrieved and `retrieve` is absent |
+| `POST /claims/:claimId/revalidate` | `{ scope, providerId?, model?, consent? }` | `{ sourceChanges, job }`; 202 when a job was started (a model was given), 200 otherwise |
+| `POST /evidence/:recordId/review` | `{ decision, reclassifiedAs?, note? }` | the claim detail, as `GET /claims/:claimId` |
+
+### Citations
+
+| Route | Body | Response |
+| --- | --- | --- |
+| `POST /claims/:claimId/citations/recommend` | | `{ recommendations }`, each with paper, key, reason, evidence and status |
+| `POST /claims/:claimId/citations/insert` | `{ recommendationIds, placement, command? }` | 201 `{ proposalId, command, keys, edit, warnings, bib }`, where `bib` is the `.bib` change to review (or null); 409 with `ANCHOR_LOST`, `CITATION_INVALID` or `ALREADY_CITED`. Nothing is written until the proposal is accepted |
+| `POST /citations/recommendations/:recommendationId/status` | `{ status: rejected or proposed }` | `{ recommendations }` (the claim's list) |
+
+### Writing and review
+
+| Route | Body / query | Response |
+| --- | --- | --- |
+| `POST /writing/analyze` | `{ projectId, file, startLine, startColumn, endLine, endColumn, selectionText, operations, model? }` | `{ sentences, findings, job }`; the rule findings at once, and a job when model operations were asked for |
+| `POST /writing/rewrite` | the same target + `{ operation, guidance, model }` | 202 `{ job }`; the result holds `{ suggestionId, proposalId, offerable, warnings, meaning, affectedClaimIds }`. 409 `STALE_PROPOSAL` when the file no longer matches the selection |
+| `GET /projects/:projectId/writing/suggestions/:suggestionId` | | `{ suggestion, findings }` |
+| `POST /projects/:projectId/review` | `{ scope, sectionPath?, claimIds?, introduction, conclusion, model? }` | 202 `{ review, job }` |
+| `GET /projects/:projectId/review` | | `{ review, job }` for the latest review (null when none) |
+| `GET /projects/:projectId/evidence-coverage` | | `{ coverage, sections, revision }`; ratios carry numerator, denominator and definition |
+| `GET /projects/:projectId/evidence-markers` | | `{ files: { <path>: [{ claimId, fromLine, toLine, status }] } }` for the editor gutter |
+
+### Settings, jobs and deletion
+
+| Route | Body | Response |
+| --- | --- | --- |
+| `GET /projects/:projectId/evidence-settings` | | `{ settings: { privacyMode, allowedProviders, models } }` |
+| `PATCH /projects/:projectId/evidence-settings` | any of the settings | `{ settings }` |
+| `GET /projects/:projectId/evidence-jobs` | | `{ jobs }` |
+| `GET /evidence/jobs/:jobId` | | `{ job }` |
+| `POST /evidence/jobs/:jobId/cancel` | | `{ job }` |
+| `DELETE /projects/:projectId/evidence` | | `{ claims }` (count deleted); the library and evidence snapshots are kept |
+
+Events on the WebSocket: `evidence.job` (job progress and result) and
+`evidence.claims` (claims of a project changed).

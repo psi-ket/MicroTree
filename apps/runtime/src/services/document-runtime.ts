@@ -302,6 +302,12 @@ export class DocumentRuntime {
     return this.providerCache.provider;
   }
 
+  /** Identifies the index results come from (active embedding space), for evidence provenance. */
+  retrievalIndexVersion(): string {
+    const space = this.activeSpace();
+    return space ? `${space.id}:${space.model}:${space.dimensions}` : 'keyword-only';
+  }
+
   private activeSpace(): EmbeddingSpace | null {
     const id = this.repos.settings.get(SCOPE, 'activeSpaceId') as string | undefined;
     return id ? this.vectors.space(id) : null;

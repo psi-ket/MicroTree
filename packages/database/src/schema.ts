@@ -19,6 +19,26 @@ import {
   type ReferenceMetadata,
 } from '@research-studio/document-intelligence';
 import {
+  ANCHOR_STATUSES,
+  ASSESSMENT_STATES,
+  ASSESSMENTS,
+  ATOMICITY,
+  CITATION_PLACEMENTS,
+  CITATION_RECOMMENDATION_STATUSES,
+  CLAIM_REVIEW_STATES,
+  CLAIM_STATUSES,
+  CONFLICT_CATEGORIES,
+  EVIDENCE_JOB_KINDS,
+  EVIDENCE_JOB_STATUSES,
+  EVIDENCE_LEVELS,
+  EVIDENCE_RECORD_STATUSES,
+  MANUSCRIPT_BLOCK_KINDS,
+  RETRIEVAL_METHODS,
+  REVIEW_DECISIONS,
+  REVIEW_SCOPES,
+  UNCERTAINTY,
+  WRITING_SUGGESTION_STATUSES,
+  type ClaimQuantity,
   APPROVAL_STATUSES,
   COMPILATION_STATUSES,
   INSERTION_STATUSES,
@@ -831,4 +851,383 @@ export const visualInsertions = sqliteTable(
     rolledBackAt: text('rolled_back_at'),
   },
   (t) => [index('visual_insertions_project_idx').on(t.projectId)],
+);
+
+// ------------------------------------------------------------------------
+// Evidence-linked writing (M5, `0005_evidence`)
+// ------------------------------------------------------------------------
+
+/** One parsed version of a manuscript file (by content hash). */
+export const manuscriptRevisions = sqliteTable(
+  'manuscript_revisions',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    filePath: text('file_path').notNull(),
+    fileHash: text('file_hash').notNull(),
+    parserVersion: text('parser_version').notNull(),
+    blockCount: integer('block_count').notNull(),
+    createdAt: text('created_at').notNull(),
+  },
+  (t) => [index('manuscript_revisions_file_idx').on(t.projectId, t.filePath, t.createdAt)],
+);
+
+/** Stable identity of a manuscript block (paragraph, display, caption, …), carried across edits by reconciliation. */
+export const manuscriptBlocks = sqliteTable(
+  'manuscript_blocks',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    filePath: text('file_path').notNull(),
+    kind: text('kind', { enum: MANUSCRIPT_BLOCK_KINDS }).notNull(),
+    sectionId: text('section_id'),
+    sectionPath: text('section_path').notNull(),
+    parentBlockId: text('parent_block_id'),
+    blockOrder: integer('block_order').notNull(),
+    text: text('text').notNull(),
+    textHash: text('text_hash').notNull(),
+    prefixContext: text('prefix_context').notNull(),
+    suffixContext: text('suffix_context').notNull(),
+    startOffset: integer('start_offset'),
+    endOffset: integer('end_offset'),
+    structurePath: text('structure_path').notNull(),
+    revisionId: text('revision_id').notNull(),
+    status: text('status', { enum: ANCHOR_STATUSES }).notNull(),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (t) => [index('manuscript_blocks_file_idx').on(t.projectId, t.filePath, t.blockOrder), index('manuscript_blocks_hash_idx').on(t.projectId, t.textHash)],
+);
+
+/** Stable identity of a sentence within a block. */
+export const manuscriptSentences = sqliteTable(
+  'manuscript_sentences',
+  {
+    id: text('id').primaryKey(),
+    blockId: text('block_id')
+      .notNull()
+      .references(() => manuscriptBlocks.id, { onDelete: 'cascade' }),
+    projectId: text('project_id').notNull(),
+    sentenceOrder: integer('sentence_order').notNull(),
+    text: text('text').notNull(),
+    textHash: text('text_hash').notNull(),
+    startOffset: integer('start_offset'),
+    endOffset: integer('end_offset'),
+    status: text('status', { enum: ANCHOR_STATUSES }).notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (t) => [index('manuscript_sentences_block_idx').on(t.blockId, t.sentenceOrder), index('manuscript_sentences_hash_idx').on(t.projectId, t.textHash)],
+);
+
+export const scientificClaims = sqliteTable(
+  'scientific_claims',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    documentId: text('document_id').notNull(),
+    documentBlockId: text('document_block_id').notNull(),
+    sentenceId: text('sentence_id'),
+    originalText: text('original_text').notNull(),
+    claimText: text('claim_text').notNull(),
+    spanStart: integer('span_start'),
+    spanEnd: integer('span_end'),
+    normalizedText: text('normalized_text').notNull(),
+    claimType: text('claim_type').notNull(),
+    atomicity: text('atomicity', { enum: ATOMICITY }).notNull(),
+    entities: text('entities', { mode: 'json' }).$type<string[]>().notNull().default([]),
+    concepts: text('concepts', { mode: 'json' }).$type<string[]>().notNull().default([]),
+    quantities: text('quantities', { mode: 'json' }).$type<ClaimQuantity[]>().notNull().default([]),
+    assumptions: text('assumptions', { mode: 'json' }).$type<string[]>().notNull().default([]),
+    textHash: text('text_hash').notNull(),
+    documentRevision: text('document_revision').notNull(),
+    status: text('status', { enum: CLAIM_STATUSES }).notNull(),
+    reviewState: text('review_state', { enum: CLAIM_REVIEW_STATES }).notNull(),
+    requiresEvidence: integer('requires_evidence', { mode: 'boolean' }).notNull(),
+    exclusionReason: text('exclusion_reason'),
+    /** Claims produced by a split or merge keep their origin. */
+    derivedFrom: text('derived_from', { mode: 'json' }).$type<string[]>().notNull().default([]),
+    extractedBy: text('extracted_by').notNull(),
+    modelProvider: text('model_provider'),
+    modelId: text('model_id'),
+    promptVersion: text('prompt_version'),
+    note: text('note'),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (t) => [index('scientific_claims_project_idx').on(t.projectId, t.status), index('scientific_claims_block_idx').on(t.documentBlockId), index('scientific_claims_hash_idx').on(t.projectId, t.textHash)],
+);
+
+export const claimAnchors = sqliteTable(
+  'claim_anchors',
+  {
+    id: text('id').primaryKey(),
+    claimId: text('claim_id')
+      .notNull()
+      .unique()
+      .references(() => scientificClaims.id, { onDelete: 'cascade' }),
+    projectId: text('project_id').notNull(),
+    filePath: text('file_path').notNull(),
+    blockId: text('block_id').notNull(),
+    sentenceId: text('sentence_id'),
+    sectionId: text('section_id'),
+    sectionPath: text('section_path').notNull(),
+    parentBlockId: text('parent_block_id'),
+    textSnapshot: text('text_snapshot').notNull(),
+    prefixContext: text('prefix_context').notNull(),
+    suffixContext: text('suffix_context').notNull(),
+    textHash: text('text_hash').notNull(),
+    revision: text('revision').notNull(),
+    startOffset: integer('start_offset'),
+    endOffset: integer('end_offset'),
+    structurePath: text('structure_path').notNull(),
+    mappingStatus: text('mapping_status', { enum: ANCHOR_STATUSES }).notNull(),
+    /** The anchored text before the last material change (for comparison). */
+    previousText: text('previous_text'),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (t) => [index('claim_anchors_file_idx').on(t.projectId, t.filePath)],
+);
+
+/** One snapshot of a source text, shared by every claim that retrieved it. Kept when the paper or extraction is removed. */
+export const evidenceSources = sqliteTable(
+  'evidence_sources',
+  {
+    id: text('id').primaryKey(),
+    snapshotHash: text('snapshot_hash').notNull().unique(),
+    level: text('level', { enum: EVIDENCE_LEVELS }).notNull(),
+    scholarlyWorkId: text('scholarly_work_id').references(() => scholarlyWorks.id, { onDelete: 'set null' }),
+    libraryItemId: text('library_item_id').references(() => libraryItems.id, { onDelete: 'set null' }),
+    attachmentId: text('attachment_id'),
+    extractionId: text('extraction_id'),
+    passageId: text('passage_id'),
+    stableKey: text('stable_key'),
+    passageTextHash: text('passage_text_hash'),
+    sourceSha256: text('source_sha256'),
+    extractorVersion: text('extractor_version'),
+    externalId: text('external_id'),
+    doi: text('doi'),
+    arxivId: text('arxiv_id'),
+    url: text('url'),
+    title: text('title').notNull(),
+    authors: text('authors', { mode: 'json' }).$type<string[]>().notNull().default([]),
+    year: integer('year'),
+    venue: text('venue'),
+    publicationType: text('publication_type'),
+    sectionPath: text('section_path'),
+    pageStart: integer('page_start'),
+    pageEnd: integer('page_end'),
+    coordinates: text('coordinates', { mode: 'json' }).$type<DocumentCoordinate[]>().notNull().default([]),
+    text: text('text').notNull(),
+    contextBefore: text('context_before'),
+    contextAfter: text('context_after'),
+    createdAt: text('created_at').notNull(),
+  },
+  (t) => [index('evidence_sources_passage_idx').on(t.passageId), index('evidence_sources_stable_idx').on(t.stableKey), index('evidence_sources_work_idx').on(t.scholarlyWorkId)],
+);
+
+/** A claim's link to a source (the claim–evidence relation), with how it was found. */
+export const evidenceRecords = sqliteTable(
+  'evidence_records',
+  {
+    id: text('id').primaryKey(),
+    claimId: text('claim_id')
+      .notNull()
+      .references(() => scientificClaims.id, { onDelete: 'cascade' }),
+    sourceId: text('source_id')
+      .notNull()
+      .references(() => evidenceSources.id),
+    retrievalMethod: text('retrieval_method', { enum: RETRIEVAL_METHODS }).notNull(),
+    queryVariant: text('query_variant'),
+    relevanceRank: integer('relevance_rank'),
+    keywordRank: integer('keyword_rank'),
+    semanticRank: integer('semantic_rank'),
+    fusedScore: real('fused_score'),
+    retrievalIndexVersion: text('retrieval_index_version'),
+    claimTextHash: text('claim_text_hash').notNull(),
+    status: text('status', { enum: EVIDENCE_RECORD_STATUSES }).notNull(),
+    retrievedAt: text('retrieved_at').notNull(),
+  },
+  (t) => [uniqueIndex('evidence_records_uq').on(t.claimId, t.sourceId), index('evidence_records_source_idx').on(t.sourceId)],
+);
+
+/** AI assessments, append-only: a new analysis supersedes, never overwrites. */
+export const evidenceAssessments = sqliteTable(
+  'evidence_assessments',
+  {
+    id: text('id').primaryKey(),
+    claimId: text('claim_id')
+      .notNull()
+      .references(() => scientificClaims.id, { onDelete: 'cascade' }),
+    evidenceRecordId: text('evidence_record_id')
+      .notNull()
+      .references(() => evidenceRecords.id, { onDelete: 'cascade' }),
+    assessment: text('assessment', { enum: ASSESSMENTS }).notNull(),
+    explanation: text('explanation').notNull(),
+    supportingText: text('supporting_text'),
+    excerptVerified: integer('excerpt_verified', { mode: 'boolean' }).notNull(),
+    supportedSubclaims: text('supported_subclaims', { mode: 'json' }).$type<string[]>().notNull().default([]),
+    unsupportedSubclaims: text('unsupported_subclaims', { mode: 'json' }).$type<string[]>().notNull().default([]),
+    contradictoryStatements: text('contradictory_statements', { mode: 'json' }).$type<string[]>().notNull().default([]),
+    limitations: text('limitations', { mode: 'json' }).$type<string[]>().notNull().default([]),
+    uncertainty: text('uncertainty', { enum: UNCERTAINTY }).notNull(),
+    validationNotes: text('validation_notes', { mode: 'json' }).$type<string[]>().notNull().default([]),
+    modelProvider: text('model_provider').notNull(),
+    modelId: text('model_id').notNull(),
+    promptVersion: text('prompt_version').notNull(),
+    assessmentVersion: text('assessment_version').notNull(),
+    claimTextHash: text('claim_text_hash').notNull(),
+    sourceSnapshotHash: text('source_snapshot_hash').notNull(),
+    status: text('status', { enum: ASSESSMENT_STATES }).notNull(),
+    jobId: text('job_id'),
+    createdAt: text('created_at').notNull(),
+    supersededAt: text('superseded_at'),
+  },
+  (t) => [index('evidence_assessments_record_idx').on(t.evidenceRecordId, t.createdAt), index('evidence_assessments_claim_idx').on(t.claimId, t.status)],
+);
+
+/** Human review, kept apart from AI assessments. */
+export const evidenceReviews = sqliteTable(
+  'evidence_reviews',
+  {
+    id: text('id').primaryKey(),
+    claimId: text('claim_id')
+      .notNull()
+      .references(() => scientificClaims.id, { onDelete: 'cascade' }),
+    evidenceRecordId: text('evidence_record_id').references(() => evidenceRecords.id, { onDelete: 'cascade' }),
+    assessmentId: text('assessment_id'),
+    decision: text('decision', { enum: REVIEW_DECISIONS }).notNull(),
+    reclassifiedAs: text('reclassified_as', { enum: ASSESSMENTS }),
+    note: text('note'),
+    actor: text('actor'),
+    createdAt: text('created_at').notNull(),
+  },
+  (t) => [index('evidence_reviews_claim_idx').on(t.claimId, t.createdAt)],
+);
+
+export const conflictAnalyses = sqliteTable(
+  'conflict_analyses',
+  {
+    id: text('id').primaryKey(),
+    claimId: text('claim_id')
+      .notNull()
+      .references(() => scientificClaims.id, { onDelete: 'cascade' }),
+    supportingRecordId: text('supporting_record_id').notNull(),
+    opposingRecordId: text('opposing_record_id').notNull(),
+    category: text('category', { enum: CONFLICT_CATEGORIES }).notNull(),
+    explanation: text('explanation').notNull(),
+    differences: text('differences', { mode: 'json' }).$type<{ aspect: string; supporting: string; opposing: string }[]>().notNull().default([]),
+    uncertainty: text('uncertainty', { enum: UNCERTAINTY }).notNull(),
+    modelProvider: text('model_provider').notNull(),
+    modelId: text('model_id').notNull(),
+    promptVersion: text('prompt_version').notNull(),
+    status: text('status', { enum: ASSESSMENT_STATES }).notNull(),
+    createdAt: text('created_at').notNull(),
+  },
+  (t) => [index('conflict_analyses_claim_idx').on(t.claimId)],
+);
+
+export const citationRecommendations = sqliteTable(
+  'citation_recommendations',
+  {
+    id: text('id').primaryKey(),
+    claimId: text('claim_id')
+      .notNull()
+      .references(() => scientificClaims.id, { onDelete: 'cascade' }),
+    scholarlyWorkId: text('scholarly_work_id').references(() => scholarlyWorks.id, { onDelete: 'set null' }),
+    libraryItemId: text('library_item_id'),
+    citationKey: text('citation_key').notNull(),
+    keySource: text('key_source').notNull(),
+    recommendedPlacement: text('recommended_placement', { enum: CITATION_PLACEMENTS }).notNull(),
+    evidenceAssessmentId: text('evidence_assessment_id'),
+    evidenceRecordId: text('evidence_record_id'),
+    reason: text('reason').notNull(),
+    status: text('status', { enum: CITATION_RECOMMENDATION_STATUSES }).notNull(),
+    proposalId: text('proposal_id'),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (t) => [index('citation_recommendations_claim_idx').on(t.claimId)],
+);
+
+export const writingSuggestions = sqliteTable(
+  'writing_suggestions',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    documentBlockId: text('document_block_id'),
+    filePath: text('file_path').notNull(),
+    originalText: text('original_text').notNull(),
+    proposedText: text('proposed_text'),
+    suggestionType: text('suggestion_type').notNull(),
+    explanation: text('explanation').notNull(),
+    findings: text('findings', { mode: 'json' }).$type<Record<string, unknown>[]>().notNull().default([]),
+    warnings: text('warnings', { mode: 'json' }).$type<string[]>().notNull().default([]),
+    meaningCheck: text('meaning_check', { mode: 'json' }).$type<Record<string, unknown>>(),
+    proposalId: text('proposal_id'),
+    modelProvider: text('model_provider'),
+    modelId: text('model_id'),
+    promptVersion: text('prompt_version'),
+    status: text('status', { enum: WRITING_SUGGESTION_STATUSES }).notNull(),
+    createdAt: text('created_at').notNull(),
+  },
+  (t) => [index('writing_suggestions_project_idx').on(t.projectId, t.createdAt)],
+);
+
+export const manuscriptReviews = sqliteTable(
+  'manuscript_reviews',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    documentRevision: text('document_revision').notNull(),
+    reviewScope: text('review_scope', { enum: REVIEW_SCOPES }).notNull(),
+    scopeDetail: text('scope_detail', { mode: 'json' }).$type<Record<string, unknown>>().notNull().default({}),
+    status: text('status', { enum: EVIDENCE_JOB_STATUSES }).notNull(),
+    coverage: text('coverage', { mode: 'json' }).$type<Record<string, unknown>>(),
+    result: text('result', { mode: 'json' }).$type<Record<string, unknown>>(),
+    modelProvider: text('model_provider'),
+    modelId: text('model_id'),
+    promptVersion: text('prompt_version'),
+    startedAt: text('started_at').notNull(),
+    completedAt: text('completed_at'),
+  },
+  (t) => [index('manuscript_reviews_project_idx').on(t.projectId, t.startedAt)],
+);
+
+/** Persistent background jobs for M5 (extraction, retrieval, assessment, revalidation, review, writing). */
+export const evidenceJobs = sqliteTable(
+  'evidence_jobs',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    kind: text('kind', { enum: EVIDENCE_JOB_KINDS }).notNull(),
+    status: text('status', { enum: EVIDENCE_JOB_STATUSES }).notNull(),
+    input: text('input', { mode: 'json' }).$type<Record<string, unknown>>().notNull(),
+    progress: text('progress', { mode: 'json' }).$type<{ done: number; total: number; message: string | null }>().notNull(),
+    result: text('result', { mode: 'json' }).$type<Record<string, unknown>>(),
+    error: text('error'),
+    providerId: text('provider_id'),
+    providerKind: text('provider_kind'),
+    modelId: text('model_id'),
+    privacyMode: text('privacy_mode', { enum: PRIVACY_MODES }),
+    consentAt: text('consent_at'),
+    /** What left the computer (counts only, never the text). */
+    outgoing: text('outgoing', { mode: 'json' }).$type<{ manuscriptChars: number; sourceChars: number; passages: number; requests: number }>(),
+    usage: text('usage', { mode: 'json' }).$type<Record<string, number | null>>(),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+    finishedAt: text('finished_at'),
+  },
+  (t) => [index('evidence_jobs_project_idx').on(t.projectId, t.createdAt), index('evidence_jobs_status_idx').on(t.status)],
 );

@@ -165,7 +165,7 @@ describe('document schema', () => {
 
   it('can be rolled back with the down script and applied again', () => {
     addExtraction('x1', true);
-    for (const name of ['0004_visual', '0003_documents']) {
+    for (const name of ['0005_evidence', '0004_visual', '0003_documents']) {
       handle.sqlite.exec(readFileSync(fileURLToPath(new URL(`../migrations/down/${name}.sql`, import.meta.url)), 'utf8'));
       handle.sqlite.prepare('DELETE FROM __drizzle_migrations WHERE created_at = (SELECT max(created_at) FROM __drizzle_migrations)').run();
     }

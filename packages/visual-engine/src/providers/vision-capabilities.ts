@@ -1,5 +1,5 @@
 import type { ModelProvider } from '@research-studio/ai-core';
-import { isLoopbackHost } from '@research-studio/ai-core';
+import { privacyModeOf } from '@research-studio/ai-core';
 import type { ModelProviderKind, PrivacyMode, VisualTaskType } from '@research-studio/shared-types';
 import { VisualError } from '../errors/visual-errors';
 
@@ -45,14 +45,7 @@ export async function routeTask(task: VisualTaskType, target: ProviderTarget, si
       if (modelVision === false) throw new VisualError('no-vision', `The model ${target.model} does not accept images (it reports no vision capability). Choose a vision model, for example one with "vision" or "vl" in its name.`);
     }
   }
-  let local = false;
-  if (target.kind === 'ollama') {
-    try {
-      local = isLoopbackHost(new URL(target.baseUrl ?? 'http://127.0.0.1:11434').hostname);
-    } catch {
-      local = false;
-    }
-  }
+  const local = privacyModeOf(target.kind, target.baseUrl) === 'local';
   return { privacyMode: local ? 'local' : 'cloud', needsConsent: !local, modelVision };
 }
 

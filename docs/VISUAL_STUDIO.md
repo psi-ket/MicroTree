@@ -149,3 +149,12 @@ after every compile.
   providers a model without vision fails with the provider's error.
 - No OCR engine and no non-model digitiser: reconstruction always uses the
   chosen model.
+
+## 7. Shared privacy rule (M5)
+
+`privacyModeOf(kind, baseUrl)`, which decides whether a provider is local
+(Ollama on loopback) or cloud, moved from `visual-engine` into `ai-core`
+(`catalog.ts`). The Visual Studio and the evidence engine now use the same
+function, so a provider is treated the same way in both. Behaviour in the
+Visual Studio is unchanged. The evidence engine adds a per-project privacy
+mode on top (see [EVIDENCE_ENGINE.md](EVIDENCE_ENGINE.md) §7).

@@ -16,6 +16,7 @@ import { FileWatchService } from './services/file-watch-service';
 import { DocumentRuntime, type DocumentRuntimeOptions } from './services/document-runtime';
 import { LibraryRuntime, type LibraryRuntimeOptions } from './services/library-runtime';
 import { VisualRuntime } from './services/visual-runtime';
+import { EvidenceRuntime } from './services/evidence-runtime';
 import { AssistantService } from './services/ai/assistant-service';
 import { ProposalService } from './services/ai/proposal-service';
 import { AiProviderService, type ModelProviderFactory } from './services/ai/provider-service';
@@ -67,6 +68,7 @@ export interface RuntimeApp {
   library: LibraryRuntime;
   documents: DocumentRuntime;
   visual: VisualRuntime;
+  evidence: EvidenceRuntime;
 }
 
 /** Strip query strings from logged URLs (WebSocket tickets travel in the query). */
@@ -109,6 +111,8 @@ export async function buildApp(deps: AppDeps): Promise<RuntimeApp> {
 
   const visual = new VisualRuntime(libraryDb, deps.config, providers, projects, library, audit, events, app.log, deps.toolchain);
 
+  const evidence = new EvidenceRuntime(libraryDb, deps.repos, projects, documents, library, deps.config.literature.enabled ? literature : null, providers, proposals, audit, events, app.log);
+
   const sweeper = setInterval(() => sessions.sweep(), 60_000);
   sweeper.unref();
 
@@ -117,6 +121,7 @@ export async function buildApp(deps: AppDeps): Promise<RuntimeApp> {
   await library.start();
   await documents.start();
   await visual.start();
+  evidence.start();
   registerErrorHandling(app, audit);
   registerRequestGuards(app, { allowedOrigins: deps.config.allowedOrigins, sessions, audit });
 
@@ -150,10 +155,12 @@ export async function buildApp(deps: AppDeps): Promise<RuntimeApp> {
     library,
     documents,
     visual,
+    evidence,
   });
 
   app.addHook('onClose', async () => {
     clearInterval(sweeper);
+    await evidence.stop();
     await visual.stop();
     await documents.stop();
     await library.stop();
@@ -166,5 +173,5 @@ export async function buildApp(deps: AppDeps): Promise<RuntimeApp> {
     await compile.shutdown();
   });
 
-  return { app, events, sessions, projects, compile, hub, assistant, proposals, agents, staging, watcher, literature, library, documents, visual };
+  return { app, events, sessions, projects, compile, hub, assistant, proposals, agents, staging, watcher, literature, library, documents, visual, evidence };
 }

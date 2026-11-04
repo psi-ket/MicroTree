@@ -163,6 +163,36 @@ import {
   type PreprocessOperationSchema,
   type RefineRequest,
 } from './visual';
+import {
+  AnalyzeWritingResponse,
+  ClaimDetailResponse,
+  ClaimListResponse,
+  ClaimResponse,
+  CitationRecommendationSchema,
+  ClaimSchema,
+  ConflictSchema,
+  CoverageResponse,
+  EvidenceJobListResponse,
+  EvidenceJobResponse,
+  EvidenceRecordSchema,
+  EvidenceSettingsResponse,
+  InsertCitationResponse,
+  ManuscriptMarkersResponse,
+  ManuscriptReviewResponse,
+  WritingSuggestionSchema,
+  type AnalyzeWritingRequest,
+  type AssessAllRequest,
+  type AssessRequest,
+  type ExtractClaimsRequest,
+  type InsertCitationRequest,
+  type ManuscriptReviewRequest,
+  type RetrieveEvidenceRequest,
+  type RevalidateRequest,
+  type ReviewEvidenceRequest,
+  type RewriteRequest,
+  type UpdateClaimRequest,
+  type UpdateEvidenceSettingsRequest,
+} from './evidence';
 import { z as zod } from 'zod';
 import type { LibraryItemQuery, LiteratureProviderId, ProposalStatus } from '@research-studio/shared-types';
 
@@ -554,6 +584,41 @@ export function createRuntimeClient(options: RuntimeClientOptions) {
       insert: (artifactId: string, input: z.input<typeof ApplyInsertionRequest>) => json(InsertionResponse, 'POST', `${art(artifactId)}/insert`, { body: input }),
       insertions: (projectId: string) => json(InsertionListResponse, 'GET', '/visual/insertions', { query: { projectId } }),
       rollback: (insertionId: string) => json(RollbackResponse, 'POST', `/visual/insertions/${encodeURIComponent(insertionId)}/rollback`),
+    },
+
+    evidence: {
+      extract: (input: z.input<typeof ExtractClaimsRequest>) =>
+        json(zod.object({ claims: zod.array(ClaimSchema), nonClaims: zod.array(zod.object({ sentenceIndex: zod.number(), kind: zod.string(), reason: zod.string(), text: zod.string().optional() })), rejected: zod.array(zod.unknown()), job: EvidenceJobResponse.shape.job.nullable() }), 'POST', '/claims/extract', { body: input }),
+      claims: (projectId: string, query: { status?: string; section?: string; file?: string; includeArchived?: boolean } = {}) =>
+        json(ClaimListResponse, 'GET', `${p(projectId)}/claims`, { query: { ...query, includeArchived: query.includeArchived ? '1' : undefined } }),
+      claim: (claimId: string) => json(ClaimDetailResponse, 'GET', `/claims/${encodeURIComponent(claimId)}`),
+      updateClaim: (claimId: string, patch: z.input<typeof UpdateClaimRequest>) => json(ClaimResponse, 'PATCH', `/claims/${encodeURIComponent(claimId)}`, { body: patch }),
+      splitClaim: (claimId: string, parts: string[]) => json(zod.object({ claims: zod.array(ClaimSchema) }), 'POST', `/claims/${encodeURIComponent(claimId)}/split`, { body: { parts } }),
+      mergeClaims: (projectId: string, claimIds: string[]) => json(ClaimResponse, 'POST', '/claims/merge', { body: { projectId, claimIds } }),
+      reconcile: (projectId: string) => json(zod.object({ revision: zod.string(), summary: zod.record(zod.string(), zod.number()), changedClaimIds: zod.array(zod.string()) }), 'POST', `${p(projectId)}/anchors/reconcile`),
+      retrieve: (claimId: string, input: z.input<typeof RetrieveEvidenceRequest> = {}, signal?: AbortSignal) =>
+        json(zod.object({ evidence: zod.array(EvidenceRecordSchema), conflicts: zod.array(ConflictSchema), warnings: zod.array(zod.string()), queries: zod.array(zod.object({ variant: zod.string(), query: zod.string(), mode: zod.string() })) }), 'POST', `/claims/${encodeURIComponent(claimId)}/retrieve-evidence`, { body: input, signal }),
+      assess: (recordId: string, input: z.input<typeof AssessRequest>) => json(EvidenceJobResponse, 'POST', `/evidence/${encodeURIComponent(recordId)}/assess`, { body: input }),
+      assessAll: (claimId: string, input: z.input<typeof AssessAllRequest>) => json(EvidenceJobResponse, 'POST', `/claims/${encodeURIComponent(claimId)}/assess-all`, { body: input }),
+      revalidate: (claimId: string, input: z.input<typeof RevalidateRequest> = {}) =>
+        json(zod.object({ sourceChanges: zod.array(zod.object({ recordId: zod.string(), state: zod.string(), reason: zod.string().optional() })), job: EvidenceJobResponse.shape.job.nullable() }), 'POST', `/claims/${encodeURIComponent(claimId)}/revalidate`, { body: input }),
+      review: (recordId: string, input: z.input<typeof ReviewEvidenceRequest>) => json(ClaimDetailResponse, 'POST', `/evidence/${encodeURIComponent(recordId)}/review`, { body: input }),
+      recommend: (claimId: string) => json(zod.object({ recommendations: zod.array(CitationRecommendationSchema) }), 'POST', `/claims/${encodeURIComponent(claimId)}/citations/recommend`, { body: {} }),
+      setRecommendationStatus: (id: string, status: 'rejected' | 'proposed') => json(zod.object({ recommendations: zod.array(CitationRecommendationSchema) }), 'POST', `/citations/recommendations/${encodeURIComponent(id)}/status`, { body: { status } }),
+      insertCitations: (claimId: string, input: z.input<typeof InsertCitationRequest>) => json(InsertCitationResponse, 'POST', `/claims/${encodeURIComponent(claimId)}/citations/insert`, { body: input }),
+      analyzeWriting: (input: z.input<typeof AnalyzeWritingRequest>) => json(AnalyzeWritingResponse, 'POST', '/writing/analyze', { body: input }),
+      rewrite: (input: z.input<typeof RewriteRequest>) => json(EvidenceJobResponse, 'POST', '/writing/rewrite', { body: input }),
+      suggestion: (projectId: string, id: string) => json(zod.object({ suggestion: WritingSuggestionSchema, findings: zod.array(zod.unknown()) }), 'GET', `${p(projectId)}/writing/suggestions/${encodeURIComponent(id)}`),
+      startReview: (projectId: string, input: z.input<typeof ManuscriptReviewRequest> = {}) => json(ManuscriptReviewResponse, 'POST', `${p(projectId)}/review`, { body: input }),
+      latestReview: (projectId: string) => json(ManuscriptReviewResponse, 'GET', `${p(projectId)}/review`),
+      coverage: (projectId: string) => json(CoverageResponse, 'GET', `${p(projectId)}/evidence-coverage`),
+      markers: (projectId: string) => json(ManuscriptMarkersResponse, 'GET', `${p(projectId)}/evidence-markers`),
+      settings: (projectId: string) => json(EvidenceSettingsResponse, 'GET', `${p(projectId)}/evidence-settings`),
+      updateSettings: (projectId: string, patch: z.input<typeof UpdateEvidenceSettingsRequest>) => json(EvidenceSettingsResponse, 'PATCH', `${p(projectId)}/evidence-settings`, { body: patch }),
+      deleteAnalysis: (projectId: string) => json(zod.object({ claims: zod.number() }), 'DELETE', `${p(projectId)}/evidence`),
+      jobs: (projectId: string) => json(EvidenceJobListResponse, 'GET', `${p(projectId)}/evidence-jobs`),
+      job: (jobId: string) => json(EvidenceJobResponse, 'GET', `/evidence/jobs/${encodeURIComponent(jobId)}`),
+      cancelJob: (jobId: string) => json(EvidenceJobResponse, 'POST', `/evidence/jobs/${encodeURIComponent(jobId)}/cancel`),
     },
 
     references: {

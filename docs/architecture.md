@@ -457,5 +457,45 @@ Details: [`VISUAL_STUDIO.md`](VISUAL_STUDIO.md),
 [`VISUAL_VALIDATION.md`](VISUAL_VALIDATION.md),
 [`AI_PROVIDERS.md`](AI_PROVIDERS.md).
 
+## 11. Evidence-linked writing (M5)
+
+```
+web (features/claim-analysis, evidence-review,   ── /api/v1/claims, /evidence, /citations,
+     citation-intelligence, scientific-writing,       /writing, /projects/:id/review … ──▶ EvidenceRuntime
+     manuscript-review)                                 ├─ ManuscriptSync: claim-anchors parse → identities → reconcile
+   ▲ evidence.job, evidence.claims                      │    (manuscript_revisions, _blocks, _sentences, claim_anchors)
+   │                                                    ├─ extraction: rules or model (evidence-engine) → scientific_claims
+   │                                                    ├─ LibrarySearchPort ──▶ DocumentRuntime.search (M3.3 hybrid)
+   │                                                    │    + stored abstracts, + M3.1 search on request
+   │                                                    ├─ evidence_sources (snapshots) ← evidence_records (ranks)
+   │                                                    ├─ assessment / conflicts: ModelTarget ──▶ ModelProvider.generateStructured
+   │                                                    │    validated → evidence_assessments (history kept)
+   │                                                    ├─ EvidencePrivacy: per-task model, privacy mode, consent, audit
+   │                                                    ├─ EvidenceJobs: persistent jobs, progress, cancel, recovery
+   │                                                    └─ citations and rewrites ──▶ ProposalService (M2 diffs, CAS)
+   │                                                         + ProjectLibraryService (.bib preview and apply, M3.2)
+```
+
+- **Pure packages, one facade.** `claim-anchors`, `evidence-engine`,
+  `citation-intelligence` and `writing-intelligence` hold no state and know
+  nothing of the database. `EvidenceRuntime` joins them to persistence, the
+  library, the search index, the proposal service, privacy and jobs.
+- **Reuse, not new pipelines.** Evidence comes from the M3.3 index through a
+  port. PDF highlighting uses the M3.2 viewer. Every manuscript change goes
+  through the M2 proposal service. `.bib` changes use the M3.2 preview and
+  apply.
+- **Anchors on text, not lines.** Claims point at sentences with stable
+  identities. Edits are reconciled, and material changes mark the claim for
+  revalidation instead of silently keeping or dropping its evidence.
+- **Relevance apart from support, AI apart from people.** Ranks live on the
+  evidence record, model judgements in `evidence_assessments` (never
+  overwritten) and the researcher's decisions in `evidence_reviews`.
+- **Privacy per project and task.** `privacyModeOf` (moved into `ai-core` and
+  shared with the visual engine) marks Ollama on loopback as local. Cloud
+  use depends on the project's mode and needs consent for each operation.
+
+Details: [`EVIDENCE_ENGINE.md`](EVIDENCE_ENGINE.md) and the documents linked
+from it.
+
 See `docs/decisions/` for the reasoning behind each choice and
 `docs/security.md` for the threat model.

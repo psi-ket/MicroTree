@@ -145,3 +145,23 @@ rules, query parsing, FTS phrases, Boolean and notation, filters, deletion,
 vector store isolation and validation, embedding cache and cancellation,
 RRF arithmetic and ties, engine modes, pagination, model mismatch, Ollama
 provider) and the evaluation in [`RETRIEVAL_EVALUATION.md`](RETRIEVAL_EVALUATION.md).
+
+## 9. Use by the evidence engine (M5)
+
+The evidence engine retrieves candidate evidence for a claim through this
+search (`DocumentRuntime.search`), wrapped in a `LibrarySearchPort`.
+
+- Up to five query variants per claim. The claim itself runs in hybrid mode,
+  and its key terms, technical phrases and named entities run as keyword
+  queries. Hedges and citations are removed, and numbers are kept.
+- The lists are fused with reciprocal rank fusion (k = 60) and limited to two
+  passages per paper by default.
+- The keyword, semantic and fused ranks are stored on the evidence record,
+  apart from any support judgement.
+- `retrievalIndexVersion()` is now public. It is stored with every evidence
+  record, so later index changes can be detected.
+- Passage `stable_key` and `text_hash` are used by the freshness check. A
+  passage found again with the same text after reprocessing is "moved" and
+  keeps its assessments. Changed text makes them stale.
+
+Details: [EVIDENCE_ENGINE.md](EVIDENCE_ENGINE.md) §2 and §5.

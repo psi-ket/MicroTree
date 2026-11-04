@@ -115,6 +115,41 @@ visual_assets 1──* visual_artifacts 1──* visual_artifact_versions   visu
 | `visual_tasks` | `id` PK (`vtk_…`), `task_type`, `resolved_type`, `project_id`, `source_asset_id`, `input_asset_id`, `source_attachment_id`, `source_page`, `provider_id`, `provider_kind`, `model`, `privacy_mode`, `consent_at`, `prompt_version`, `config` (JSON), `status`, `progress`, `error`, `choices` (JSON), `usage` (JSON), `artifact_id`, `artifact_version`, timestamps | queued and running tasks become failed at start-up |
 | `visual_insertions` | `id` PK (`vin_…`), `project_id` → projects (cascade), `artifact_id`, `version_number`, `created_files` (JSON path and hash), `modified_files` (JSON path, hashes and the previous content for rollback), `status` (`applied`, `rolled-back`), `created_at`, `rolled_back_at` | the previous content is never returned by the API |
 
+## Evidence-linked writing (`0005_evidence`, M5)
+
+```
+projects 1──* manuscript_revisions          projects 1──* manuscript_blocks 1──* manuscript_sentences
+projects 1──* scientific_claims 1──1 claim_anchors
+scientific_claims 1──* evidence_records *──1 evidence_sources (snapshots, shared, never cascaded)
+evidence_records 1──* evidence_assessments      evidence_records 1──* evidence_reviews
+scientific_claims 1──* conflict_analyses, citation_recommendations
+projects 1──* writing_suggestions, manuscript_reviews, evidence_jobs
+```
+
+| Table | Columns | Constraints and notes |
+| --- | --- | --- |
+| `manuscript_revisions` | `id`, `project_id` → projects (cascade), `file_path`, `file_hash`, `parser_version`, `block_count`, `created_at` | one row per sync that changed a file; index (project, file, created) |
+| `manuscript_blocks` | `id`, `project_id` (cascade), `file_path`, `kind`, `section_id`, `section_path`, `parent_block_id`, `block_order`, `text`, `text_hash`, `prefix_context`, `suffix_context`, `start_offset`, `end_offset`, `structure_path`, `revision_id`, `status`, timestamps | IDs kept while the normalised text hash is unchanged |
+| `manuscript_sentences` | `id`, `block_id` → blocks (cascade), `project_id`, `sentence_order`, `text`, `text_hash`, `start_offset`, `end_offset`, `status`, `updated_at` | |
+| `scientific_claims` | `id` (`clm_…`), `project_id` (cascade), `document_id`, `document_block_id`, `sentence_id`, `original_text`, `claim_text`, `span_start`, `span_end`, `normalized_text`, `claim_type`, `atomicity`, `entities`, `concepts`, `quantities`, `assumptions` (JSON), `text_hash`, `document_revision`, `status`, `review_state`, `requires_evidence`, `exclusion_reason`, `derived_from` (split or merge sources), `extracted_by`, `model_provider`, `model_id`, `prompt_version`, `note`, timestamps | claims are archived, not deleted, when the researcher removes them |
+| `claim_anchors` | `id`, `claim_id` (cascade, unique), `project_id`, `file_path`, `block_id`, `sentence_id`, `section_id`, `section_path`, `parent_block_id`, `text_snapshot`, `prefix_context`, `suffix_context`, `text_hash`, `revision`, `start_offset`, `end_offset`, `structure_path`, `mapping_status`, `previous_text`, `updated_at` | `mapping_status` is `current`, `modified`, `needs_revalidation`, `unmatched` or `deleted` |
+| `evidence_sources` | `id`, `snapshot_hash` (unique), `level`, `scholarly_work_id` and `library_item_id` (set null), `attachment_id`, `extraction_id`, `passage_id`, `stable_key`, `passage_text_hash`, `source_sha256`, `extractor_version`, `external_id`, `doi`, `arxiv_id`, `url`, `title`, `authors`, `year`, `venue`, `publication_type`, `section_path`, `page_start`, `page_end`, `coordinates`, `text`, `context_before`, `context_after`, `created_at` | the evidence snapshot; survives deletion of the paper or PDF; records reference it without cascade |
+| `evidence_records` | `id`, `claim_id` (cascade), `source_id` → sources (no action), `retrieval_method`, `query_variant`, `relevance_rank`, `keyword_rank`, `semantic_rank`, `fused_score`, `retrieval_index_version`, `claim_text_hash`, `status`, `retrieved_at` | unique (claim, source); relevance only, no support judgement |
+| `evidence_assessments` | `id`, `claim_id`, `evidence_record_id` (cascade), `assessment`, `explanation`, `supporting_text`, `excerpt_verified`, `supported_subclaims`, `unsupported_subclaims`, `contradictory_statements`, `limitations`, `uncertainty`, `validation_notes`, `model_provider`, `model_id`, `prompt_version`, `assessment_version`, `claim_text_hash`, `source_snapshot_hash`, `status` (`current`, `superseded`, `stale`), `job_id`, `created_at`, `superseded_at` | AI judgements; never updated except to supersede or mark stale |
+| `evidence_reviews` | `id`, `claim_id`, `evidence_record_id` (cascade), `assessment_id`, `decision`, `reclassified_as`, `note`, `actor`, `created_at` | the researcher's decisions, append only |
+| `conflict_analyses` | `id`, `claim_id` (cascade), `supporting_record_id`, `opposing_record_id`, `category`, `explanation`, `differences` (JSON), `uncertainty`, `model_provider`, `model_id`, `prompt_version`, `status`, `created_at` | |
+| `citation_recommendations` | `id`, `claim_id` (cascade), `scholarly_work_id`, `library_item_id`, `citation_key`, `key_source`, `recommended_placement`, `evidence_assessment_id`, `evidence_record_id`, `reason`, `status`, `proposal_id`, timestamps | `proposal_id` links to the M2 proposal of the insertion |
+| `writing_suggestions` | `id`, `project_id` (cascade), `document_block_id`, `file_path`, `original_text`, `proposed_text`, `suggestion_type`, `explanation`, `findings`, `warnings`, `meaning_check` (JSON), `proposal_id`, `model_provider`, `model_id`, `prompt_version`, `status`, `created_at` | |
+| `manuscript_reviews` | `id`, `project_id` (cascade), `document_revision`, `review_scope`, `scope_detail`, `status`, `coverage`, `result` (JSON), `model_provider`, `model_id`, `prompt_version`, `started_at`, `completed_at` | |
+| `evidence_jobs` | `id`, `project_id` (cascade), `kind`, `status`, `input`, `progress`, `result`, `error`, `provider_id`, `provider_kind`, `model_id`, `privacy_mode`, `consent_at`, `outgoing`, `usage`, `created_at`, `updated_at`, `finished_at` | queued and running jobs become failed at start-up |
+
+Deleting a library item or a PDF sets the source links to null and keeps
+the snapshot. Deleting a claim's evidence history happens only through
+`DELETE /projects/:id/evidence` (or deleting the project). Evidence sources
+are kept even then. Project evidence settings are in `settings` scope
+`project:<id>`, key `evidence`. The rollback is
+`migrations/down/0005_evidence.sql`.
+
 ## AI (`packages/ai-storage`)
 
 `ai_providers`, `ai_conversations`, `ai_messages`, `ai_proposals`,

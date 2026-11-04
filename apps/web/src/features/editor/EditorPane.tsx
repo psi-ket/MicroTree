@@ -14,6 +14,7 @@ import { isDirty, useEditor } from '../../stores/editor';
 import { useLayout } from '../../stores/layout';
 import { compileProject, forwardSearch, overwriteOnDisk, reloadFromDisk, saveFile } from '../workspace/actions';
 import { CompareDialog } from './CompareDialog';
+import { useEvidenceRequest, useMarkers } from '../evidence-review/state';
 import { monaco, setupMonaco } from './monaco-setup';
 
 setupMonaco();
@@ -157,6 +158,24 @@ export function EditorPane({ projectId }: { projectId: string }) {
   const theme = useResolvedTheme();
   const editorRef = useRef<MonacoEditor.IStandaloneCodeEditor | null>(null);
   const buffer = active ? buffers[active] : undefined;
+  // Quiet evidence indicators: a thin mark beside lines whose claims need attention, only while the evidence panel is open.
+  const evidenceOpen = useLayout((s) => s.evidence);
+  const markers = useMarkers(projectId, evidenceOpen).data;
+  const marks = useRef<MonacoEditor.IEditorDecorationsCollection | null>(null);
+  const [mounted, setMounted] = useState(0);
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    marks.current ??= editor.createDecorationsCollection([]);
+    const list = evidenceOpen && active ? (markers?.files[active] ?? []) : [];
+    const cls = (status: string) =>
+      status === 'potentially_contradicted' ? 'rs-ev-mark rs-ev-conflict' : status === 'needs_revalidation' ? 'rs-ev-mark rs-ev-stale' : status === 'supporting_evidence_found' || status === 'user_reviewed' ? 'rs-ev-mark rs-ev-ok' : status === 'not_assessable' ? '' : 'rs-ev-mark rs-ev-open';
+    marks.current.set(
+      list
+        .filter((m) => cls(m.status))
+        .map((m) => ({ range: new monaco.Range(m.fromLine, 1, m.toLine, 1), options: { linesDecorationsClassName: cls(m.status), linesDecorationsTooltip: 'Claim: see the evidence panel' } })),
+    );
+  }, [markers, active, evidenceOpen, mounted]);
   const job = useCompile((s) => s.jobs[projectId]);
 
   // Autosave after a pause in typing.
@@ -254,6 +273,19 @@ export function EditorPane({ projectId }: { projectId: string }) {
         },
       });
     }
+
+    editor.addAction({
+      id: 'rs.evidence.check',
+      label: 'Check evidence for the selection',
+      contextMenuGroupId: '9_assistant',
+      precondition: 'editorHasSelection',
+      run: () => {
+        useLayout.getState().toggle('evidence', true);
+        useEvidenceRequest.getState().request();
+      },
+    });
+    marks.current = null;
+    setMounted((n) => n + 1);
 
     editor.onDidChangeCursorPosition((e) => setCursor({ line: e.position.lineNumber, column: e.position.column }));
     editor.onDidChangeCursorSelection((e) => {

@@ -103,6 +103,17 @@ control applied at each.
 | T57 | Unexpected changes to manuscripts. | Insertion only after approval and review of every created and changed file; applying recomputes the plan and refuses if it changed; create-only new files, compare-and-swap writes, undo on partial failure, rollback refused when files changed since; preamble changes only on explicit opt-in. |
 | T58 | Path tricks through project images or PDF regions. | Project images are read through `ProjectService` (path guard); PDF regions only from existing library attachments by ID; plot data files must be plain relative CSV names. |
 
+## Evidence-linked writing (M5)
+
+| # | Threat | Mitigation |
+| --- | --- | --- |
+| T59 | Manuscript or paper text sent to a cloud model without the researcher knowing. | Per-project privacy mode, `local-only` by default. Only Ollama on loopback is local. `confidential` refuses cloud models always (`CONFIDENTIAL_PROJECT`), `local-only` refuses them (`LOCAL_ONLY`), an optional provider allow-list is enforced (`PROVIDER_NOT_ALLOWED`). With `cloud-allowed`, every operation needs consent after a preview of the provider, model, task and how much manuscript and passage text is sent (`CONSENT_REQUIRED`). Each use and each refusal is audited (`evidence.cloud`). |
+| T60 | Prompt injection through a paper's text or the manuscript. | Passages, sentences and selections are fenced as untrusted data, and fence markers inside them are defused. The system prompts say fenced text is data. Answers must match a strict JSON Schema and may refer only to `C1` and `P1`. Quotations must occur in the passage, or the assessment is not counted. No model output is executed, applied or treated as an instruction. |
+| T61 | Invented evidence or citations. | Every candidate is an existing passage or stored abstract with provenance. Support without a verified quotation becomes `not_assessed`. Citations are recommended only from supporting evidence for papers in the library. Keys are resolved against the `.bib` and the library, collisions are refused. |
+| T62 | Unexpected changes to the manuscript or bibliography. | Extraction, assessment and review never write files. Citation insertion and rewrites are M2 proposals, reviewed as diffs and written with compare-and-swap (`STALE_PROPOSAL`). `.bib` changes are additions from the M3.2 preview, shown before they are applied. Rewrites that drop or add citations or references are not offered. |
+| T63 | Loss of the record of what supported a claim. | Evidence sources are snapshots (text, hash, location, extractor and index versions) that survive the deletion of the library item or PDF (links set to null). Assessments are superseded or marked stale, never overwritten. Human reviews are separate rows. Only an explicit "delete analysis" removes a project's claims and their links, and it is audited. |
+| T64 | A request touching data of the wrong project. | Every claim, record, recommendation, suggestion and job is loaded by ID and resolved to its project, which must exist, before anything is done. Routes that name a project and an object check that they belong together. The runtime has one local user, so this is about correctness, not access between users. |
+
 ## Residual risks / accepted trade-offs
 
 - **Visual models can be wrong.** Reconstructions are drafts: a wrong symbol
@@ -215,3 +226,14 @@ Library events: `library.import` (job kind and counts), `library.items.delete`,
 `library.attachment.delete`, `library.storage.sweep`, `library.bib.apply`
 (file and changes written), `library.zotero.key` (stored or removed, never the
 key) and `library.zotero.export`.
+
+Evidence events (M5): `evidence.extract`, `evidence.claim.update`,
+`evidence.claim.split`, `evidence.claim.merge`, `evidence.retrieve`,
+`evidence.assess`, `evidence.revalidate`, `evidence.review`,
+`evidence.citations.recommend`, `evidence.citations.propose`,
+`evidence.citations.link`, `evidence.citations.status`,
+`evidence.writing.analyze`, `evidence.writing.rewrite`,
+`evidence.review.manuscript`, `evidence.settings`, `evidence.delete` and
+`evidence.cloud` (task, provider and model, plus the refusal reason when
+denied or the number of manuscript and source characters sent when allowed). Claim text, passages, prompts and answers
+are not written to the audit log.

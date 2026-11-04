@@ -36,6 +36,7 @@ async function api(request: APIRequestContext) {
 
 test('reconstruct an equation and a plot locally, compile, approve, insert after review and roll back', async ({ page, request }) => {
   const rt = await api(request);
+  const requestsBefore = ((await (await request.get(`${E2E_MOCK_OLLAMA_URL}/__stats`)).json()) as { requests: number }).requests;
   const { project } = (await rt.post('/projects', { name: 'Visual E2E', template: 'empty' })) as { project: { id: string } };
   await rt.put(`/projects/${project.id}/files/content`, { path: 'main.tex', content: MAIN });
   const { provider } = (await rt.post('/ai/providers', { kind: 'ollama', displayName: 'Mock Ollama', baseUrl: E2E_MOCK_OLLAMA_URL, defaultModel: 'llava-vision-mock' })) as { provider: { id: string } };
@@ -99,7 +100,7 @@ test('reconstruct an equation and a plot locally, compile, approve, insert after
   await expect(studio.getByRole('toolbar', { name: 'Result actions' })).toContainText('version 2');
   await expect(studio.getByTestId('compile-status')).toHaveText('Compiled', { timeout: 90_000 });
   const stats = (await (await request.get(`${E2E_MOCK_OLLAMA_URL}/__stats`)).json()) as { requests: number };
-  expect(stats.requests).toBe(2); // one per reconstruction, none for the restyle
+  expect(stats.requests - requestsBefore).toBe(2); // one per reconstruction, none for the restyle
   await studio.getByTestId('visual-bottom').getByRole('button', { name: /Versions/ }).click();
   await expect(studio.getByTestId('versions').locator('tbody tr')).toHaveCount(2);
   await shot(page, 'visual-3-plot');

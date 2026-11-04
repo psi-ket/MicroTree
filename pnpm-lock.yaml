@@ -71,6 +71,12 @@ importers:
       '@research-studio/api-contracts':
         specifier: workspace:*
         version: link:../../packages/api-contracts
+      '@research-studio/citation-intelligence':
+        specifier: workspace:*
+        version: link:../../packages/citation-intelligence
+      '@research-studio/claim-anchors':
+        specifier: workspace:*
+        version: link:../../packages/claim-anchors
       '@research-studio/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -80,6 +86,9 @@ importers:
       '@research-studio/document-intelligence':
         specifier: workspace:*
         version: link:../../packages/document-intelligence
+      '@research-studio/evidence-engine':
+        specifier: workspace:*
+        version: link:../../packages/evidence-engine
       '@research-studio/latex-engine':
         specifier: workspace:*
         version: link:../../packages/latex-engine
@@ -110,6 +119,9 @@ importers:
       '@research-studio/visual-engine':
         specifier: workspace:*
         version: link:../../packages/visual-engine
+      '@research-studio/writing-intelligence':
+        specifier: workspace:*
+        version: link:../../packages/writing-intelligence
       better-sqlite3:
         specifier: ^13.0.3
         version: 13.0.3
@@ -315,6 +327,27 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
 
+  packages/citation-intelligence:
+    dependencies:
+      '@research-studio/document-engine':
+        specifier: workspace:*
+        version: link:../document-engine
+      '@research-studio/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
+
+  packages/claim-anchors:
+    dependencies:
+      '@research-studio/document-engine':
+        specifier: workspace:*
+        version: link:../document-engine
+      '@research-studio/document-intelligence':
+        specifier: workspace:*
+        version: link:../document-intelligence
+      '@research-studio/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
+
   packages/database:
     dependencies:
       '@research-studio/document-intelligence':
@@ -351,6 +384,37 @@ importers:
       pdfjs-dist:
         specifier: 6.5.438
         version: 6.5.438
+
+  packages/evidence-engine:
+    dependencies:
+      '@research-studio/ai-core':
+        specifier: workspace:*
+        version: link:../ai-core
+      '@research-studio/claim-anchors':
+        specifier: workspace:*
+        version: link:../claim-anchors
+      '@research-studio/document-intelligence':
+        specifier: workspace:*
+        version: link:../document-intelligence
+      '@research-studio/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
+    devDependencies:
+      '@research-studio/citation-intelligence':
+        specifier: workspace:*
+        version: link:../citation-intelligence
+      '@research-studio/database':
+        specifier: workspace:*
+        version: link:../database
+      '@research-studio/model-adapters':
+        specifier: workspace:*
+        version: link:../model-adapters
+      '@research-studio/research-retrieval':
+        specifier: workspace:*
+        version: link:../research-retrieval
 
   packages/latex-engine:
     dependencies:
@@ -572,6 +636,27 @@ importers:
       '@research-studio/model-adapters':
         specifier: workspace:*
         version: link:../model-adapters
+
+  packages/writing-intelligence:
+    dependencies:
+      '@research-studio/ai-core':
+        specifier: workspace:*
+        version: link:../ai-core
+      '@research-studio/citation-intelligence':
+        specifier: workspace:*
+        version: link:../citation-intelligence
+      '@research-studio/claim-anchors':
+        specifier: workspace:*
+        version: link:../claim-anchors
+      '@research-studio/evidence-engine':
+        specifier: workspace:*
+        version: link:../evidence-engine
+      '@research-studio/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
 
 packages:
 
