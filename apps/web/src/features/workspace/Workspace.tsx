@@ -20,6 +20,7 @@ import { Explorer } from '../explorer/Explorer';
 import { CommandPalette, type PaletteCommand } from '../palette/CommandPalette';
 import { PdfPane } from '../pdf/PdfPane';
 import { ReferencesPanel } from '../references/ReferencesPanel';
+import { EvidencePanel } from '../claim-analysis/EvidencePanel';
 import { SettingsDialog } from '../settings/SettingsDialog';
 import { compileProject, forwardSearch, openFile, saveAll } from './actions';
 import { StatusBar } from './StatusBar';
@@ -97,8 +98,8 @@ export function Workspace({ projectId, onBack }: { projectId: string; onBack: ()
     completionSources.citations = symbols?.citations ?? [];
   }, [files, symbols]);
 
-  const horizontalIds = ['explorer', 'editor', 'pdf', 'references', 'assistant'].filter(
-    (id) => (id !== 'explorer' || layout.explorer) && (id !== 'assistant' || layout.assistant) && (id !== 'references' || layout.references),
+  const horizontalIds = ['explorer', 'editor', 'pdf', 'references', 'evidence', 'assistant'].filter(
+    (id) => (id !== 'explorer' || layout.explorer) && (id !== 'assistant' || layout.assistant) && (id !== 'references' || layout.references) && (id !== 'evidence' || layout.evidence),
   );
   const horizontal = useDefaultLayout({ id: 'rs.workspace.h', panelIds: horizontalIds });
   const verticalIds = layout.diagnostics ? ['main', 'diagnostics'] : ['main'];
@@ -114,6 +115,7 @@ export function Workspace({ projectId, onBack }: { projectId: string; onBack: ()
     { id: 'log', label: 'Show raw compile log', run: () => { layout.toggle('diagnostics', true); layout.setBottomTab('log'); } },
     { id: 'assistant', label: 'Toggle assistant', run: () => layout.toggle('assistant') },
     { id: 'references', label: 'Toggle references', run: () => layout.toggle('references') },
+    { id: 'evidence', label: 'Toggle evidence panel', run: () => layout.toggle('evidence') },
     { id: 'library', label: 'Open your library', run: () => void saveAll().finally(() => openLibrary(projectId)) },
     { id: 'settings', label: 'Open settings', run: () => layout.setSettingsOpen(true) },
     { id: 'projects', label: 'Back to all projects', run: onBack },
@@ -177,6 +179,14 @@ export function Workspace({ projectId, onBack }: { projectId: string; onBack: ()
                   <ResizableHandle />
                   <ResizablePanel id="references" defaultSize={300} minSize={240} maxSize="40">
                     <ReferencesPanel projectId={projectId} />
+                  </ResizablePanel>
+                </>
+              ) : null}
+              {layout.evidence ? (
+                <>
+                  <ResizableHandle />
+                  <ResizablePanel id="evidence" defaultSize={340} minSize={260} maxSize="45">
+                    <EvidencePanel projectId={projectId} />
                   </ResizablePanel>
                 </>
               ) : null}

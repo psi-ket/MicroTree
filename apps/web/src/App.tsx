@@ -6,6 +6,7 @@ import { LiteratureScreen } from './features/literature/LiteratureScreen';
 import { ProjectsScreen } from './features/projects/ProjectsScreen';
 import { saveAll } from './features/workspace/actions';
 import { VisualStudio } from './features/visual/VisualStudio';
+import { ReviewScreen } from './features/manuscript-review/ReviewScreen';
 import { Workspace } from './features/workspace/Workspace';
 import {
   connect,
@@ -28,7 +29,8 @@ type Route =
   | { page: 'project'; projectId: string }
   | { page: 'literature'; from: string | null }
   | { page: 'library'; from: string | null }
-  | { page: 'visual'; from: string | null };
+  | { page: 'visual'; from: string | null }
+  | { page: 'review'; projectId: string };
 
 function readRoute(): string {
   return window.location.hash;
@@ -43,6 +45,8 @@ function parseRoute(hash: string): Route {
   if (library) return { page: 'library', from: library[1] ?? null };
   const visual = /^#\/visual(?:\?from=([A-Za-z0-9_-]+))?$/.exec(hash);
   if (visual) return { page: 'visual', from: visual[1] ?? null };
+  const review = /^#\/review\?from=([A-Za-z0-9_-]+)$/.exec(hash);
+  if (review) return { page: 'review', projectId: review[1]! };
   return { page: 'projects' };
 }
 
@@ -110,6 +114,10 @@ export function App() {
   if (route.page === 'library') {
     const from = route.from;
     return <LibraryScreen backLabel={from ? 'Back to project' : 'Projects'} onBack={() => navigate(from)} />;
+  }
+  if (route.page === 'review') {
+    const id = route.projectId;
+    return <ReviewScreen projectId={id} backLabel="Back to project" onBack={() => navigate(id)} />;
   }
   if (route.page === 'visual') {
     const from = route.from;

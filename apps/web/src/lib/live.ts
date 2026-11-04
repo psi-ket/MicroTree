@@ -12,6 +12,7 @@ import { upsertLibraryJob } from '../features/library/jobs';
 import { invalidateDocuments, invalidateLibrary, keys, queryClient } from './queries';
 import { RuntimeSocket } from './socket';
 import { onVisualArtifact, onVisualTask } from '../features/visual/queries';
+import { onEvidenceEvent } from '../features/evidence-review/state';
 
 let recovering: Promise<void> | null = null;
 
@@ -133,6 +134,10 @@ function handle(event: ServerEvent) {
       break;
     case 'visual.artifact':
       onVisualArtifact(event.artifactId, event.version);
+      break;
+    case 'evidence.job':
+    case 'evidence.claims':
+      onEvidenceEvent(event);
       break;
     case 'hello':
     case 'pong':

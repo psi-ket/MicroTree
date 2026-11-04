@@ -12,3 +12,8 @@ export function openLibrary(fromProjectId?: string): void {
 export function openVisual(fromProjectId?: string): void {
   window.location.hash = fromProjectId ? `/visual?from=${fromProjectId}` : '/visual';
 }
+
+/** Open Evidence Review Mode for a project. */
+export function openReview(projectId: string): void {
+  window.location.hash = `/review?from=${projectId}`;
+}

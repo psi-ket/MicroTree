@@ -10,6 +10,8 @@ import {
   Play,
   Settings2,
   Shapes,
+  ShieldQuestion,
+  ClipboardCheck,
   Square,
   Sun,
 } from 'lucide-react';
@@ -20,7 +22,7 @@ import { useTree, useUpdateProject, useUpdateSettings } from '../../lib/queries'
 import { useResolvedTheme } from '../../lib/theme';
 import { isActive, useCompile } from '../../stores/compile';
 import { useLayout } from '../../stores/layout';
-import { openLibrary, openLiterature, openVisual } from '../../lib/routes';
+import { openLibrary, openLiterature, openReview, openVisual } from '../../lib/routes';
 import { cancelCompile, compileProject, saveAll } from './actions';
 
 const ENGINE_LABEL: Record<LatexEngine, string> = { pdflatex: 'pdfLaTeX', xelatex: 'XeLaTeX', lualatex: 'LuaLaTeX' };
@@ -141,6 +143,14 @@ export function TopBar({ project, onBack }: { project: Project; onBack: () => vo
         <PanelToggle label="References" pressed={layout.references} onClick={() => layout.toggle('references')}>
           <Quote />
         </PanelToggle>
+        <PanelToggle label="Evidence" pressed={layout.evidence} onClick={() => layout.toggle('evidence')}>
+          <ShieldQuestion />
+        </PanelToggle>
+        <Tooltip content="Evidence review of the manuscript">
+          <Button variant="ghost" size="icon" aria-label="Open evidence review" className="text-ink-faint" onClick={() => void saveAll().finally(() => openReview(project.id))} data-testid="open-review">
+            <ClipboardCheck />
+          </Button>
+        </Tooltip>
         <Tooltip content="Search literature">
           <Button
             variant="ghost"

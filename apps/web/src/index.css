@@ -77,3 +77,10 @@
 .monaco-editor-background {
   background-color: var(--rs-panel) !important;
 }
+
+/* Evidence indicators (M5): a thin mark in the line gutter, no badges in the text. */
+.rs-ev-mark { margin-left: 3px; width: 3px !important; border-radius: 1px; }
+.rs-ev-ok { background: var(--rs-success); opacity: 0.55; }
+.rs-ev-open { background: var(--rs-rule-strong); }
+.rs-ev-stale { background: var(--rs-warning); }
+.rs-ev-conflict { background: var(--rs-danger); }

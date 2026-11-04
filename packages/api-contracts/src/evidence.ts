@@ -437,3 +437,9 @@ export const RecordParams = z.object({ recordId: Id });
 export const RecommendationParams = z.object({ recommendationId: Id });
 export const EvidenceJobParams = z.object({ jobId: Id });
 export const ProjectIdParams = z.object({ projectId: z.string().min(1).max(80) });
+
+export type CitationRecommendationView = z.infer<typeof CitationRecommendationSchema>;
+export type ConflictAnalysisView = z.infer<typeof ConflictSchema>;
+export type WritingFindingView = z.infer<typeof WritingFindingSchema>;
+export type CoverageView = z.infer<typeof CoverageSchema>;
+export type CoverageRatio = z.infer<typeof CoverageRatioSchema>;
