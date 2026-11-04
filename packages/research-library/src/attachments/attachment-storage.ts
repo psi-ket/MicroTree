@@ -15,7 +15,7 @@ export interface TempFile {
   tail: Buffer;
 }
 
-const STORAGE_KEY = /^objects\/[0-9a-f]{2}\/[0-9a-f]{2}\/[0-9a-f]{64}\.(pdf|zip|png|jpg|csv|txt)$/;
+const STORAGE_KEY = /^objects\/[0-9a-f]{2}\/[0-9a-f]{2}\/[0-9a-f]{64}\.(pdf|zip|png|jpg|webp|svg|csv|txt)$/;
 
 /**
  * Content-addressed file store for library attachments:

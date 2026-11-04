@@ -1,0 +1,20 @@
+{
+  "name": "@research-studio/visual-artifacts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@research-studio/database": "workspace:*",
+    "@research-studio/shared-types": "workspace:*",
+    "@research-studio/visual-engine": "workspace:*",
+    "drizzle-orm": "^0.45.4"
+  }
+}

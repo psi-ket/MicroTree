@@ -9,6 +9,7 @@ import {
   PanelLeft,
   Play,
   Settings2,
+  Shapes,
   Square,
   Sun,
 } from 'lucide-react';
@@ -19,7 +20,7 @@ import { useTree, useUpdateProject, useUpdateSettings } from '../../lib/queries'
 import { useResolvedTheme } from '../../lib/theme';
 import { isActive, useCompile } from '../../stores/compile';
 import { useLayout } from '../../stores/layout';
-import { openLibrary, openLiterature } from '../../lib/routes';
+import { openLibrary, openLiterature, openVisual } from '../../lib/routes';
 import { cancelCompile, compileProject, saveAll } from './actions';
 
 const ENGINE_LABEL: Record<LatexEngine, string> = { pdflatex: 'pdfLaTeX', xelatex: 'XeLaTeX', lualatex: 'LuaLaTeX' };
@@ -160,6 +161,18 @@ export function TopBar({ project, onBack }: { project: Project; onBack: () => vo
             onClick={() => void saveAll().finally(() => openLibrary(project.id))}
           >
             <BookMarked />
+          </Button>
+        </Tooltip>
+        <Tooltip content="Visual Studio: images to LaTeX">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Open the Visual Studio"
+            className="text-ink-faint"
+            onClick={() => void saveAll().finally(() => openVisual(project.id))}
+            data-testid="open-visual"
+          >
+            <Shapes />
           </Button>
         </Tooltip>
         <Tooltip content={theme === 'dark' ? 'Light theme' : 'Dark theme'}>

@@ -165,9 +165,10 @@ describe('document schema', () => {
 
   it('can be rolled back with the down script and applied again', () => {
     addExtraction('x1', true);
-    const down = readFileSync(fileURLToPath(new URL('../migrations/down/0003_documents.sql', import.meta.url)), 'utf8');
-    handle.sqlite.exec(down);
-    handle.sqlite.prepare('DELETE FROM __drizzle_migrations WHERE created_at = (SELECT max(created_at) FROM __drizzle_migrations)').run();
+    for (const name of ['0004_visual', '0003_documents']) {
+      handle.sqlite.exec(readFileSync(fileURLToPath(new URL(`../migrations/down/${name}.sql`, import.meta.url)), 'utf8'));
+      handle.sqlite.prepare('DELETE FROM __drizzle_migrations WHERE created_at = (SELECT max(created_at) FROM __drizzle_migrations)').run();
+    }
     const tables = () =>
       (handle.sqlite
         .prepare("SELECT name FROM sqlite_master WHERE type='table' AND (name LIKE 'document_%' OR name LIKE 'passage_%' OR name LIKE 'embedding_%')")

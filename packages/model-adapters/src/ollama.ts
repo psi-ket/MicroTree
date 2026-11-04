@@ -17,6 +17,8 @@ import { parseJson } from './anthropic';
 import { toProviderError, trimSlash, type ProviderConnection } from './util';
 
 // Shapes from Ollama's documented REST API (docs/api.md): /api/tags and /api/chat.
+const ShowResponse = z.object({ capabilities: z.array(z.string()).optional() });
+
 const TagsResponse = z.object({
   models: z.array(z.object({ name: z.string(), model: z.string().optional() })),
 });
@@ -90,11 +92,26 @@ export class OllamaProvider implements ModelProvider {
     return parsed.data.models.map((m) => ({ id: m.model ?? m.name, displayName: m.name, contextTokens: null }));
   }
 
+  /** Whether a local model accepts images (`/api/show` lists `vision` among its capabilities). */
+  async describeModel(model: string, signal?: AbortSignal): Promise<{ vision: boolean | null }> {
+    const response = await this.request('/api/show', { method: 'POST', body: JSON.stringify({ model }) }, signal);
+    const parsed = ShowResponse.safeParse(await response.json().catch(() => null));
+    if (!parsed.success || !parsed.data.capabilities) return { vision: null };
+    return { vision: parsed.data.capabilities.includes('vision') };
+  }
+
   private body(request: ModelRequest, extra: Record<string, unknown>) {
     validateRequestContent(request, this.capabilities);
     return JSON.stringify({
       model: request.model,
-      messages: [{ role: 'system', content: request.system }, ...request.messages.map((m) => ({ role: m.role, content: textOf(m.content) }))],
+      messages: [
+        { role: 'system', content: request.system },
+        ...request.messages.map((m) => {
+          // Ollama's /api/chat takes the text as `content` and images as a list of base64 strings.
+          const images = typeof m.content === 'string' ? [] : m.content.flatMap((p) => (p.type === 'image' ? [Buffer.from(p.data).toString('base64')] : []));
+          return { role: m.role, content: textOf(m.content), ...(images.length ? { images } : {}) };
+        }),
+      ],
       options: { num_predict: request.maxOutputTokens },
       ...extra,
     });

@@ -4,3 +4,4 @@ export * from './ai';
 export * from './evidence';
 export * from './literature';
 export * from './library';
+export * from './visual';

@@ -5,6 +5,7 @@ import { LibraryScreen } from './features/library/LibraryScreen';
 import { LiteratureScreen } from './features/literature/LiteratureScreen';
 import { ProjectsScreen } from './features/projects/ProjectsScreen';
 import { saveAll } from './features/workspace/actions';
+import { VisualStudio } from './features/visual/VisualStudio';
 import { Workspace } from './features/workspace/Workspace';
 import {
   connect,
@@ -20,13 +21,14 @@ import { useApplyTheme } from './lib/theme';
 /**
  * Routes: `#/p/<projectId>` opens a project, `#/literature` the literature
  * search and `#/library` the library (`?from=<projectId>` returns there);
- * anything else shows the project list.
+ * `#/visual` the Visual Studio, anything else shows the project list.
  */
 type Route =
   | { page: 'projects' }
   | { page: 'project'; projectId: string }
   | { page: 'literature'; from: string | null }
-  | { page: 'library'; from: string | null };
+  | { page: 'library'; from: string | null }
+  | { page: 'visual'; from: string | null };
 
 function readRoute(): string {
   return window.location.hash;
@@ -39,6 +41,8 @@ function parseRoute(hash: string): Route {
   if (literature) return { page: 'literature', from: literature[1] ?? null };
   const library = /^#\/library(?:\?from=([A-Za-z0-9_-]+))?$/.exec(hash);
   if (library) return { page: 'library', from: library[1] ?? null };
+  const visual = /^#\/visual(?:\?from=([A-Za-z0-9_-]+))?$/.exec(hash);
+  if (visual) return { page: 'visual', from: visual[1] ?? null };
   return { page: 'projects' };
 }
 
@@ -106,6 +110,10 @@ export function App() {
   if (route.page === 'library') {
     const from = route.from;
     return <LibraryScreen backLabel={from ? 'Back to project' : 'Projects'} onBack={() => navigate(from)} />;
+  }
+  if (route.page === 'visual') {
+    const from = route.from;
+    return <VisualStudio projectId={from} backLabel={from ? 'Back to project' : 'Projects'} onBack={() => navigate(from)} />;
   }
   if (route.page === 'project') {
     return (

@@ -82,8 +82,8 @@ export const PROVIDER_KINDS: Record<ModelProviderKind, ProviderKindInfo> = {
       streaming: true,
       structuredOutput: true,
       toolUse: false,
-      // Some local models accept images, but the adapter does not send them.
-      vision: false,
+      // The adapter sends images; whether a model accepts them is reported per model (`describeModel`, /api/show).
+      vision: true,
       reasoning: false,
       maxContextTokens: null,
       maxOutputTokens: null,

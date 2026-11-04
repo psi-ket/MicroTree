@@ -14,7 +14,15 @@ import type {
 export type ImageMimeType = 'image/png' | 'image/jpeg' | 'image/webp';
 
 /** One part of a message. Images are raw bytes; adapters encode them for their provider. */
-export type MessageContent = { type: 'text'; text: string } | { type: 'image'; mimeType: ImageMimeType; data: Uint8Array };
+export type MessageContent =
+  | { type: 'text'; text: string }
+  | {
+      type: 'image';
+      mimeType: ImageMimeType;
+      data: Uint8Array;
+      /** OpenAI's image detail level; other adapters ignore it. */
+      detail?: 'low' | 'high' | 'auto';
+    };
 
 export interface ChatTurn {
   role: 'user' | 'assistant';
@@ -102,6 +110,12 @@ export interface ModelProvider {
   stream(request: ModelRequest): AsyncIterable<ModelStreamEvent>;
   /** Only available when `capabilities.structuredOutput` is true. */
   generateStructured<T>(request: ModelRequest, spec: StructuredOutputSpec<T>): Promise<StructuredResult<T>>;
+  /**
+   * What one model accepts, when the provider can tell (Ollama reports it per
+   * model). `vision: null` means unknown: the adapter can send images, the
+   * model may still reject them.
+   */
+  describeModel?(model: string, signal?: AbortSignal): Promise<{ vision: boolean | null }>;
 }
 
 // ----------------------------------------------------------------- CLI agents

@@ -134,6 +134,36 @@ import {
   type SimilarPassagesRequest,
   type UpdateRetrievalSettingsRequest,
 } from './documents';
+import {
+  ArtifactListResponse,
+  ArtifactResponse,
+  ArtifactVersionSchema,
+  ArtifactVersionsResponse,
+  CompareResponse,
+  InsertionListResponse,
+  InsertionPlanSchema,
+  InsertionResponse,
+  ProviderCheckResponse,
+  RefineResponse,
+  RollbackResponse,
+  ValidateResponse,
+  VisualArtifactSchema,
+  VisualAssetDetailResponse,
+  VisualAssetListResponse,
+  VisualAssetResponse,
+  VisualAssetSchema,
+  VisualProvidersResponse,
+  VisualTaskListResponse,
+  VisualTaskResponse,
+  type ApplyInsertionRequest,
+  type CreateVisualTaskRequest,
+  type InsertionOptionsSchema,
+  type ManualEditRequest,
+  type PlotUpdateRequest,
+  type PreprocessOperationSchema,
+  type RefineRequest,
+} from './visual';
+import { z as zod } from 'zod';
 import type { LibraryItemQuery, LiteratureProviderId, ProposalStatus } from '@research-studio/shared-types';
 
 export class RuntimeApiError extends Error {
@@ -234,6 +264,8 @@ export function createRuntimeClient(options: RuntimeClientOptions) {
   const attachment = (attachmentId: string) => `/library/attachments/${encodeURIComponent(attachmentId)}`;
   const collection = (collectionId: string) => `/library/collections/${encodeURIComponent(collectionId)}`;
   const doc = (attachmentId: string) => `/documents/${encodeURIComponent(attachmentId)}`;
+  const art = (artifactId: string) => `/visual/artifacts/${encodeURIComponent(artifactId)}`;
+  const VersionResponse = zod.object({ version: ArtifactVersionSchema });
   /** DOIs and old-style arXiv IDs contain `/`; each segment is encoded on its own. */
   const segments = (id: string) => id.split('/').map(encodeURIComponent).join('/');
 
@@ -475,6 +507,53 @@ export function createRuntimeClient(options: RuntimeClientOptions) {
       status: () => json(IndexStatusResponse, 'GET', '/retrieval/index/status'),
       reindex: (rebuild = false) => json(IndexStatusResponse, 'POST', '/retrieval/reindex', { body: { rebuild } }),
       cancelReindex: () => json(IndexStatusResponse, 'POST', '/retrieval/reindex/cancel'),
+    },
+
+    visual: {
+      upload: (file: Blob, fileName: string, source: 'upload' | 'clipboard' = 'upload', projectId?: string) => {
+        const form = new FormData();
+        form.set('source', source);
+        if (projectId) form.set('projectId', projectId);
+        form.set('file', file, fileName);
+        return json(VisualAssetResponse, 'POST', '/visual/assets', { formData: form });
+      },
+      fromProject: (projectId: string, path: string) => json(VisualAssetResponse, 'POST', '/visual/assets/from-project', { body: { projectId, path } }),
+      pdfRegion: (png: Blob, region: { attachmentId: string; pageNumber: number; x: number; y: number; width: number; height: number; pageWidth: number; pageHeight: number; renderScale: number }) => {
+        const form = new FormData();
+        for (const [k, v] of Object.entries(region)) form.set(k, String(v));
+        form.set('file', png, 'region.png');
+        return json(VisualAssetResponse, 'POST', '/visual/assets/pdf-region', { formData: form });
+      },
+      assets: (projectId?: string) => json(VisualAssetListResponse, 'GET', '/visual/assets', { query: { projectId } }),
+      asset: (assetId: string) => json(VisualAssetDetailResponse, 'GET', `/visual/assets/${encodeURIComponent(assetId)}`),
+      assetContent: async (assetId: string, signal?: AbortSignal) => (await send('GET', `/visual/assets/${encodeURIComponent(assetId)}/content`, { signal })).blob(),
+      variant: (assetId: string, operations: z.input<typeof PreprocessOperationSchema>[], label?: string) =>
+        json(zod.object({ asset: VisualAssetSchema }), 'POST', `/visual/assets/${encodeURIComponent(assetId)}/variants`, { body: { operations, ...(label ? { label } : {}) } }),
+      providers: () => json(VisualProvidersResponse, 'GET', '/visual/providers'),
+      checkProvider: (providerId: string, model: string, taskType?: string) => json(ProviderCheckResponse, 'GET', `/visual/providers/${encodeURIComponent(providerId)}/check`, { query: { model, taskType } }),
+      createTask: (input: z.input<typeof CreateVisualTaskRequest>) => json(VisualTaskResponse, 'POST', '/visual/tasks', { body: input }),
+      tasks: (projectId?: string) => json(VisualTaskListResponse, 'GET', '/visual/tasks', { query: { projectId } }),
+      task: (taskId: string) => json(VisualTaskResponse, 'GET', `/visual/tasks/${encodeURIComponent(taskId)}`),
+      cancelTask: (taskId: string) => json(VisualTaskResponse, 'POST', `/visual/tasks/${encodeURIComponent(taskId)}/cancel`),
+      retryTask: (taskId: string, consent = false) => json(VisualTaskResponse, 'POST', `/visual/tasks/${encodeURIComponent(taskId)}/retry`, { body: { consent } }),
+      chooseTaskType: (taskId: string, taskType: string) => json(VisualTaskResponse, 'POST', `/visual/tasks/${encodeURIComponent(taskId)}/choose`, { body: { taskType } }),
+      artifacts: (projectId?: string) => json(ArtifactListResponse, 'GET', '/visual/artifacts', { query: { projectId } }),
+      artifact: (artifactId: string) => json(ArtifactResponse, 'GET', art(artifactId)),
+      versions: (artifactId: string) => json(ArtifactVersionsResponse, 'GET', `${art(artifactId)}/versions`),
+      saveVersion: (artifactId: string, input: z.input<typeof ManualEditRequest>) => json(VersionResponse, 'POST', `${art(artifactId)}/versions`, { body: input }),
+      restore: (artifactId: string, version: number) => json(VersionResponse, 'POST', `${art(artifactId)}/restore`, { body: { version } }),
+      validate: (artifactId: string, sourceCode?: string) => json(ValidateResponse, 'POST', `${art(artifactId)}/validate`, { body: sourceCode === undefined ? {} : { sourceCode } }),
+      compile: (artifactId: string, version?: number) => json(VersionResponse, 'POST', `${art(artifactId)}/compile`, { body: version ? { version } : {} }),
+      preview: async (artifactId: string, version: number, signal?: AbortSignal) => (await send('GET', `${art(artifactId)}/versions/${version}/preview`, { signal })).arrayBuffer(),
+      refine: (artifactId: string, input: z.input<typeof RefineRequest>, signal?: AbortSignal) => json(RefineResponse, 'POST', `${art(artifactId)}/refine`, { body: input, signal }),
+      updatePlot: (artifactId: string, input: z.input<typeof PlotUpdateRequest>) => json(VersionResponse, 'POST', `${art(artifactId)}/plot`, { body: input }),
+      approve: (artifactId: string, version: number) => json(zod.object({ artifact: VisualArtifactSchema }), 'POST', `${art(artifactId)}/approve`, { body: { version } }),
+      compare: (artifactId: string, from: number, to: number) => json(CompareResponse, 'GET', `${art(artifactId)}/compare`, { query: { from, to } }),
+      export: async (artifactId: string, version: number, format: 'tex' | 'standalone' | 'csv' | 'json') => (await send('GET', `${art(artifactId)}/versions/${version}/export`, { query: { format } })).text(),
+      previewInsertion: (artifactId: string, input: z.input<typeof InsertionOptionsSchema>) => json(zod.object({ plan: InsertionPlanSchema }), 'POST', `${art(artifactId)}/insert/preview`, { body: input }),
+      insert: (artifactId: string, input: z.input<typeof ApplyInsertionRequest>) => json(InsertionResponse, 'POST', `${art(artifactId)}/insert`, { body: input }),
+      insertions: (projectId: string) => json(InsertionListResponse, 'GET', '/visual/insertions', { query: { projectId } }),
+      rollback: (insertionId: string) => json(RollbackResponse, 'POST', `/visual/insertions/${encodeURIComponent(insertionId)}/rollback`),
     },
 
     references: {

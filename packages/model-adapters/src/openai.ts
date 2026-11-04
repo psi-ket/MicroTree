@@ -97,7 +97,7 @@ export class OpenAiProvider implements ModelProvider {
               content: m.content.map((p): OpenAI.ChatCompletionContentPart =>
                 p.type === 'text'
                   ? { type: 'text', text: p.text }
-                  : { type: 'image_url', image_url: { url: `data:${p.mimeType};base64,${Buffer.from(p.data).toString('base64')}` } },
+                  : { type: 'image_url', image_url: { url: `data:${p.mimeType};base64,${Buffer.from(p.data).toString('base64')}`, ...(p.detail ? { detail: p.detail } : {}) } },
               ),
             },
       ),

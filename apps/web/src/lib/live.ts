@@ -11,6 +11,7 @@ import { dropSession, onUnauthorized, reconnectWithRememberedToken, runtime, use
 import { upsertLibraryJob } from '../features/library/jobs';
 import { invalidateDocuments, invalidateLibrary, keys, queryClient } from './queries';
 import { RuntimeSocket } from './socket';
+import { onVisualArtifact, onVisualTask } from '../features/visual/queries';
 
 let recovering: Promise<void> | null = null;
 
@@ -126,6 +127,12 @@ function handle(event: ServerEvent) {
       break;
     case 'retrieval.changed':
       void queryClient.invalidateQueries({ queryKey: keys.documents.index });
+      break;
+    case 'visual.task':
+      onVisualTask(event.task);
+      break;
+    case 'visual.artifact':
+      onVisualArtifact(event.artifactId, event.version);
       break;
     case 'hello':
     case 'pong':

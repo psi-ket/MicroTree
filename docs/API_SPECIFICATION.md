@@ -398,3 +398,84 @@ probability of relevance or correctness.
 | `RS_INGESTION_MAX_PAGES` | `500` | page limit |
 | `RS_OLLAMA_URL` | `http://127.0.0.1:11434` | default embedding endpoint |
 | `RS_EMBEDDINGS_ALLOW_REMOTE` | `0` | allow an embedding base URL on another computer |
+
+## Visual routes (M4)
+
+Same rules as above. Schemas: `packages/api-contracts/src/visual.ts`;
+client: `client.visual.*`. Images, tasks, artifacts and insertions are
+addressed by ID; no response contains a file-system path. Task changes are
+pushed as `visual.task` (`{ task }`), new versions and compile results as
+`visual.artifact` (`{ artifactId, version }`). Behaviour:
+[`VISUAL_STUDIO.md`](VISUAL_STUDIO.md),
+[`VISUAL_VALIDATION.md`](VISUAL_VALIDATION.md),
+[`AI_PROVIDERS.md`](AI_PROVIDERS.md).
+
+### Images
+
+| Route | Body / query | Response |
+| --- | --- | --- |
+| `POST /visual/assets` | multipart: `file` (PNG, JPEG, WebP, SVG), `source` (`upload`, `clipboard`), `projectId?` | 201 `{ asset, working, removed }`: `working` is the image to use (the PNG rendering for SVG), `removed` lists what SVG sanitising removed; 415 wrong type, 413 too large or too many pixels |
+| `POST /visual/assets/from-project` | `{ projectId, path }` | 201, same; provenance `project-file` |
+| `POST /visual/assets/pdf-region` | multipart: `file` (PNG), `attachmentId`, `pageNumber`, `x`, `y`, `width`, `height`, `pageWidth`, `pageHeight` (PDF points, top-left, unrotated), `renderScale` | 201, same; provenance records the attachment, item, PDF SHA-256, page and region |
+| `GET /visual/assets` | `projectId?`, `limit` | `{ assets }` (originals) |
+| `GET /visual/assets/:assetId` | | `{ asset, lineage }` |
+| `GET /visual/assets/:assetId/content` | | the bytes, sandboxed CSP, `nosniff` (SVG: its PNG rendering) |
+| `POST /visual/assets/:assetId/variants` | `{ operations: [{ op: auto-orient \| rotate \| crop \| resize \| grayscale \| contrast \| normalize \| sharpen \| upscale, … }], label? }` | 201 `{ asset }` |
+| `GET /visual/assets/:assetId/artifacts` | | `{ artifacts }` made from that image |
+
+### Providers
+
+| Route | Query | Response |
+| --- | --- | --- |
+| `GET /visual/providers` | | `{ providers: [{ id, kind, displayName, defaultModel, vision, structuredOutput, privacyMode, host, usable, problem }], compileAvailable }` |
+| `GET /visual/providers/:providerId/check` | `model`, `taskType?` | `{ ok, privacyMode, needsConsent, modelVision, problem, estimatedImageTokens }` |
+
+### Tasks
+
+| Route | Body | Response |
+| --- | --- | --- |
+| `POST /visual/tasks` | `{ taskType, assetId, text, projectId, layout?, imageDetail?, providerId, model, consent }` | 202 `{ task }`; 409 `details.reason = CONSENT_REQUIRED` (with `provider`, `model`, `imageBytes`, `imageSize`, `estimatedImageTokens`) for a cloud provider without consent; 400 with `details.reason` such as `NO_VISION` or `NO_STRUCTURED_OUTPUT` when the provider or model cannot do it |
+| `POST /visual/equations/reconstruct` · `/diagrams/reconstruct` · `/plots/reconstruct` · `/diagrams/generate` · `/captions/generate` | the same without `taskType` | 202 `{ task }` |
+| `POST /visual/circuits/reconstruct` | the same plus `circuitType` (`quantum`, `electrical`) | 202 `{ task }` |
+| `GET /visual/tasks` | `projectId?`, `limit` | `{ tasks }` |
+| `GET /visual/tasks/:taskId` | | `{ task }`: status (`queued`, `running`, `needs_input`, `completed`, `failed`, `cancelled`), progress, error, choices, provider, model, privacy mode, consent time, prompt version, usage, artifact |
+| `POST /visual/tasks/:taskId/cancel` | | `{ task }` |
+| `POST /visual/tasks/:taskId/retry` | `{ consent }` | 202 `{ task }` (a new task with the same input) |
+| `POST /visual/tasks/:taskId/choose` | `{ taskType }` | 202 `{ task }` (continues a `needs_input` task) |
+
+### Artifacts
+
+| Route | Body / query | Response |
+| --- | --- | --- |
+| `GET /visual/artifacts` | `projectId?` | `{ artifacts }` with the current version's compile status |
+| `GET /visual/artifacts/:artifactId` | | `{ artifact, version }` (current) |
+| `GET /visual/artifacts/:artifactId/versions` · `/versions/:n` | | `{ versions }` · `{ version }` |
+| `POST /visual/artifacts/:artifactId/versions` | `{ sourceCode, dataCsv?, changeDescription }` | 201 `{ version }` (hand edit; compiled in the background) |
+| `POST /visual/artifacts/:artifactId/restore` | `{ version }` | 201 `{ version }` (a copy as a new version) |
+| `POST /visual/artifacts/:artifactId/validate` | `{ sourceCode? }` | `{ issues, packages, missingPackages }` |
+| `POST /visual/artifacts/:artifactId/compile` | `{ version? }` | 202 `{ version }` (status `compiling`); 503 `TOOLCHAIN_MISSING` without latexmk |
+| `GET /visual/artifacts/:artifactId/versions/:n/preview` | | the compiled PDF |
+| `POST /visual/artifacts/:artifactId/refine` | `{ instruction, providerId, model, consent }` | 201 `{ version, summary, changes, topologyChanges, ambiguities }`; consent as for tasks |
+| `POST /visual/artifacts/:artifactId/plot` | `{ style?, xAxis?, yAxis?, exactCsv? }` | 201 `{ version }`; no model call |
+| `POST /visual/artifacts/:artifactId/approve` | `{ version }` | `{ artifact }`; 409 unless that version compiled |
+| `GET /visual/artifacts/:artifactId/compare` | `from`, `to` | `{ from, to, diff, structuredChanged }` |
+| `GET /visual/artifacts/:artifactId/versions/:n/export` | `format` (`tex`, `standalone`, `csv`, `json`) | the file as an attachment |
+
+### Insertion
+
+| Route | Body / query | Response |
+| --- | --- | --- |
+| `POST /visual/artifacts/:artifactId/insert/preview` | `{ projectId, version, targetFile, afterLine, directory, label, caption, addPreamble }` | `{ plan: { createdFiles, modifiedFiles (before, after), missingPackages, preambleLines, snippet, warnings, planHash } }`; writes nothing; 409 unless the version is approved |
+| `POST /visual/artifacts/:artifactId/insert` | the same plus `planHash` | 201 `{ insertion }`; 409 `STALE_PREVIEW` when the plan changed since the preview |
+| `GET /visual/insertions` | `projectId` | `{ insertions }` |
+| `POST /visual/insertions/:insertionId/rollback` | | `{ insertion, restored, removed }`; 409 when a file changed since the insertion |
+
+### Configuration
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `RS_VISUAL_DIR` | `<data dir>/visual` | image and preview store |
+| `RS_VISUAL_COMPILE_TIMEOUT_MS` | `60000` | per preview compile |
+| `RS_VISUAL_MAX_IMAGE_BYTES` | `20971520` | per image |
+| `RS_VISUAL_MAX_IMAGE_PIXELS` | `40000000` | decoded pixels |
+| `RS_VISUAL_CONCURRENCY` | `2` | tasks at once |
