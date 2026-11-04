@@ -315,6 +315,18 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
 
+  packages/claim-anchors:
+    dependencies:
+      '@research-studio/document-engine':
+        specifier: workspace:*
+        version: link:../document-engine
+      '@research-studio/document-intelligence':
+        specifier: workspace:*
+        version: link:../document-intelligence
+      '@research-studio/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
+
   packages/database:
     dependencies:
       '@research-studio/document-intelligence':

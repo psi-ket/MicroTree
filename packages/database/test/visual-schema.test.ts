@@ -47,8 +47,11 @@ describe('visual schema', () => {
 
   it('can be rolled back with the down script and applied again', () => {
     artifact('a1');
-    handle.sqlite.exec(readFileSync(fileURLToPath(new URL('../migrations/down/0004_visual.sql', import.meta.url)), 'utf8'));
-    handle.sqlite.prepare('DELETE FROM __drizzle_migrations WHERE created_at = (SELECT max(created_at) FROM __drizzle_migrations)').run();
+    // Later migrations are rolled back first (newest first).
+    for (const name of ['0005_evidence', '0004_visual']) {
+      handle.sqlite.exec(readFileSync(fileURLToPath(new URL(`../migrations/down/${name}.sql`, import.meta.url)), 'utf8'));
+      handle.sqlite.prepare('DELETE FROM __drizzle_migrations WHERE created_at = (SELECT max(created_at) FROM __drizzle_migrations)').run();
+    }
     const tables = () => (handle.sqlite.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'visual_%'").all() as unknown[]).length;
     expect(tables()).toBe(0);
     expect(count('document_extractions')).toBe(0);
