@@ -26,3 +26,6 @@ export * from './plots/pgfplots-generator';
 export * from './plots/csv-generator';
 export * from './refinement/diagram-patch';
 export * from './orchestrator/builders';
+export * from './providers/vision-capabilities';
+export * from './orchestrator/prompts';
+export * from './orchestrator/visual-orchestrator';

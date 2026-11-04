@@ -33,6 +33,7 @@ export function checkLatexSafety(source: string, opts: { maxLength?: number } = 
   if (source.length > max) issues.push({ severity: 'error', message: `The source is longer than ${max} characters`, at: null });
   if (source.includes('^^')) issues.push({ severity: 'error', message: 'Character-code escapes (^^) are not allowed', at: source.indexOf('^^') });
   // Control characters other than tab and newline can hide content.
+  // eslint-disable-next-line no-control-regex -- detecting control characters is the point
   const ctrl = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.exec(source);
   if (ctrl) issues.push({ severity: 'error', message: 'The source contains control characters', at: ctrl.index });
   for (const m of source.matchAll(FORBIDDEN_RE)) {

@@ -23,6 +23,7 @@ export const newAssetId = () => `vas_${randomUUID().replace(/-/g, '')}`;
 /** A label safe to show: no path, no control characters, bounded. */
 export function assetLabel(name: string | null | undefined, fallback: string): string {
   const base = (name ?? '').split(/[\\/]/).pop() ?? '';
+  // eslint-disable-next-line no-control-regex -- removing control characters is the point
   const clean = base.replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 120);
   return clean || fallback;
 }
