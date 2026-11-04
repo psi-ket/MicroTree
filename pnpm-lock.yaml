@@ -402,6 +402,19 @@ importers:
       zod:
         specifier: ^4.6.7
         version: 4.6.7
+    devDependencies:
+      '@research-studio/citation-intelligence':
+        specifier: workspace:*
+        version: link:../citation-intelligence
+      '@research-studio/database':
+        specifier: workspace:*
+        version: link:../database
+      '@research-studio/model-adapters':
+        specifier: workspace:*
+        version: link:../model-adapters
+      '@research-studio/research-retrieval':
+        specifier: workspace:*
+        version: link:../research-retrieval
 
   packages/latex-engine:
     dependencies:

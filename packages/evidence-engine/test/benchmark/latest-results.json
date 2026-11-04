@@ -1,0 +1,228 @@
+{
+  "dataset": "synthetic M5 set (see dataset.ts)",
+  "date": "2026-11-04",
+  "extraction": {
+    "claimDetection": {
+      "precision": 1,
+      "recall": 1,
+      "truePositives": 18,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "trueNegatives": 7
+    },
+    "atomicSegmentation": {
+      "exactMatch": 1,
+      "cases": 18,
+      "failures": []
+    },
+    "typeGuess": {
+      "accuracy": 0.833,
+      "note": "Rule-based first guess; the dataset was also used to tune these rules (in-sample)."
+    },
+    "byCategory": {
+      "quantitative": {
+        "detected": 3,
+        "total": 3,
+        "typeCorrect": 3
+      },
+      "comparative": {
+        "detected": 2,
+        "total": 2,
+        "typeCorrect": 2
+      },
+      "theoretical": {
+        "detected": 4,
+        "total": 4,
+        "typeCorrect": 2
+      },
+      "empirical": {
+        "detected": 2,
+        "total": 2,
+        "typeCorrect": 1
+      },
+      "mathematical": {
+        "detected": 1,
+        "total": 1,
+        "typeCorrect": 1
+      },
+      "methodological": {
+        "detected": 1,
+        "total": 1,
+        "typeCorrect": 1
+      },
+      "causal": {
+        "detected": 1,
+        "total": 1,
+        "typeCorrect": 1
+      },
+      "historical": {
+        "detected": 1,
+        "total": 1,
+        "typeCorrect": 1
+      },
+      "interpretive": {
+        "detected": 1,
+        "total": 1,
+        "typeCorrect": 1
+      },
+      "definition": {
+        "detected": 1,
+        "total": 1,
+        "typeCorrect": 1
+      },
+      "background": {
+        "detected": 1,
+        "total": 1,
+        "typeCorrect": 1
+      }
+    }
+  },
+  "retrieval": {
+    "keyword": {
+      "mode": "keyword",
+      "recallAt5": 1,
+      "recallAt10": 1,
+      "supportingRecallAt5": 1,
+      "meanIndependentPapersInTop5": 2.706,
+      "claims": 17,
+      "byCategory": {
+        "quantitative": {
+          "recallAt5": 1,
+          "recallAt10": 1,
+          "claims": 3
+        },
+        "comparative": {
+          "recallAt5": 1,
+          "recallAt10": 1,
+          "claims": 2
+        },
+        "theoretical": {
+          "recallAt5": 1,
+          "recallAt10": 1,
+          "claims": 4
+        },
+        "empirical": {
+          "recallAt5": 1,
+          "recallAt10": 1,
+          "claims": 2
+        },
+        "mathematical": {
+          "recallAt5": 1,
+          "recallAt10": 1,
+          "claims": 1
+        },
+        "methodological": {
+          "recallAt5": 1,
+          "recallAt10": 1,
+          "claims": 1
+        },
+        "causal": {
+          "recallAt5": 1,
+          "recallAt10": 1,
+          "claims": 1
+        },
+        "historical": {
+          "recallAt5": 1,
+          "recallAt10": 1,
+          "claims": 1
+        },
+        "interpretive": {
+          "recallAt5": 1,
+          "recallAt10": 1,
+          "claims": 1
+        },
+        "background": {
+          "recallAt5": 1,
+          "recallAt10": 1,
+          "claims": 1
+        }
+      }
+    },
+    "hybrid": {
+      "mode": "hybrid (lexical hash embedder, a test stand-in, not a semantic model)",
+      "recallAt5": 1,
+      "recallAt10": 1,
+      "supportingRecallAt5": 1,
+      "meanIndependentPapersInTop5": 3.941,
+      "claims": 17,
+      "byCategory": {
+        "quantitative": {
+          "recallAt5": 1,
+          "recallAt10": 1,
+          "claims": 3
+        },
+        "comparative": {
+          "recallAt5": 1,
+          "recallAt10": 1,
+          "claims": 2
+        },
+        "theoretical": {
+          "recallAt5": 1,
+          "recallAt10": 1,
+          "claims": 4
+        },
+        "empirical": {
+          "recallAt5": 1,
+          "recallAt10": 1,
+          "claims": 2
+        },
+        "mathematical": {
+          "recallAt5": 1,
+          "recallAt10": 1,
+          "claims": 1
+        },
+        "methodological": {
+          "recallAt5": 1,
+          "recallAt10": 1,
+          "claims": 1
+        },
+        "causal": {
+          "recallAt5": 1,
+          "recallAt10": 1,
+          "claims": 1
+        },
+        "historical": {
+          "recallAt5": 1,
+          "recallAt10": 1,
+          "claims": 1
+        },
+        "interpretive": {
+          "recallAt5": 1,
+          "recallAt10": 1,
+          "claims": 1
+        },
+        "background": {
+          "recallAt5": 1,
+          "recallAt10": 1,
+          "claims": 1
+        }
+      }
+    }
+  },
+  "citations": {
+    "precision": 1,
+    "recall": 1,
+    "recommended": 14,
+    "note": "Given correct assessments; measures the recommender, not the model."
+  },
+  "anchors": {
+    "accuracy": 0.833,
+    "cases": 12,
+    "unsafeErrors": [],
+    "conservativeErrors": [
+      "a2 (minor wording)",
+      "a12 (sentences merged)"
+    ],
+    "otherErrors": [],
+    "note": "\"current\" and \"modified\" both keep the claim’s evidence and count as agreeing."
+  },
+  "quotes": {
+    "genuineAccepted": 1,
+    "alteredRefused": 1,
+    "cases": 16
+  },
+  "assessment": {
+    "measured": false,
+    "reason": "No model was configured (set RS_EVIDENCE_LIVE=1 and RS_EVIDENCE_MODEL)."
+  }
+}

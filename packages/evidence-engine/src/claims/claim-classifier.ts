@@ -32,15 +32,15 @@ const RULES: [BuiltInClaimType, RegExp][] = [
   ['definition', /\b(is|are) (defined|called|termed|referred to) as\b|\bwe (define|call|denote|refer to)\b|\bdenotes?\b|\bis known as\b|:=|\\coloneqq/i],
   ['assumption', /\bwe assume\b|\bassuming\b|\bunder the assumption\b|\bis assumed\b/i],
   ['hypothesis', /\bwe (hypothesi[sz]e|conjecture|expect|propose that)\b|\bhypothesis\b|\bconjecture\b/i],
-  ['mathematical', /\b(theorem|lemma|corollary|proposition|identity|holds for all|for all|equals|is equal to|is bounded by|converges to|is proportional to)\b|\$[^$]*[=<>≤≥∝][^$]*\$/i],
+  ['mathematical', /\b(theorem|lemma|corollary|proposition|identity|holds for all|for all|equals|is equal to|is bounded by|converges to|is proportional to)\b|\$[^$]*[=<>≤≥∝][^$]*\$|\b(follows?|satisf(y|ies)|obeys?|solves?) (an? |the )?([\w-]+ ){0,3}(equation|inequality)\b/i],
   ['historical', /\b(first|originally|initially) (proposed|introduced|demonstrated|observed|described|discovered)\b|\b(in|since|by) (1[5-9]|20)\d\d\b|\bhistorically\b|\bwas introduced by\b/i],
-  ['comparative', /\b(more|less|better|worse|higher|lower|faster|slower|larger|smaller|greater|fewer) than\b|\boutperform|\bcompared (to|with)\b|\bexceeds?\b|\bsuperior to\b|\binferior to\b/i],
+  ['comparative', /\b(more|less|better|worse|higher|lower|faster|slower|larger|smaller|greater|fewer)\b(\s+[\w-]+){0,3}\s+than\b|\boutperform|\bcompared (to|with)\b|\bexceeds?\b|\bsuperior to\b|\binferior to\b/i],
   ['causal', /\b(causes?|caused by|leads? to|results? in|due to|because of|gives rise to|induces?|drives?|is responsible for)\b/i],
-  ['quantitative', /\d+(?:[.,]\d+)?\s*(%|\\%|percent|[a-zA-Zµμ]{1,4}\b)|\b\d+(?:\.\d+)?\b/],
+  ['quantitative', /\d+(?:[.,]\d+)?\s*(%|\\%|percent|[a-zA-Zµμ]{1,4}\b)|\b\d+(?:\.\d+)?\b|\b(one|two|three|four|five|ten|a few|several|half a|a) (percent|per cent|orders? of magnitude|times)\b|\b(exponentially|linearly|quadratically|polynomially|logarithmically) (with|in)\b|\bscales? (as|like|with)\b/i],
   ['methodological', /\bwe (use|employ|apply|simulate|measure|compute|implement|train|fit|perform|adopt|follow)\b|\b(is|are|was|were) (measured|computed|simulated|estimated|obtained|calibrated) (using|with|by)\b/i],
   ['interpretive', /\b(suggests?|indicates?|implies|imply|we interpret|can be interpreted|points to|is consistent with|appears? to|seems? to)\b/i],
   ['empirical', /\b(observed|measured|experiments?|experimental(ly)?|data show|we find|was found|were found|reported|demonstrated)\b/i],
-  ['theoretical', /\b(predicts?|predicted|theory|theoretical(ly)?|in principle|model(s)? (predict|show)|framework)\b/i],
+  ['theoretical', /\b(predicts?|predicted|theory|theoretical(ly)?|in principle|model(s)? (predict|show)|framework|obeys?|statistics|[\w-]+ law)\b/i],
 ];
 
 /** A first guess at the claim type (the model and the researcher can change it). */
