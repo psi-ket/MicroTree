@@ -384,3 +384,86 @@ published images (all images are synthetic).
 - [ ] Assistant conversations cannot attach images
 - [ ] No OCR engine or model-free plot digitiser
 - [ ] Contour plots are not digitised into data
+
+## M5 Evidence-linked scientific writing and citation intelligence
+
+Verification (2026-11-04): VERIFICATION_PLACEHOLDER
+
+**What was not verified:** no real language model (no Ollama or hosted
+key in this container). Assessment, conflict analysis, model extraction,
+rewrites and manuscript review run against scripted models at the adapter
+boundary, and in E2E against the real Ollama adapter talking to a mock
+server. Assessment and conflict quality are therefore not measured. All
+papers in tests and the benchmark are synthetic.
+
+**Data model (`database` 4 new tests)**
+- [x] Migration `0005_evidence` (14 tables) with down script, up → down → up
+- [x] One source snapshot shared by many claims, unique per claim; assessment history kept
+- [x] Provenance survives deletion of the library item, the PDF or a claim; project deletion removes the analysis but not the sources
+
+**Anchors (`claim-anchors` 13 tests)**
+- [x] Blocks from the document body (sections, displays, captions, list items); sentences not broken at maths, references or citations
+- [x] `\input` and `\include` followed file by file with section context
+- [x] Stable identities; minor wording kept, material change (numbers, negation, hedging, scope, citations) marked for revalidation; added citations do not make a claim stale
+- [x] Paragraph split, merge, reorder, renamed files, changed included files, duplicates (ambiguity reported), deletion
+
+**Claims (`evidence-engine` claims 8 tests)**
+- [x] Non-claims recognised with a reason (question, instruction, heading, citation only, equation reference, transition, connective, structural)
+- [x] Atomic splitting with spans; noun lists and maths not split
+- [x] 13 claim types guessed by rules; quantities, units, entities and concepts
+- [x] Model extraction validated against the sentence (invented content refused); malformed output and provider failures with stable codes
+- [x] Approve, edit, split, merge, exclude, archive (runtime)
+
+**Retrieval and provenance (`evidence-engine` evidence 13 tests, runtime over real PyMuPDF)**
+- [x] Claim, term, phrase and entity queries through the M3.3 hybrid index; RRF fusion, two passages per paper, full text before abstracts
+- [x] Abstract-level evidence (library and external) marked and warned about
+- [x] Exact passages with paper, section, page, coordinates, hashes, extractor and index versions
+- [x] Freshness: fresh, moved, changed, missing; stale assessments only on material changes
+
+**Assessment and conflicts**
+- [x] Strict structured output; direct, partial, indirect, context, contradiction, insufficient, irrelevant, not assessed
+- [x] Invented or missing quotations do not count; abstract evidence gets a limitation and higher uncertainty
+- [x] Relevance kept apart from support; human review kept apart from AI rows; history never overwritten
+- [x] A contradiction is never hidden behind support; conflict analysis in 8 categories, never resolved
+- [x] Injected instructions in passages fenced as data
+- [ ] Assessment and conflict precision with a real model (harness exists, `RS_EVIDENCE_LIVE=1`, not run)
+
+**Citations (`citation-intelligence` 9 tests)**
+- [x] Recommendations only from supporting evidence, one per paper, never contradictions, rejected or stale items; already cited separated
+- [x] natbib, biblatex and plain detection; `\cite`, `\citep`, `\citet`, `\parencite`, `\textcite`, `\autocite` compatibility
+- [x] Key reuse from the `.bib`, library key with an entry to add, collisions and missing keys reported
+- [x] Insertion before final punctuation, merged into an existing citation, keys already cited skipped
+- [x] `.tex` and `.bib` changes as reviewed diffs; applied only on acceptance (runtime and web)
+- [x] Grouping of adjacent claims resting on the same papers
+
+**Writing (`writing-intelligence` 8 tests)**
+- [x] 29 operations, 9 of them report only
+- [x] Rule findings (overgeneralisation, causal language, style, acronyms, repetition, terminology)
+- [x] Rewrites as M2 proposals; dropped or added citations or references refused; meaning changes warned
+- [x] Coverage with explicit denominators, no aggregate score; introduction and conclusion review with sentence references
+
+**Runtime (`apps/runtime/test/evidence.test.ts` 12 tests)**
+- [x] Routes, typed client and events (`evidence.job`, `evidence.claims`); persistent jobs with cancel and recovery after restart
+- [x] Privacy modes, per-task models, consent with a preview of what is sent, audit of every cloud use and refusal
+- [x] Claims stay inside their project; every request validated
+
+**Web (`apps/web/test/evidence.test.tsx` 6 tests with axe; `e2e/evidence.spec.ts`)**
+- [x] Evidence panel for a selection with claims, evidence, conflicts and citations; gutter marks; "Check evidence" in the context menu
+- [x] PDF viewer at the passage with highlights
+- [x] Consent dialog; model picker per task; project evidence settings
+- [x] Citation review with `.tex` and `.bib` diffs; writing tools
+- [x] Evidence Review Mode with filters, decisions, section summaries and coverage
+- [x] E2E in Chromium: select a sentence, find the claim and its evidence, assess locally, insert a reviewed citation, review coverage; axe on the panel and the review screen
+
+**Benchmark (`evidence-engine` benchmark, synthetic set)**
+- [x] Claim detection, segmentation and type guess; Recall@5/10; citation precision given assessments; anchor accuracy; quotation validation (results in `docs/EVIDENCE_EVALUATION.md`)
+- [ ] A held-out set written independently of the rules
+
+**Docs**
+- [x] `EVIDENCE_ENGINE.md`, `CLAIM_EXTRACTION.md`, `EVIDENCE_ASSESSMENT.md`, `CITATION_INTELLIGENCE.md`, `SCIENTIFIC_WRITING.md`, `MANUSCRIPT_REVIEW.md`, `EVIDENCE_EVALUATION.md`; README, architecture §11, security T59 to T64 and audit events, `DATABASE_SCHEMA.md`, `API_SPECIFICATION.md`, `LIBRARY.md`, `RESEARCH_RETRIEVAL.md`, `VISUAL_STUDIO.md`, `docs/reviews/m5-evidence.md` (plan and report)
+
+**Not done / known limits**
+- [ ] No real model in the verification (see above)
+- [ ] Rule-based claim types are a first guess; the benchmark is small and in-sample
+- [ ] Retrieval quality in a large library is not measured beyond M3.3's evaluation
+- [ ] No reference-manager-style citation of papers outside the library (they must be added first)

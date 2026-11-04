@@ -260,3 +260,249 @@ citation recommendation precision given assessments) by claim category;
 model-dependent metrics (assessment and contradiction precision and recall)
 have a harness that runs with a real model when configured and are reported
 as not measured otherwise.
+
+## Part 2: Engineering report (2026-11-04)
+
+Status labels used below: **[tested]** implemented and covered by automated
+tests; **[not live]** implemented but not verified against a real external
+service or model; **[partial]** partly implemented; **[not done]** not
+implemented.
+
+### 1. Architecture changes
+
+- Four new pure packages (`claim-anchors`, `evidence-engine`,
+  `citation-intelligence`, `writing-intelligence`) and one runtime facade
+  (`EvidenceRuntime`) with its routes, contracts, events and jobs. No new
+  provider or search abstraction. Models are reached through
+  `ModelProvider.generateStructured` (M2) and evidence through the M3.3
+  `DocumentRuntime.search`. **[tested]**
+- Manuscript changes go through the M2 `ProposalService`, and `.bib` changes
+  through the M3.2 project references preview and apply. **[tested]**
+- `ai-core`: `privacyModeOf` moved here from `visual-engine` and is shared.
+  **[tested]**
+- `DocumentRuntime`: `retrievalIndexVersion()` made public. **[tested]**
+- Database migration `0005_evidence` with a down script. **[tested]**
+- Web: five feature modules, an evidence panel in the workspace layout, a
+  `#/review` route, gutter marks and a context-menu action. **[tested]**
+
+### 2. New packages and files
+
+| Area | Files |
+| --- | --- |
+| `packages/claim-anchors` | `hashing/text-hash`, `mapping/materiality`, `parser/latex-blocks`, `parser/sentences`, `parser/manuscript`, `identity/identity`, `reconciliation/matcher`, `reconciliation/reconcile`, `revision/revision` |
+| `packages/evidence-engine` | `claims/` (normalizer, classifier, atomic splitter, validator, extractor), `retrieval/` (types, query builder, source ranking, retriever, context), `assessment/` (validator, support assessor, evidence classifier, contradiction detector, uncertainty), `provenance/`, `freshness/`, `schemas/`, `model/structured`, `prompts`, `errors`; `test/benchmark/` (dataset, harness, test, results) |
+| `packages/citation-intelligence` | validation (setup, command), key resolver, placement, recommender and grouping, diff, bibliography updater |
+| `packages/writing-intelligence` | `analysis/` (academic style, sentence, terminology, logical flow, paragraph), `rewriting/` (citation and meaning preservation, operations, schemas, validation, service), `review/` (coverage, sections, introduction and conclusion), `suggestions/` |
+| `packages/api-contracts` | `src/evidence.ts`; `client.ts` and `events.ts` extended |
+| `packages/shared-types` | `src/evidence.ts` (replaces the M0 placeholder) |
+| `packages/database` | `schema.ts` (14 tables), `migrations/0005_evidence.sql`, `migrations/down/0005_evidence.sql`, `test/evidence-schema.test.ts` |
+| `apps/runtime` | `services/evidence-runtime.ts`, `services/evidence/` (manuscript sync, privacy, jobs, search port), `routes-evidence.ts`, `test/evidence.test.ts` |
+| `apps/web` | `features/evidence-review`, `claim-analysis`, `citation-intelligence`, `scientific-writing`, `manuscript-review`; `test/evidence.test.tsx` |
+| `e2e` | `evidence.spec.ts`; the mock Ollama server answers evidence requests |
+
+### 3. Claim extraction
+
+Rules classify each sentence as a claim or one of eight non-claim kinds with
+a reason, split compound sentences into atomic claims with spans, guess one
+of 13 types and record quantities, entities and concepts. Model extraction
+uses a strict schema with fenced input and is validated against the
+sentence (invented content refused). Both merge by text, and claims are
+stored as `proposed` for the researcher to approve, edit, split, merge,
+exclude or archive. The manuscript is never changed. **[tested]** for rules
+and for the model path with a scripted model; **[not live]** with a real
+model. Benchmark: detection precision and recall 1.000, segmentation 1.000,
+type guess 0.833 (in-sample, see §16).
+
+### 4. Anchoring
+
+LaTeX is parsed into blocks and sentences (preamble and comments skipped,
+maths and references masked, includes followed). Identities are stable while
+the normalised text is unchanged. Reconciliation matches exact, similar,
+split and merged text, and reports ties as ambiguous. `assessChange` decides
+materiality (numbers, negation, quantifiers, modals, comparatives, causal
+words, references, maths, content words, similarity below 0.75). Added
+citations are ignored. Automatic syncs only move statuses towards caution.
+**[tested]** (13 package tests, runtime test on edits). Benchmark: 10 of 12
+anchor cases agree, no unsafe errors, two conservative ones.
+
+### 5. Retrieval methodology
+
+Up to five query variants per claim (the claim in hybrid mode, key terms,
+technical phrases and entities as keyword queries, hedges and citations
+removed, numbers kept) run through the M3.3 index over the library, chosen
+collections or chosen papers. Stored abstracts and, on request, M3.1 results
+are added at abstract level. Reciprocal rank fusion (k = 60) with at most two
+passages per paper, full text before abstracts. Every candidate is an actual
+passage with full provenance, and its ranks are stored apart from support.
+**[tested]** over the real M3.3 keyword index and PyMuPDF extraction;
+semantic search only with the lexical test embedder, **[not live]** with a
+real embedding model. Benchmark Recall@5 and Recall@10 1.000 on 17 claims
+(a small corpus, see §16).
+
+### 6. Assessment methodology
+
+Each record is judged on its own by the assessment model with a strict
+schema, seeing the claim, its sentence and section, and the passage with its
+neighbours, all fenced. Eight categories, uncertainty, one verified excerpt,
+supported and unsupported subclaims, contradictory statements and
+limitations. Support or contradiction without a quotation that occurs in the
+text becomes `not_assessed`. Abstract evidence gets a limitation and a
+higher uncertainty floor. New rows supersede old ones, and changes make them
+stale. Human decisions are separate rows that take precedence when the
+claim status is derived. **[tested]** with scripted models; **[not live]**
+with a real model, so assessment precision is not measured.
+
+### 7. Contradiction classification
+
+Supporting and opposing records are paired and classified by the
+contradiction model into eight categories (direct contradiction,
+conditional, methodological, different assumptions, regimes, definitions,
+apparent disagreement, insufficient information), with both sides and the
+conditions under which each holds. A contradiction always shows as
+`potentially_contradicted` and is never cancelled by support, resolved or
+used to edit text. **[tested]** with scripted models; **[not live]**;
+**[partial]** for evaluation (no labelled conflict set).
+
+### 8. Citation recommendation
+
+Only `direct_support` or `partial_support` evidence counts, judged by the
+model with a verified excerpt or accepted by the researcher, for papers in
+the library. Rejected, stale and external-abstract evidence is left out,
+contradicting papers are never recommended, one recommendation per paper,
+ordered by strength, review, level and uncertainty. Citation counts and
+venues play no part. Papers already cited are listed apart. Grouping
+suggests one citation for adjacent claims resting on the same papers.
+**[tested]**. Benchmark precision and recall 1.000 given correct
+assessments (end to end it depends on §6).
+
+### 9. Bibliography integration
+
+The citation setup (natbib, biblatex, plain) is read from the preamble, and
+the configured command is used only when it compiles, otherwise the setup's
+parenthetical command with a warning. Keys come from the `.bib` when the
+work is there, otherwise from the library with an `add-entry` change from
+the M3.2 preview. Collisions and missing keys are refused, never resolved.
+The cited items are linked to the project first. The `.tex` edit is an M2
+proposal, the `.bib` change is shown as a diff, and both are applied only
+when the researcher accepts. Changed files fail with `STALE_PROPOSAL`.
+**[tested]** (package, runtime and web tests, E2E).
+
+### 10. Writing assistant
+
+29 operations in four groups, 9 of them report only. Rule analysis needs no
+model. Rewrites use the writing model with a strict schema and are checked
+for citations, references and maths (`checkPreservation`) and meaning
+(`assessChange` in non-strict mode). A rewrite that drops or adds a citation
+or reference is not offered, and meaning changes are warned about with the
+affected claims. Valid rewrites become M2 proposals. No section is written
+and no manuscript is rewritten as a whole. **[tested]** with scripted
+models; **[not live]**.
+
+### 11. Manuscript review UI
+
+Evidence panel beside the editor (selection or open file), claim cards with
+evidence, conflicts and recommendations, PDF viewer at the passage, consent
+dialog, model picker, project evidence settings, citation review dialog with
+both diffs, writing tools, gutter marks with text status. Evidence Review
+Mode at `#/review` with filters, decisions, section summaries, introduction
+and conclusion checks and coverage with denominators and no score.
+**[tested]** (6 web tests with axe, E2E in Chromium with axe).
+
+### 12. Migrations
+
+`0005_evidence` adds 14 tables (manuscript revisions, blocks, sentences,
+scientific claims, claim anchors, evidence sources, records, assessments,
+reviews, conflict analyses, citation recommendations, writing suggestions,
+manuscript reviews, evidence jobs). Sources are shared snapshots, unique by
+hash, whose paper links are set null on deletion and which records
+reference without cascade. Down script tested up → down → up. Earlier schema
+tests updated for the new table list and rollback order. **[tested]**
+
+### 13. API endpoints
+
+30 routes under `/api/v1` (claims 8, evidence 6, citations 3, writing and
+review 7, settings, jobs and deletion 6), with Zod contracts, a typed client
+and two events. Listed in `docs/API_SPECIFICATION.md`. **[tested]** (runtime
+integration tests through HTTP).
+
+### 14. Security and privacy
+
+Per-project privacy (`local-only` default, `cloud-allowed` with consent per
+operation and a preview of what is sent, `confidential`), an optional
+provider allow-list, per-task model routing and an audit entry for every
+cloud use and refusal. Untrusted text is fenced and fence markers defused,
+answers are schema-checked and may only refer to `C1` and `P1`, and
+quotations are verified. No model output writes files. Every change is a
+reviewed proposal with compare-and-swap. Provenance is never cascaded away.
+Threats T59 to T64 in `docs/security.md`. **[tested]** (including injected
+instructions, consent, cross-project requests, invalid output and stale
+proposals).
+
+### 15. Benchmark methodology
+
+A synthetic set, written for M5 and reviewed by hand. It has 8 papers with
+"Synthetic" titles and 16 passages, 25 sentences (18 claims across 11 types,
+7 non-claims) with expected atomic claims, 24 claim and passage pairs with
+expected assessments and 12 anchor edits. Nothing is presented as real
+literature. Deterministic parts run in every test run against baselines,
+and model-dependent parts run only with `RS_EVIDENCE_LIVE=1`. Details in
+`docs/EVIDENCE_EVALUATION.md`.
+
+### 16. Benchmark results
+
+| Metric | Result |
+| --- | --- |
+| Claim detection precision / recall | 1.000 / 1.000 |
+| Atomic segmentation exact match | 1.000 (18) |
+| Claim type first guess | 0.833 (0.389 before tuning on this set) |
+| Retrieval Recall@5 / Recall@10, keyword | 1.000 / 1.000 (17 claims) |
+| Retrieval Recall@5 / Recall@10, hybrid with test embedder | 1.000 / 1.000 |
+| Citation precision / recall given correct assessments | 1.000 / 1.000 (14) |
+| Anchor reconciliation agreement | 0.833 (10 of 12), no unsafe errors |
+| Quotation validation, genuine accepted / altered refused | 1.000 / 1.000 (16 each) |
+| Assessment and contradiction precision | not measured (no model) |
+
+These numbers are optimistic. The set is small, the corpus has 16 passages,
+and the set was written by the same team as the rules and partly used to
+tune the type rules. They show the parts work as designed, not how well
+they generalise.
+
+### 17. Automated test results
+
+TEST_RESULTS_PLACEHOLDER
+
+### 18. Build and lint results
+
+BUILD_RESULTS_PLACEHOLDER
+
+### 19. Limitations
+
+- No real language model was available, so assessment, conflict analysis,
+  model extraction, rewrites and reviews were verified only with scripted
+  models and a mock Ollama server. **[not live]**
+- Assessment and contradiction precision are not measured. There is no
+  labelled conflict set. **[partial]**
+- The benchmark is small, synthetic and in-sample for the rules.
+- Semantic retrieval was exercised only with the lexical test embedder.
+- Rule-based claim types are a first guess (three misses in 18).
+- Papers outside the library can be shown as abstract-level evidence but
+  must be added to the library before they can be cited.
+- Anchors are conservative. Some harmless edits ask for revalidation.
+- Rewrites work on a selection only, by design. Whole-manuscript rewriting
+  is excluded.
+
+### 20. Recommendations for M6
+
+1. Run the live harness with a local model (and, with consent, a hosted
+   one) and record assessment and conflict precision per category.
+2. Build a held-out evaluation set written by someone other than the rule
+   authors, with real open-access papers whose licences allow it, and a
+   labelled conflict set.
+3. Measure retrieval with a real embedding model on a library of realistic
+   size, and tune query variants and the per-paper limit there.
+4. Let the researcher teach the claim type rules (corrections become
+   examples) instead of tuning them by hand.
+5. Make anchor materiality configurable per project, to reduce unnecessary
+   revalidation.
+6. Add the claim graph across sections (the same claim stated in the
+   introduction and the results) so evidence can be shared, still reviewed.

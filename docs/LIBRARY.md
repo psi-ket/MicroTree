@@ -230,3 +230,24 @@ processed PDFs, and the **Full text** tab is the processing dashboard.
 Processing reads the PDFs from the store described in §3 and never copies
 them. See [`PAPER_INGESTION.md`](PAPER_INGESTION.md) and
 [`RESEARCH_RETRIEVAL.md`](RESEARCH_RETRIEVAL.md).
+
+## 13. Evidence and citations (M5)
+
+The evidence engine ([EVIDENCE_ENGINE.md](EVIDENCE_ENGINE.md)) searches the
+papers of the library for passages that bear on the manuscript's claims and
+recommends citations from them ([CITATION_INTELLIGENCE.md](CITATION_INTELLIGENCE.md)).
+
+- **Scope.** Evidence is searched in the whole library, in chosen
+  collections or in chosen papers. Archived items are left out. Stored
+  abstracts of papers without full text can be used and are marked
+  "abstract only".
+- **Keys and `.bib`.** Insertion uses the item's citation key and the
+  project `.bib` preview and apply from §6. Inserting a citation links the
+  cited items to the project first, because the preview covers only linked
+  items. Key collisions are reported and the insertion is refused. Keys are
+  never renamed.
+- **Deleting items.** Evidence taken from a paper is a snapshot. Deleting
+  the item or its PDF sets the links to null and keeps the snapshot, and
+  the evidence is shown as `source_missing` at the next check.
+- **PDF viewer.** "Open in PDF" from an evidence item opens the viewer at the
+  passage's page with its coordinates highlighted.

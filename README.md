@@ -6,8 +6,10 @@ the TeX toolchain. Your projects are ordinary folders on disk.
 
 This repository implements milestones **M0** (foundation), **M1** (LaTeX
 workspace), **M2** (AI assistant), **M3.1** (scholarly literature search),
-**M3.2** (personal research library and reference manager) and **M3.3**
-(scientific PDF intelligence, full-text extraction and hybrid retrieval).
+**M3.2** (personal research library and reference manager), **M3.3**
+(scientific PDF intelligence, full-text extraction and hybrid retrieval),
+**M4** (visual intelligence and image-to-LaTeX reconstruction) and **M5**
+(evidence-linked scientific writing and citation intelligence).
 See [`docs/implementation-checklist.md`](docs/implementation-checklist.md)
 for exactly what is done and how it is verified.
 
@@ -318,6 +320,47 @@ Details: [`docs/VISUAL_STUDIO.md`](docs/VISUAL_STUDIO.md),
 [`docs/VISUAL_VALIDATION.md`](docs/VISUAL_VALIDATION.md),
 [`docs/AI_PROVIDERS.md`](docs/AI_PROVIDERS.md).
 
+## Evidence-linked writing
+
+The **Evidence** button in a project's top bar opens a panel beside the
+editor. Select a sentence or a paragraph and choose **Check evidence** (also
+in the editor's context menu).
+
+- **Claims**: the selection's scientific claims are found (by rules, or by a
+  model if you choose) and compound sentences are split into atomic claims.
+  You approve, edit, split, merge or exclude them. The manuscript is not
+  changed.
+- **Evidence**: passages are searched in the papers of your library through
+  the full-text index. Each one is shown with its paper, section and page and
+  opens in the PDF viewer with the passage highlighted. Abstract-only
+  evidence is labelled as such.
+- **Assessment**: a model says how each passage relates to the claim (direct,
+  partial or indirect support, context, contradiction, insufficient,
+  irrelevant). Support must quote the passage, and quotations are checked.
+  Your own decisions are stored separately and never overwritten.
+- **Conflicts**: when sources disagree, the disagreement is classified and
+  both sides are shown. It is never resolved for you.
+- **Citations**: papers are recommended only from supporting evidence. The
+  `.tex` change and any `.bib` addition are shown as diffs to review.
+- **Writing**: 29 writing operations on the selection. Rewrites are diffs to
+  review, citations and references must survive, and meaning changes are
+  flagged.
+- **Review**: Evidence Review Mode (top bar) goes through the manuscript by
+  section with coverage counts and their denominators. There is no single
+  score.
+
+Privacy is set per project. The default is local models only. Cloud models
+can be allowed, and each use is confirmed and audited, or the project can be
+marked confidential so nothing is ever sent.
+
+Details: [`docs/EVIDENCE_ENGINE.md`](docs/EVIDENCE_ENGINE.md),
+[`docs/CLAIM_EXTRACTION.md`](docs/CLAIM_EXTRACTION.md),
+[`docs/EVIDENCE_ASSESSMENT.md`](docs/EVIDENCE_ASSESSMENT.md),
+[`docs/CITATION_INTELLIGENCE.md`](docs/CITATION_INTELLIGENCE.md),
+[`docs/SCIENTIFIC_WRITING.md`](docs/SCIENTIFIC_WRITING.md),
+[`docs/MANUSCRIPT_REVIEW.md`](docs/MANUSCRIPT_REVIEW.md),
+[`docs/EVIDENCE_EVALUATION.md`](docs/EVIDENCE_EVALUATION.md).
+
 ## Security in short
 
 - The runtime listens on loopback only, rejects unexpected `Host` headers
@@ -392,6 +435,13 @@ packages/
                         plot digitising, refinement patches, isolated compile
   visual-assets/        Image validation, SVG sanitising, preprocessing variants, image store
   visual-artifacts/     Artifacts and versions, approval, reviewed insertion and rollback
+  claim-anchors/        LaTeX blocks and sentences, stable identities, anchor reconciliation,
+                        materiality of edits
+  evidence-engine/      Claim extraction and splitting, evidence retrieval, assessment and its
+                        validation, conflicts, provenance, freshness, the M5 benchmark
+  citation-intelligence/ Citation setup and commands, keys, placement, recommendation, grouping
+  writing-intelligence/ Style and precision analysis, 29 writing operations, rewrite validation,
+                        coverage and manuscript review
 docs/                   Architecture, security model, decisions (ADRs), checklist, API, reviews
 e2e/                    Playwright end-to-end tests, a mock OpenAI-compatible server, a mock
                         Ollama vision server and mock scholarly APIs that replay recorded responses
@@ -410,6 +460,7 @@ runtime build bundles them.
 | `pnpm test:e2e` | Playwright: starts a fresh runtime and web server on ports 4399/5199 with a throwaway data folder (keys in memory, agents off), a mock model service on 4499, a mock Ollama vision server on 4497 and mock scholarly APIs on 4498. The tests create a project, edit, upload, compile and check the PDF; configure a model and review an AI edit; and search the literature (merging, BibTeX, rate limits, cancellation, keys, phone-sized dark layout, accessibility checks with axe). No real API keys or network are needed. Run `pnpm exec playwright install chromium` once. |
 | `RS_LITERATURE_LIVE=1 pnpm --filter @research-studio/literature-engine exec vitest run test/live.test.ts` | Opt-in smoke test against the four real scholarly APIs (no keys; set `RS_LITERATURE_MAILTO` to use Crossref's polite pool). Not part of `pnpm test`. |
 | `RS_VISUAL_LIVE=1 RS_VISUAL_MODEL=llava pnpm --filter @research-studio/visual-engine exec vitest run test/live.test.ts` | Opt-in smoke test of an equation reconstruction against a real vision model (local Ollama by default; `RS_VISUAL_KIND`, `RS_VISUAL_BASE_URL`, `RS_VISUAL_API_KEY` for another provider). Not part of `pnpm test`. |
+| `pnpm --filter @research-studio/evidence-engine bench` | M5 benchmark on the synthetic set (claim detection, segmentation, Recall@5/10, citations, anchors, quotation checks). Add `RS_EVIDENCE_LIVE=1 RS_EVIDENCE_MODEL=…` (and `RS_EVIDENCE_KIND`, `RS_EVIDENCE_BASE_URL`, `RS_EVIDENCE_API_KEY`) to measure assessments with a real model. |
 | `pnpm --filter @research-studio/research-retrieval eval` | Retrieval evaluation (Recall@5/10, MRR, nDCG@10) on the labelled set; set `RS_EVAL_OLLAMA_URL` and `RS_EVAL_MODEL` to include a real embedding model. |
 | `pnpm check` | typecheck + lint + test |
 | `pnpm db:generate` | Generate a migration after editing `packages/database/src/schema.ts` |
@@ -424,15 +475,18 @@ Further reading:
 - [`docs/LIBRARY.md`](docs/LIBRARY.md): the personal library, PDF storage, `.bib` updates, Zotero
 - [`docs/PAPER_INGESTION.md`](docs/PAPER_INGESTION.md), [`docs/DOCUMENT_INTELLIGENCE.md`](docs/DOCUMENT_INTELLIGENCE.md), [`docs/RESEARCH_RETRIEVAL.md`](docs/RESEARCH_RETRIEVAL.md), [`docs/EMBEDDING_PROVIDERS.md`](docs/EMBEDDING_PROVIDERS.md), [`docs/RETRIEVAL_EVALUATION.md`](docs/RETRIEVAL_EVALUATION.md): full text and search
 - [`docs/VISUAL_STUDIO.md`](docs/VISUAL_STUDIO.md) and the image-to-LaTeX documents linked from it; [`docs/AI_PROVIDERS.md`](docs/AI_PROVIDERS.md): providers, images, privacy and consent
+- [`docs/EVIDENCE_ENGINE.md`](docs/EVIDENCE_ENGINE.md) and the evidence documents linked from it: claims, evidence, citations, writing and review
 - [`docs/DATABASE_SCHEMA.md`](docs/DATABASE_SCHEMA.md): every table
 - [`docs/decisions/`](docs/decisions/): architecture decision records
 
 ## Not in this milestone
 
-OCR of scanned PDFs, hosted embedding providers, RAG and AI summaries of
-papers or literature reviews, sentence-level claim verification and
-citation-correctness judgements (M5), automatic two-way Zotero sync and Zotero group
-libraries, the claim/evidence verification engine, collaboration, Git
+OCR of scanned PDFs, hosted embedding providers, AI summaries of papers or
+literature reviews, autonomous writing, automatic acceptance of citations,
+judgements of truth, proof checking, data validation, automatic resolution
+of disagreements between sources, unreviewed rewriting of whole manuscripts,
+submission, automatic two-way Zotero sync and Zotero group libraries,
+collaboration, Git
 integration, attaching images to assistant conversations (images are used by
 the Visual Studio only), OCR engines and model-free digitising, tool use, an OS-level sandbox for TeX, and
 shell-escape packages such as `minted`.
