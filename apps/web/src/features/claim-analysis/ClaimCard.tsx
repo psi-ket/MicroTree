@@ -188,7 +188,7 @@ export function ClaimCard({ projectId, claim, model, onOpenPdf, defaultOpen = fa
           {detail.data && !ev.length ? <p className="text-[12px] text-ink-muted">No evidence retrieved yet. “Find evidence” searches your library’s full text.</p> : null}
           {supporting.length ? (
             <section aria-label="Supporting literature" className="flex flex-col gap-1.5">
-              <h4 className="text-[12px] font-medium">Supporting literature ({supporting.length})</h4>
+              <h3 className="text-[12px] font-medium">Supporting literature ({supporting.length})</h3>
               {supporting.map((e) => (
                 <EvidenceItem key={e.id} e={e} onOpenPdf={openPdf} onAssess={(x) => void assessOne(x)} />
               ))}
@@ -196,7 +196,7 @@ export function ClaimCard({ projectId, claim, model, onOpenPdf, defaultOpen = fa
           ) : null}
           {conflicting.length ? (
             <section aria-label="Possibly conflicting literature" className="flex flex-col gap-1.5">
-              <h4 className="text-[12px] font-medium text-danger">Possibly conflicting literature ({conflicting.length})</h4>
+              <h3 className="text-[12px] font-medium text-danger">Possibly conflicting literature ({conflicting.length})</h3>
               {conflicting.map((e) => (
                 <EvidenceItem key={e.id} e={e} onOpenPdf={openPdf} onAssess={(x) => void assessOne(x)} />
               ))}
@@ -205,7 +205,7 @@ export function ClaimCard({ projectId, claim, model, onOpenPdf, defaultOpen = fa
           {detail.data?.conflicts.filter((c) => c.status === 'current').map((c) => <ConflictView key={c.id} conflict={c} evidence={ev} />)}
           {context.length ? (
             <section aria-label="Context" className="flex flex-col gap-1.5">
-              <h4 className="text-[12px] font-medium">Context ({context.length})</h4>
+              <h3 className="text-[12px] font-medium">Context ({context.length})</h3>
               {context.map((e) => (
                 <EvidenceItem key={e.id} e={e} onOpenPdf={openPdf} onAssess={(x) => void assessOne(x)} />
               ))}

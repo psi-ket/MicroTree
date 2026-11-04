@@ -81,7 +81,7 @@ export function EvidencePanel({ projectId }: { projectId: string }) {
           <>
             {selection ? (
               <section className="rounded-md border border-rule bg-raised p-2" aria-label="Selected text">
-                <h3 className="mb-1 text-[12px] font-medium text-ink-muted">Selected text</h3>
+                <h2 className="mb-1 text-[12px] font-medium text-ink-muted">Selected text</h2>
                 <p className="max-h-28 overflow-auto whitespace-pre-wrap text-[12px]" data-testid="selected-text">
                   {selection.text}
                 </p>

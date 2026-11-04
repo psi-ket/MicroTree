@@ -352,7 +352,7 @@ export const EvidenceSettingsSchema = z.object({
   /** Providers allowed for cloud processing (empty: any configured provider, with consent). */
   allowedProviders: z.array(ProviderId).max(20),
   /** Model per task (used as the default choice in the UI). */
-  models: z.record(z.enum(EVIDENCE_MODEL_TASKS), z.object({ providerId: ProviderId, model: ModelName }).nullable()),
+  models: z.partialRecord(z.enum(EVIDENCE_MODEL_TASKS), z.object({ providerId: ProviderId, model: ModelName }).nullable()),
 });
 export type EvidenceSettings = z.infer<typeof EvidenceSettingsSchema>;
 export const UpdateEvidenceSettingsRequest = EvidenceSettingsSchema.partial().strict();

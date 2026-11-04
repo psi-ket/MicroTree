@@ -52,7 +52,7 @@ export function EvidenceSettingsDialog({ projectId, open, onClose }: { projectId
             {EVIDENCE_MODEL_TASKS.map((t) => (
               <div key={t}>
                 <Label>{TASK_LABEL[t]}</Label>
-                <ModelPicker value={draft.models[t]} onChange={(v) => setDraft({ ...draft, models: { ...draft.models, [t]: v } })} label={TASK_LABEL[t]} />
+                <ModelPicker value={draft.models[t] ?? null} onChange={(v) => setDraft({ ...draft, models: { ...draft.models, [t]: v } })} label={TASK_LABEL[t]} />
               </div>
             ))}
           </div>

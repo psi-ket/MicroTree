@@ -27,8 +27,22 @@ const PLOT = {
   warnings: [],
 };
 
-function answerFor(schema) {
+/** Evidence (M5) answers from the request text; these requests carry no image. */
+function evidenceAnswer(keys, text) {
+  if (keys.includes('relevantExcerpt')) {
+    const passage = /<untrusted kind="paper-passage">\n([\s\S]*?)\n<\/untrusted>/.exec(text)?.[1] ?? '';
+    const hit = /[^.]*one percent[^.]*/i.exec(passage)?.[0]?.trim() ?? '';
+    const base = { claimId: 'C1', passageId: 'P1', supportedSubclaims: [], unsupportedSubclaims: [], contradictoryStatements: [], limitations: [], uncertainty: 'low' };
+    return hit ? { ...base, assessment: 'direct_support', explanation: 'The passage states the threshold.', relevantExcerpt: hit } : { ...base, assessment: 'context_only', explanation: 'On the topic only.', relevantExcerpt: '' };
+  }
+  if (keys.includes('differences')) return { category: 'insufficient_information', explanation: 'Not enough detail.', differences: [], uncertainty: 'high' };
+  return null;
+}
+
+function answerFor(schema, text = '') {
   const keys = Object.keys(schema?.properties ?? {});
+  const evidence = evidenceAnswer(keys, text);
+  if (evidence) return evidence;
   if (keys.includes('latex')) return EQUATION;
   if (keys.includes('series')) return PLOT;
   if (keys.includes('taskType')) return { taskType: 'equation', alternatives: [], ambiguous: false, reason: 'A single formula', confidence: 0.9 };
@@ -54,8 +68,10 @@ createServer(async (req, res) => {
     requests++;
     const body = JSON.parse(raw);
     const images = body.messages.flatMap((m) => m.images ?? []).length;
-    const answer = answerFor(body.format);
-    if (!answer || images === 0) return json(400, { error: 'unexpected request in the mock' });
+    const text = body.messages.map((m) => (typeof m.content === 'string' ? m.content : '')).join('\n');
+    const answer = answerFor(body.format, text);
+    const textOnly = answer && evidenceAnswer(Object.keys(body.format?.properties ?? {}), text);
+    if (!answer || (images === 0 && !textOnly)) return json(400, { error: 'unexpected request in the mock' });
     return json(200, { model: body.model, message: { role: 'assistant', content: JSON.stringify(answer) }, done: true, done_reason: 'stop', prompt_eval_count: 900, eval_count: 120 });
   }
   json(404, { error: 'not found' });

@@ -7,7 +7,7 @@ export function ConflictView({ conflict, evidence }: { conflict: ConflictAnalysi
   const b = evidence.find((e) => e.id === conflict.opposingRecordId);
   return (
     <section className="rounded-md border border-danger/40 bg-danger-soft/20 p-2 text-ui" data-testid="conflict">
-      <h4 className="font-medium">{CONFLICT_LABEL[conflict.category]}</h4>
+      <h3 className="font-medium">{CONFLICT_LABEL[conflict.category]}</h3>
       <p className="text-[12px]">{conflict.explanation}</p>
       <div className="mt-1.5 grid gap-2 md:grid-cols-2">
         {[
