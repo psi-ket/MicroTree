@@ -1,5 +1,6 @@
 /** The parts of a `.bib` preview change the resolver needs (structurally typed). */
 export interface BibChangeLike {
+  id?: string;
   kind: 'add-entry' | 'add-fields' | 'existing-key-for-doi' | 'key-collision' | 'unchanged' | 'missing-key';
   libraryItemId: string;
   citationKey: string | null;
