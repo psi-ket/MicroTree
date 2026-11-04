@@ -469,11 +469,30 @@ they generalise.
 
 ### 17. Automated test results
 
-TEST_RESULTS_PLACEHOLDER
+`pnpm -r --no-bail test`: 1032 passed, 25 failed, 9 skipped (M4: 953
+passed, 25 failed, 7 skipped). The 25 failures are exactly the M4 baseline,
+all environmental and in code M5 did not change: `agent-adapters` 11 and
+`runtime` 9 (Claude Code and Codex CLIs missing), `latex-engine` 4 (XeLaTeX
+and gitignored `*.log` fixtures), `document-engine` 1 (Windows paths).
+
+| Package | Result |
+| --- | --- |
+| `claim-anchors` | 13 passed |
+| `evidence-engine` | 27 passed, 1 skipped (the opt-in live model benchmark) |
+| `citation-intelligence` | 9 passed |
+| `writing-intelligence` | 8 passed |
+| `database` | 38 passed (4 new) |
+| `apps/runtime` | 147 passed (12 new in `evidence.test.ts`), 9 baseline failures |
+| `apps/web` | 63 passed (6 new in `evidence.test.tsx`) |
+| Playwright | 11 of 11 passed, including `e2e/evidence.spec.ts` |
+
+**[tested]**
 
 ### 18. Build and lint results
 
-BUILD_RESULTS_PLACEHOLDER
+`pnpm -r typecheck` (TypeScript strict) and `pnpm -r lint` (ESLint with
+typescript-eslint strict) pass in all 24 packages with no errors.
+**[tested]**
 
 ### 19. Limitations
 

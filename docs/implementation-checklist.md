@@ -387,7 +387,16 @@ published images (all images are synthetic).
 
 ## M5 Evidence-linked scientific writing and citation intelligence
 
-Verification (2026-11-04): VERIFICATION_PLACEHOLDER
+Verification (2026-11-04): Linux, Node 22, TeX Live with pdfLaTeX and latexmk, PyMuPDF,
+Chromium for E2E. `pnpm -r typecheck` and `pnpm -r lint` pass in all 24
+packages. `pnpm -r --no-bail test`: 1032 passed, 25 failed, 9 skipped.
+**All 25 failures are the M4 baseline, in code M5 did not change**:
+`agent-adapters` (11) and `runtime` (9, in `agent-security`, `ai` and
+`staging-lifecycle`) need the Claude Code and Codex CLIs, `latex-engine` (4)
+needs XeLaTeX and three log fixtures kept out by `.gitignore`, and
+`document-engine` (1) is a Windows-path test. Every new or changed package
+passes. The full Playwright suite passes (11 of 11, including
+`e2e/evidence.spec.ts`).
 
 **What was not verified:** no real language model (no Ollama or hosted
 key in this container). Assessment, conflict analysis, model extraction,
