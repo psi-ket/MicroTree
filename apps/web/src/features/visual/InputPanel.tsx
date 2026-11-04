@@ -114,7 +114,7 @@ export function InputPanel({
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-y-auto bg-panel" data-testid="visual-input">
-      <PanelHeading>Input</PanelHeading>
+      <PanelHeading className="text-ink-muted">Input</PanelHeading>
       <div className="flex flex-col gap-3 px-3 pb-4">
         <div
           className={cn('grid min-h-36 place-items-center rounded-md border border-dashed border-rule-strong bg-sunken/40 p-2 text-center', over && 'border-accent bg-accent/5')}
@@ -181,7 +181,7 @@ export function InputPanel({
           <section aria-label="Preprocessing" className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2 text-[12px] font-medium text-ink-muted">
               <FileImage className="size-3.5" aria-hidden /> Preprocessing
-              {asset.kind === 'variant' ? <Badge>variant</Badge> : <Badge tone="success">original</Badge>}
+              {asset.kind === 'variant' ? <Badge>variant</Badge> : <Badge className="text-ink" tone="success">original</Badge>}
             </div>
             <div className="flex flex-wrap gap-1">
               <Button size="sm" onClick={() => void variant([{ op: 'rotate', degrees: 90 }], 'Rotated')}>
@@ -205,7 +205,7 @@ export function InputPanel({
                 </Button>
               ) : null}
             </div>
-            <FieldHint>Each step makes a new image; the original is kept and stays linked. Colour is kept unless you choose greyscale.</FieldHint>
+            <FieldHint className="text-ink-muted">Each step makes a new image; the original is kept and stays linked. Colour is kept unless you choose greyscale.</FieldHint>
           </section>
         ) : null}
 
@@ -219,7 +219,7 @@ export function InputPanel({
               </option>
             ))}
           </Select>
-          <FieldHint>{TASK_OPTIONS.find((o) => o.value === settings.taskType)?.hint}</FieldHint>
+          <FieldHint className="text-ink-muted">{TASK_OPTIONS.find((o) => o.value === settings.taskType)?.hint}</FieldHint>
         </div>
         {settings.taskType === 'diagram' || settings.taskType === 'text-to-diagram' ? (
           <div>
@@ -279,12 +279,12 @@ export function InputPanel({
           </div>
         </div>
         {provider ? (
-          <FieldHint>
+          <FieldHint className="text-ink-muted">
             {provider.privacyMode === 'local' ? 'Runs on this computer; nothing leaves it.' : `Runs at ${provider.host ?? provider.displayName}; you confirm before anything is sent.`}
             {!providers.data?.compileAvailable ? ' No LaTeX toolchain was found, so results cannot be compiled or approved.' : ''}
           </FieldHint>
         ) : providers.data && !providers.data.providers.length ? (
-          <FieldHint>Add a model provider in the assistant settings first (Ollama with a vision model runs locally).</FieldHint>
+          <FieldHint className="text-ink-muted">Add a model provider in the assistant settings first (Ollama with a vision model runs locally).</FieldHint>
         ) : null}
         {imageTask ? (
           <label className="flex items-center gap-2 text-ui">

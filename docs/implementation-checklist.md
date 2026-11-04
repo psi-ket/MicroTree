@@ -309,3 +309,78 @@ TEI are synthetic).
 - [ ] Symbols such as `=` and `∝` are not keyword tokens
 - [ ] No hosted embedding providers and no learned reranker
 - [ ] Exact vector scan; an approximate index would be needed for very large libraries
+
+## M4 Visual intelligence and image-to-LaTeX reconstruction
+
+Verification (2026-11-04, Linux, Node 22, TeX Live with pdfLaTeX, latexmk,
+TikZ, PGFPlots, Quantikz and Circuitikz installed, Chromium for E2E):
+`pnpm -r typecheck` and `pnpm -r lint` pass in every package.
+`pnpm -r --no-bail test`: 953 passed, 25 failed, 7 skipped. **All 25
+failures are in code M4 did not change** and come from the environment:
+`agent-adapters` (11) and `runtime` (9) need the Claude Code and Codex CLIs;
+`latex-engine` (4) needs XeLaTeX (one test) and three log fixtures that the
+root `.gitignore` (`*.log`) keeps out of the repository; `document-engine`
+(1) is a Windows-path test. Every new or changed package passes. The full
+Playwright suite passes (10 of 10, including `e2e/visual.spec.ts`).
+
+**What was not verified:** no real vision model (no Ollama or hosted key in
+this container; providers are mocked at the adapter boundary, with the
+real Ollama adapter against a mock server in E2E), and no real scanned or
+published images (all images are synthetic).
+
+**Image pipeline (`visual-assets` 12 tests; image functions in `visual-engine`)**
+- [x] PNG, JPEG, WebP and SVG by content; mismatched, unknown, damaged and empty files refused
+- [x] Size and decoded-pixel limits; decompression bomb refused before decoding
+- [x] SVG sanitising by allowlist (scripts, handlers, `foreignObject`, external references, CSS URLs, DTD and entities); raster-only display
+- [x] Rotate, crop, resize, deskew/normalise, contrast, greyscale, sharpen, upscale as variants; colour kept unless asked; original unchanged
+- [x] Provenance: upload, clipboard, project file, PDF region (attachment, item, PDF hash, page, region, render scale), generated
+- [x] Images for providers within limits (2048 px, PNG or JPEG under 4.5 MB)
+
+**Providers (`model-adapters` 60 tests, `ai-core`, `visual-engine` orchestrator 11 tests)**
+- [x] Ollama image input (`images`) and per-model vision check (`/api/show`); OpenAI `detail`
+- [x] Routing: local only for Ollama on loopback; cloud needs consent per task; adapters without images or structured output refused; text-only local models refused
+- [x] Structured contracts (strict JSON Schema from Zod at every level); malformed answers, provider failures, rate limits, unsupported images, cancellation
+- [x] Automatic detection with a choice when ambiguous; prompts versioned; image text treated as data
+- [ ] Live run against a real vision model (opt-in test `packages/visual-engine/test/live.test.ts` exists, not run here)
+
+**Reconstruction and generation (`visual-engine` generators 32 tests, real pdfLaTeX compiles)**
+- [x] Equations: inline, display, align, gather, cases, matrix, derivatives, integrals, sums, bra-ket, commutators, Unicode mapping, ambiguous symbols, missing parts, invalid LaTeX
+- [x] TikZ from a structured model: nodes, edges with directions, labels, styles, four layout modes, validation
+- [x] Quantikz: qubits, gates, controlled gates, swaps, measurements with classical wires, barriers, column scheduling, invalid indices
+- [x] Circuitikz: resistors, capacitors, inductors, voltage and current sources, diodes, wires, ground, junctions, unknown connections
+- [x] Plots: linear, log and reversed axes, least-squares calibration with residual check, pixel uncertainty, error bars, several series, legends, model estimates labelled, CSV for PGFPlots and CSV export with origin, style changes without touching data
+- [x] Text to diagram (no image sent); refinement through structural operations or exact source edits
+- [x] Static LaTeX safety, package detection and allowlist, isolated compile, timeout, cleanup, missing packages reported and never installed
+
+**Artifacts and insertion (`visual-artifacts` 8 tests, `database` 3 new tests)**
+- [x] Migration `0004_visual` (assets, artifacts, versions, tasks, insertions) with down script, up → down → up
+- [x] Versions never overwritten; restore as a copy; line diff; approval names a compiled version
+- [x] Insertion plan (unique names, figure snippet, plot CSV path, preamble opt-in), compare-and-swap apply with undo on failure, rollback refused after later edits
+
+**Runtime (`apps/runtime/test/visual.test.ts`, 16 tests, real compile)**
+- [x] Routes under `/api/v1/visual` with Zod contracts, typed client, `visual.task` and `visual.artifact` events, audit events; every response and event checked against its schema
+- [x] Intake (upload, SVG, variants, project images, PDF-region refusal for unknown attachments), inert serving
+- [x] Consent enforced and recorded; local tasks need none; text-only models refused
+- [x] Task queue: equation, automatic detection with choice, cancel and retry, failed answers, text to diagram, refinement, compare, restore, hand edits, refused unsafe source, plots (restyle, recalibrate, exact data, CSV export) with no model call
+- [x] Reviewed insertion: refused before approval, stale preview refused, applied, listed, rolled back; restart marks running tasks failed
+
+**Web (`apps/web/test/visual.test.tsx` 10 tests with axe; `e2e/visual.spec.ts`)**
+- [x] `#/visual` from the project list and the workspace top bar; resizable and collapsible panels, tabs below 1100 px
+- [x] Upload, paste, drop, project images, PDF region picker; preprocessing; task, provider, model, layout, context, Precise
+- [x] Consent dialog (provider, model, size, approximate tokens)
+- [x] Preview of input and compiled result; explanation view with observations apart from interpretation
+- [x] Source editor with save as version and validate; CSV and exact data; axes and style; structure view
+- [x] Warnings, validation, packages, log, versions with compare and restore
+- [x] Improve, presets, Reconstruct, Precise, Explain, Compile, Approve, Insert, Copy, Export
+- [x] Insertion review with new files and diffs, preamble opt-in, stale preview, apply, undo
+- [x] E2E in Chromium: upload, local reconstruction, real compile, approve, review, insert, rollback, plot CSV and restyle without a model call; axe without violations (contrast included) at desktop and phone width; no horizontal scrolling at 390 px
+
+**Docs**
+- [x] `docs/VISUAL_STUDIO.md`, `IMAGE_TO_EQUATION.md`, `DIAGRAM_RECONSTRUCTION.md`, `QUANTUM_CIRCUITS.md`, `PLOT_RECONSTRUCTION.md`, `VISUAL_VALIDATION.md`, `AI_PROVIDERS.md`; README, architecture §10, security T51 to T58 and residual risks, `DATABASE_SCHEMA.md`, `API_SPECIFICATION.md`, `.env.example`, `docs/reviews/m4-visual.md` (plan and report)
+
+**Not done / known limits**
+- [ ] No real vision model or real images in the verification (see above)
+- [ ] Reconstruction quality is not measured (no labelled image benchmark)
+- [ ] Assistant conversations cannot attach images
+- [ ] No OCR engine or model-free plot digitiser
+- [ ] Contour plots are not digitised into data

@@ -50,7 +50,7 @@ export function SourcePanel({ artifact, version, isCurrent }: { artifact: Visual
   if (!artifact || !version) {
     return (
       <div className="flex h-full flex-col bg-panel">
-        <PanelHeading>Source</PanelHeading>
+        <PanelHeading className="text-ink-muted">Source</PanelHeading>
         <p className="px-3 text-ui text-ink-muted">The editable LaTeX appears here after a reconstruction.</p>
       </div>
     );
@@ -88,7 +88,7 @@ export function SourcePanel({ artifact, version, isCurrent }: { artifact: Visual
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-panel" data-testid="visual-source">
-      <PanelHeading className="flex items-center gap-1">
+      <PanelHeading className="text-ink-muted flex items-center gap-1">
         <nav aria-label="Source views" className="flex gap-0.5">
           {tabs.map((t) => (
             <button key={t.id} type="button" aria-current={tab === t.id ? 'page' : undefined} onClick={() => setTab(t.id)} className={cn('rounded-ctl px-2 py-0.5 text-ui text-ink-muted hover:bg-sunken', tab === t.id && 'bg-sunken text-ink')}>
@@ -117,7 +117,7 @@ export function SourcePanel({ artifact, version, isCurrent }: { artifact: Visual
             <Button size="sm" variant="primary" disabled={!dirty || busy} onClick={() => void save()} data-testid="save-version">
               {busy ? <Spinner /> : <Save />} Save as new version
             </Button>
-            {!isCurrent ? <FieldHint>You are viewing an older version; saving builds on it.</FieldHint> : null}
+            {!isCurrent ? <FieldHint className="text-ink-muted">You are viewing an older version; saving builds on it.</FieldHint> : null}
           </div>
         </>
       ) : tab === 'csv' ? (
@@ -161,7 +161,7 @@ function CsvTab({ artifactId, csv, onCsv, version }: { artifactId: string; csv: 
       <div>
         <Label htmlFor="plot-csv">Data PGFPlots reads (read only)</Label>
         <textarea id="plot-csv" readOnly value={csv} onChange={(e) => onCsv(e.target.value)} rows={8} className="w-full rounded-ctl border border-rule bg-sunken/40 p-1.5 font-mono text-[11px]" data-testid="plot-csv" />
-        <FieldHint>Columns per series: x, y, lower and upper error. Digitised values are approximations; the export says where each value came from.</FieldHint>
+        <FieldHint className="text-ink-muted">Columns per series: x, y, lower and upper error. Digitised values are approximations; the export says where each value came from.</FieldHint>
         <Button size="sm" onClick={() => void download()}>
           Export CSV with origins
         </Button>
@@ -286,7 +286,7 @@ function PlotTab({ artifactId, settings }: { artifactId: string; settings: PlotS
       <Button size="sm" disabled={busy} onClick={() => void apply('axes')} data-testid="apply-axes">
         Recalibrate axes
       </Button>
-      {!settings.canRecalibrate ? <FieldHint>These values were entered as exact data, so there are no pixel positions to recalibrate.</FieldHint> : null}
+      {!settings.canRecalibrate ? <FieldHint className="text-ink-muted">These values were entered as exact data, so there are no pixel positions to recalibrate.</FieldHint> : null}
     </div>
   );
 }

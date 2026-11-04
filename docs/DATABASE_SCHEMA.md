@@ -10,13 +10,13 @@ Two migration histories share the file:
 
 | History | Package | Table that records it | Migrations |
 | --- | --- | --- | --- |
-| Core | `packages/database` | `__drizzle_migrations` | `0000_init`, `0001_literature`, `0002_library`, `0003_documents` |
+| Core | `packages/database` | `__drizzle_migrations` | `0000_init`, `0001_literature`, `0002_library`, `0003_documents`, `0004_visual` |
 | AI | `packages/ai-storage` | `__ai_migrations` | its own numbered files |
 
-Migrations are applied at start-up, forward only. `0002_library` and
-`0003_documents` have hand-written reverses in
+Migrations are applied at start-up, forward only. `0002_library`,
+`0003_documents` and `0004_visual` have hand-written reverses in
 `packages/database/migrations/down/` (each drops its own tables, nothing
-else; `0003` must be reversed before `0002`); tests apply up → down → up.
+else; reverse them newest first); tests apply up → down → up.
 They are never run automatically.
 
 Timestamps are ISO 8601 strings in UTC. JSON columns are `text`.
@@ -99,6 +99,21 @@ library_attachments 1──* document_jobs            passage_fts (FTS5, rows pe
 Retrieval settings (auto-process, embeddings on/off, model, base URL), the
 active embedding space and the reindex state are in `settings` scope
 `retrieval`.
+
+## Visual intelligence (`0004_visual`, M4)
+
+```
+visual_assets (original) 1──* visual_assets (variant, render)     projects 1──* visual_insertions
+visual_assets 1──* visual_artifacts 1──* visual_artifact_versions   visual_tasks ──▶ visual_artifacts
+```
+
+| Table | Columns | Constraints and notes |
+| --- | --- | --- |
+| `visual_assets` | `id` PK (`vas_…`), `kind` (`original`, `variant`, `render`), `parent_asset_id`, `original_asset_id`, `storage_key`, `mime_type`, `file_size`, `sha256`, `width`, `height`, `operations` (JSON), `preprocess_version`, `provenance` (JSON: upload, clipboard, project file, PDF region with attachment, PDF hash, page and region, generated), `label`, `project_id` → projects (set null), `created_at` | bytes live in the content-addressed store `<data dir>/visual`; indexes on original and SHA-256 |
+| `visual_artifacts` | `id` PK (`var_…`), `artifact_type`, `title`, `description`, `project_id` (set null), `source_asset_id`, `current_version`, `approval` (`draft`, `approved`), `approved_at`, `approved_version`, timestamps | |
+| `visual_artifact_versions` | `id` PK (`vav_…`), `artifact_id` → artifacts (cascade), `version_number`, `source_code`, `structured_data` (JSON), `data_csv`, `warnings` (JSON), `origin` (`model`, `manual`, `refinement`, `restore`, `calibration`), `change_description`, `packages` (JSON), `compilation_status`, `diagnostics` (JSON), `compile_log`, `preview_asset_id`, `task_id`, `created_at` | unique (`artifact_id`, `version_number`); rows are never updated except for the compile result |
+| `visual_tasks` | `id` PK (`vtk_…`), `task_type`, `resolved_type`, `project_id`, `source_asset_id`, `input_asset_id`, `source_attachment_id`, `source_page`, `provider_id`, `provider_kind`, `model`, `privacy_mode`, `consent_at`, `prompt_version`, `config` (JSON), `status`, `progress`, `error`, `choices` (JSON), `usage` (JSON), `artifact_id`, `artifact_version`, timestamps | queued and running tasks become failed at start-up |
+| `visual_insertions` | `id` PK (`vin_…`), `project_id` → projects (cascade), `artifact_id`, `version_number`, `created_files` (JSON path and hash), `modified_files` (JSON path, hashes and the previous content for rollback), `status` (`applied`, `rolled-back`), `created_at`, `rolled_back_at` | the previous content is never returned by the API |
 
 ## AI (`packages/ai-storage`)
 

@@ -38,10 +38,10 @@ export function PreviewPane({
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-paper" data-testid="visual-preview">
-      <PanelHeading className="flex items-center gap-2">
+      <PanelHeading className="text-ink-muted flex items-center gap-2">
         Preview
         {status ? (
-          <Badge tone={status.tone} data-testid="compile-status">
+          <Badge className="text-ink" tone={status.tone} data-testid="compile-status">
             {status.label}
           </Badge>
         ) : null}

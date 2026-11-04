@@ -51,7 +51,7 @@ export function BottomPanel({
         {tabs.map((t) => (
           <button key={t.id} type="button" aria-current={tab === t.id ? 'page' : undefined} onClick={() => setTab(t.id)} className={cn('flex items-center gap-1 rounded-ctl px-2 py-0.5 text-ui text-ink-muted hover:bg-sunken', tab === t.id && 'bg-sunken text-ink')}>
             {t.label}
-            {t.count ? <Badge tone={t.id === 'validation' ? 'danger' : t.id === 'warnings' ? 'warning' : 'neutral'}>{t.count}</Badge> : null}
+            {t.count ? <Badge className="text-ink" tone={t.id === 'validation' ? 'danger' : t.id === 'warnings' ? 'warning' : 'neutral'}>{t.count}</Badge> : null}
           </button>
         ))}
       </nav>
@@ -73,7 +73,7 @@ export function BottomPanel({
         ) : tab === 'validation' ? (
           <div data-testid="validation">
             <p className="mb-1">
-              <Badge tone={COMPILE_TEXT[version.compilationStatus].tone}>{COMPILE_TEXT[version.compilationStatus].label}</Badge>{' '}
+              <Badge className="text-ink" tone={COMPILE_TEXT[version.compilationStatus].tone}>{COMPILE_TEXT[version.compilationStatus].label}</Badge>{' '}
               {version.compilationStatus === 'succeeded' ? 'Compiled with pdfLaTeX in an isolated folder (no shell escape, no file access outside it).' : null}
             </p>
             <ul className="flex flex-col gap-1">
@@ -116,14 +116,14 @@ export function BottomPanel({
                     <button type="button" className="text-accent hover:underline" onClick={() => onSelectVersion(v.versionNumber)}>
                       {v.versionNumber}
                     </button>
-                    {artifact?.approvedVersion === v.versionNumber ? <Badge tone="success" className="ml-1">approved</Badge> : null}
+                    {artifact?.approvedVersion === v.versionNumber ? <Badge tone="success" className="ml-1 text-ink">approved</Badge> : null}
                   </td>
                   <td>{ORIGIN_TEXT[v.origin]}</td>
                   <td className="max-w-[28ch] truncate" title={v.changeDescription}>
                     {v.changeDescription}
                   </td>
                   <td>
-                    <Badge tone={COMPILE_TEXT[v.compilationStatus].tone}>{COMPILE_TEXT[v.compilationStatus].label}</Badge>
+                    <Badge className="text-ink" tone={COMPILE_TEXT[v.compilationStatus].tone}>{COMPILE_TEXT[v.compilationStatus].label}</Badge>
                   </td>
                   <td className="flex justify-end gap-1 py-0.5">
                     {v.versionNumber !== version.versionNumber ? (
@@ -170,7 +170,7 @@ export function CompareVersionsDialog({ artifactId, versions, initial, onClose }
         </DialogTitle>
         <DialogDescription id="cmp-desc" className="flex flex-wrap items-center gap-2">
           {pick(from, setFrom, 'Older version')} → {pick(to, setTo, 'Newer version')}
-          {a && b && JSON.stringify(a.structuredData) !== JSON.stringify(b.structuredData) ? <Badge tone="warning">structure changed</Badge> : null}
+          {a && b && JSON.stringify(a.structuredData) !== JSON.stringify(b.structuredData) ? <Badge className="text-ink" tone="warning">structure changed</Badge> : null}
         </DialogDescription>
         <div className="mt-2 min-h-0 flex-1 overflow-hidden rounded-md border border-rule">
           <SafeDiff original={a?.sourceCode ?? ''} modified={b?.sourceCode ?? ''} path={`visual-cmp://${artifactId}/${from}-${to}.tex`} />

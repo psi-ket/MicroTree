@@ -282,6 +282,42 @@ Details: [`docs/PAPER_INGESTION.md`](docs/PAPER_INGESTION.md),
 [`docs/RESEARCH_RETRIEVAL.md`](docs/RESEARCH_RETRIEVAL.md),
 [`docs/EMBEDDING_PROVIDERS.md`](docs/EMBEDDING_PROVIDERS.md).
 
+## Images to LaTeX (Visual Studio)
+
+**Visual Studio** (from the project list, or the shapes button in a
+project's top bar) turns images into editable LaTeX: printed and
+handwritten equations and derivations, diagrams (TikZ), quantum circuits
+(Quantikz), electrical circuits (Circuitikz) and plots (PGFPlots with a CSV
+of the values). It also explains figures (observations kept apart from
+interpretation), drafts captions, and draws diagrams from a description.
+
+- **Input**: upload, paste, drop, an image from the project, or a region of
+  a library PDF (the page and the box are recorded). Preprocessing makes new
+  images linked to the untouched original.
+- **Models**: any configured provider with image input. Ollama with a
+  vision model on this computer is **local**; anything else is **cloud**
+  and needs your confirmation for each task, after seeing the provider, model,
+  image size and approximate cost.
+- **Results**: source generated from a validated structure, compiled in an
+  isolated throwaway folder; only a compiled version counts as a result.
+  Uncertain symbols, uncertain components and digitised values are marked.
+  Plots can be restyled, recalibrated or given exact data without asking the
+  model again.
+- **Versions**: every change is a new version (compare, restore). Improve
+  a result in words; the change is applied to the existing structure, not
+  regenerated.
+- **Insert**: approve a compiled version, review every new file and every
+  change as a diff (preamble changes only if you tick them), apply, and undo
+  later if needed.
+
+Details: [`docs/VISUAL_STUDIO.md`](docs/VISUAL_STUDIO.md),
+[`docs/IMAGE_TO_EQUATION.md`](docs/IMAGE_TO_EQUATION.md),
+[`docs/DIAGRAM_RECONSTRUCTION.md`](docs/DIAGRAM_RECONSTRUCTION.md),
+[`docs/QUANTUM_CIRCUITS.md`](docs/QUANTUM_CIRCUITS.md),
+[`docs/PLOT_RECONSTRUCTION.md`](docs/PLOT_RECONSTRUCTION.md),
+[`docs/VISUAL_VALIDATION.md`](docs/VISUAL_VALIDATION.md),
+[`docs/AI_PROVIDERS.md`](docs/AI_PROVIDERS.md).
+
 ## Security in short
 
 - The runtime listens on loopback only, rejects unexpected `Host` headers
@@ -315,6 +351,12 @@ Details: [`docs/PAPER_INGESTION.md`](docs/PAPER_INGESTION.md),
 - Files changed by other programs while a project is open are picked up; if
   you have unsaved edits to such a file, nothing is overwritten: you compare
   and choose.
+- Images are checked by content (PNG, JPEG, WebP, SVG), size and decoded
+  pixel count (decompression bombs refused); SVG is rebuilt from an allowlist
+  and only its raster is shown or sent. Generated LaTeX may not read, write
+  or define anything and loads only allowlisted packages; it compiles in a
+  throwaway folder with the restricted TeX settings above. Packages are never
+  installed for you.
 - Sensitive actions, including AI requests and agent runs, are recorded in an
   audit log (never the prompts or answers).
 
@@ -345,9 +387,14 @@ packages/
   document-intelligence/ Document model, coordinates and transforms, sentences, normalisation
   paper-ingestion/      GROBID and PyMuPDF adapters, TEI parsing, normalisation, job pipeline
   research-retrieval/   Passages, embeddings (Ollama), FTS5 and vector search, hybrid ranking
+  visual-engine/        Visual task schemas, routing and consent, prompts, orchestration,
+                        TikZ/Quantikz/Circuitikz/PGFPlots/CSV generators, validators,
+                        plot digitising, refinement patches, isolated compile
+  visual-assets/        Image validation, SVG sanitising, preprocessing variants, image store
+  visual-artifacts/     Artifacts and versions, approval, reviewed insertion and rollback
 docs/                   Architecture, security model, decisions (ADRs), checklist, API, reviews
-e2e/                    Playwright end-to-end tests, a mock OpenAI-compatible server and
-                        mock scholarly APIs that replay recorded responses
+e2e/                    Playwright end-to-end tests, a mock OpenAI-compatible server, a mock
+                        Ollama vision server and mock scholarly APIs that replay recorded responses
 ```
 
 Internal packages are consumed as TypeScript source (see ADR 0004); the
@@ -360,8 +407,9 @@ runtime build bundles them.
 | `pnpm typecheck` | `tsc` in every package (strict) |
 | `pnpm lint` | ESLint (flat config, typescript-eslint strict) |
 | `pnpm test` | Vitest unit and integration tests in every package. The latex-engine and runtime suites run the real TeX toolchain; they skip those cases if `latexmk` is missing. |
-| `pnpm test:e2e` | Playwright: starts a fresh runtime and web server on ports 4399/5199 with a throwaway data folder (keys in memory, agents off), a mock model service on 4499 and mock scholarly APIs on 4498. The tests create a project, edit, upload, compile and check the PDF; configure a model and review an AI edit; and search the literature (merging, BibTeX, rate limits, cancellation, keys, phone-sized dark layout, accessibility checks with axe). No real API keys or network are needed. Run `pnpm exec playwright install chromium` once. |
+| `pnpm test:e2e` | Playwright: starts a fresh runtime and web server on ports 4399/5199 with a throwaway data folder (keys in memory, agents off), a mock model service on 4499, a mock Ollama vision server on 4497 and mock scholarly APIs on 4498. The tests create a project, edit, upload, compile and check the PDF; configure a model and review an AI edit; and search the literature (merging, BibTeX, rate limits, cancellation, keys, phone-sized dark layout, accessibility checks with axe). No real API keys or network are needed. Run `pnpm exec playwright install chromium` once. |
 | `RS_LITERATURE_LIVE=1 pnpm --filter @research-studio/literature-engine exec vitest run test/live.test.ts` | Opt-in smoke test against the four real scholarly APIs (no keys; set `RS_LITERATURE_MAILTO` to use Crossref's polite pool). Not part of `pnpm test`. |
+| `RS_VISUAL_LIVE=1 RS_VISUAL_MODEL=llava pnpm --filter @research-studio/visual-engine exec vitest run test/live.test.ts` | Opt-in smoke test of an equation reconstruction against a real vision model (local Ollama by default; `RS_VISUAL_KIND`, `RS_VISUAL_BASE_URL`, `RS_VISUAL_API_KEY` for another provider). Not part of `pnpm test`. |
 | `pnpm --filter @research-studio/research-retrieval eval` | Retrieval evaluation (Recall@5/10, MRR, nDCG@10) on the labelled set; set `RS_EVAL_OLLAMA_URL` and `RS_EVAL_MODEL` to include a real embedding model. |
 | `pnpm check` | typecheck + lint + test |
 | `pnpm db:generate` | Generate a migration after editing `packages/database/src/schema.ts` |
@@ -375,6 +423,7 @@ Further reading:
 - [`docs/LITERATURE_ENGINE.md`](docs/LITERATURE_ENGINE.md): providers, merging, ranking, caching
 - [`docs/LIBRARY.md`](docs/LIBRARY.md): the personal library, PDF storage, `.bib` updates, Zotero
 - [`docs/PAPER_INGESTION.md`](docs/PAPER_INGESTION.md), [`docs/DOCUMENT_INTELLIGENCE.md`](docs/DOCUMENT_INTELLIGENCE.md), [`docs/RESEARCH_RETRIEVAL.md`](docs/RESEARCH_RETRIEVAL.md), [`docs/EMBEDDING_PROVIDERS.md`](docs/EMBEDDING_PROVIDERS.md), [`docs/RETRIEVAL_EVALUATION.md`](docs/RETRIEVAL_EVALUATION.md): full text and search
+- [`docs/VISUAL_STUDIO.md`](docs/VISUAL_STUDIO.md) and the image-to-LaTeX documents linked from it; [`docs/AI_PROVIDERS.md`](docs/AI_PROVIDERS.md): providers, images, privacy and consent
 - [`docs/DATABASE_SCHEMA.md`](docs/DATABASE_SCHEMA.md): every table
 - [`docs/decisions/`](docs/decisions/): architecture decision records
 
@@ -384,6 +433,6 @@ OCR of scanned PDFs, hosted embedding providers, RAG and AI summaries of
 papers or literature reviews, sentence-level claim verification and
 citation-correctness judgements (M5), automatic two-way Zotero sync and Zotero group
 libraries, the claim/evidence verification engine, collaboration, Git
-integration, attaching images to AI requests (the runtime's adapters accept
-them; there is no UI yet), tool use, an OS-level sandbox for TeX, and
+integration, attaching images to assistant conversations (images are used by
+the Visual Studio only), OCR engines and model-free digitising, tool use, an OS-level sandbox for TeX, and
 shell-escape packages such as `minted`.

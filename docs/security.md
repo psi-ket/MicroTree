@@ -90,7 +90,25 @@ control applied at each.
 | T49 | Losing a usable extraction. | New extractions are written inactive and activated only after indexing; a failed or cancelled run deletes only its own rows. |
 | T50 | Mixing vectors of different models. | Vectors live in embedding spaces keyed by provider, model, dimensions and version; searches name one space; dimensions are checked on write and on query; a changed model needs an explicit reindex, and the old space stays active until the new one is complete. |
 
+## Visual intelligence (M4)
+
+| # | Threat | Mitigation |
+| --- | --- | --- |
+| T51 | Hostile images: wrong types, decompression bombs, malformed files. | Content signature must match the declared type; size limit (`RS_VISUAL_MAX_IMAGE_BYTES`); sharp with `limitInputPixels` (`RS_VISUAL_MAX_IMAGE_PIXELS`) and `failOn: 'error'`; dimension limits; tested with a bomb PNG and damaged files. |
+| T52 | Script in SVG. | Parsed with the hardened XML reader (no DTD or entities, limits) and rebuilt from an allowlist; scripts, `foreignObject`, handlers, external references and CSS URLs removed; only a PNG rendering is displayed or sent; the SVG source is never served. |
+| T53 | Stored images rendered as active content. | Served with `default-src 'none'; …; sandbox` CSP, `nosniff` and inline disposition; IDs only, no paths. |
+| T54 | Images or text sent off the computer without the user knowing. | Only Ollama on loopback is local. Every other provider needs consent per task, shown with provider, model, size and approximate tokens, and refused by the runtime without it (`CONSENT_REQUIRED`); consent time, provider, model and privacy mode are stored on the task and in the audit log (never the image or the answer). |
+| T55 | Generated LaTeX that reads, writes or runs things. | Static refusal of file and stream primitives, definitions, catcode changes, string-built control sequences, Lua and PDF primitives, `\includegraphics`, `\usepackage` and control characters; packages only from an allowlist via the wrapper; the restricted TeX run (no shell escape, paranoid reads and writes) in a throwaway owner-only folder outside every project, removed afterwards; time limit; packages never installed. |
+| T56 | Model output treated as instructions or as fact. | Answers are parsed against JSON Schemas; source is generated from structure; context text is passed as data; uncertainties, digitised values and interpretations are labelled; only compiled versions can be approved. |
+| T57 | Unexpected changes to manuscripts. | Insertion only after approval and review of every created and changed file; applying recomputes the plan and refuses if it changed; create-only new files, compare-and-swap writes, undo on partial failure, rollback refused when files changed since; preamble changes only on explicit opt-in. |
+| T58 | Path tricks through project images or PDF regions. | Project images are read through `ProjectService` (path guard); PDF regions only from existing library attachments by ID; plot data files must be plain relative CSV names. |
+
 ## Residual risks / accepted trade-offs
+
+- **Visual models can be wrong.** Reconstructions are drafts: a wrong symbol
+  or connection that still compiles is not detected automatically.
+- **Cloud consent covers one task, not the provider's own handling** of the
+  image once sent (retention and training are the provider's policies).
 
 - Loopback HTTP is not encrypted; other software running as the same OS user is
   considered trusted (it could read the pairing file anyway).

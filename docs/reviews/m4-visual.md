@@ -173,3 +173,247 @@ invalid indices); refinement patches. Orchestrator tests with mocked
 providers (malformed output, refusal, rate limits, cancellation, consent,
 unsupported images). Runtime integration tests over the API. Web component
 tests and a Playwright run.
+
+## Part 2: Engineering report (2026-11-04)
+
+Status labels used below: **[tested]** implemented and covered by automated
+tests; **[not live]** implemented but not verified against a real external
+service; **[partial]** partly implemented; **[not done]** not implemented.
+
+### 1. Architectural changes
+
+- Three new packages (`visual-engine`, `visual-assets`,
+  `visual-artifacts`) and one runtime service (`VisualRuntime`) with its
+  routes, contracts and events. No new provider abstraction: visual tasks use
+  `ModelProvider.generateStructured` from M2. **[tested]**
+- `ai-core`: image parts may carry `detail`; `ModelProvider` may implement
+  `describeModel` (per-model vision). Ollama's catalog entry now has vision.
+  **[tested]**
+- `model-adapters`: Ollama sends images and checks `/api/show`
+  capabilities; OpenAI forwards `detail`. **[tested against a mock server, not live]**
+- `research-library`: the store key pattern accepts `webp` and `svg`, so the
+  visual store can reuse the class with its own root. **[tested]**
+- Database migration `0004_visual` with a down script. **[tested]**
+- Web: a new `#/visual` screen and entry points from the project list and
+  the workspace top bar; live events update its queries. **[tested]**
+
+### 2. New packages and files
+
+- `packages/visual-engine`: `errors/`, `preprocessing/` (validator,
+  normaliser, SVG sanitiser), `schemas/` (task, equation, diagram, circuit,
+  plot), `equations/`, `diagrams/`, `circuits/`, `plots/`, `refinement/`,
+  `compile/` (safety, standalone, isolated compiler), `providers/`
+  (routing), `orchestrator/` (prompts, builders, orchestrator); tests
+  `generators.test.ts` (32), `orchestrator.test.ts` (11), opt-in `live.test.ts`.
+- `packages/visual-assets`: `asset-service.ts`; `assets.test.ts` (12).
+- `packages/visual-artifacts`: `artifact-service.ts`,
+  `project-insertion.ts`; `artifacts.test.ts` (8).
+- `packages/api-contracts/src/visual.ts`, client methods `visual.*`, events.
+- `apps/runtime/src/services/visual-runtime.ts`, `routes-visual.ts`, config;
+  `test/visual.test.ts` (16).
+- `apps/web/src/features/visual/` (studio, input, PDF region picker,
+  preview, source, results, insertion, consent, diff, model, queries, hooks);
+  `test/visual.test.tsx` (10).
+- `e2e/visual.spec.ts`, `e2e/mock-ollama-server.mjs`.
+- Docs: `VISUAL_STUDIO.md`, `IMAGE_TO_EQUATION.md`,
+  `DIAGRAM_RECONSTRUCTION.md`, `QUANTUM_CIRCUITS.md`,
+  `PLOT_RECONSTRUCTION.md`, `VISUAL_VALIDATION.md`, `AI_PROVIDERS.md`, and
+  updates to README, architecture, security, checklist, API spec, schema and
+  `.env.example`.
+
+### 3. Vision provider integrations
+
+| Provider | Image serialisation | Structured output | Status |
+| --- | --- | --- | --- |
+| Ollama | `images` (base64) per message; `/api/show` vision check | `format` JSON Schema | [tested] with a mock server (unit and E2E through the real adapter); [not live] |
+| OpenAI | `image_url` data URL with `detail` | strict `json_schema` | [tested] serialisation against a mock; [not live] |
+| Anthropic | base64 `image` blocks (M2) | `output_config.format` (M2) | [tested] in M2 against a mock; [not live] for vision tasks |
+| Gemini | `inlineData` (M2) | `responseJsonSchema` (M2) | [tested] in M2 against a mock; [not live] for vision tasks |
+| OpenAI-compatible | not sent | not used | refused for visual tasks [tested] |
+
+Routing and consent (local only for Ollama on loopback, cloud needs consent
+per task, refusals for adapters without vision or structured output and for
+text-only Ollama models) are [tested] at the engine, HTTP and UI levels.
+Per-model vision for hosted providers is not known in advance [partial].
+
+### 4. Image preprocessing
+
+Signature and type check, size and pixel limits (decompression bombs),
+decode check, dimension limits, SVG allowlist sanitising and rasterising,
+variants (auto-orient, rotate, crop, resize, greyscale, contrast,
+normalise, sharpen, upscale) with lineage and versioned operations, and
+provider-ready downscaling: **[tested]**. Deskew is approximated by
+auto-orient plus normalise; there is no angle-detecting deskew **[partial]**.
+
+### 5. Equation reconstruction functionality
+
+Structured answers with environment, uncertain symbols (location,
+alternatives, reason), missing parts and warnings; Unicode and wrapper
+normalisation; validation; formatting for inline, equation, align, gather,
+cases, matrix and custom; package detection; real compiles of every
+environment including derivatives, integrals, sums, bra-ket and
+commutators: **[tested]** with scripted model answers. Recognition quality
+on real handwriting: **[not live]**.
+
+### 6. TikZ reconstruction
+
+Structured model (nodes, edges, annotations, styles, ambiguities),
+deterministic generation, four layout modes, validation, real compiles,
+text-to-diagram, refinement as structural operations (or exact edits after
+hand editing) with topology changes reported: **[tested]**. Visual
+fidelity to real figures: **[not live]**.
+
+### 7. Quantikz implementation
+
+Gates, rotations with parameters, controlled gates (CNOT, CZ, general),
+gates on adjacent qubits, swaps, measurements with classical wires,
+resets, barriers, column scheduling, index and relation validation, labels
+in math mode, real compiles: **[tested]**. Classical control (gates
+conditioned on bits) and multiple named registers beyond qubit labels:
+**[not done]**.
+
+### 8. Circuitikz implementation
+
+Resistors, capacitors, inductors, voltage and current sources, diodes,
+wires, ground and junctions, connection validation, braced labels with
+values, real compiles: **[tested]**. Batteries, LEDs, switches, lamps and
+meters are mapped to Circuitikz but not covered by a compile test
+**[partial]**. Transistors, op-amps and other multi-terminal components:
+**[not done]**.
+
+### 9. Plot reconstruction
+
+Least-squares axis calibration (linear, log, reversed) with residual
+warnings, pixel-to-value conversion with half-pixel uncertainty, error
+bars, model estimates as a labelled fallback, origins per value (exact,
+digitised, model-estimated), restyle, manual recalibration and exact data
+without a model call: **[tested]**. Contour plots are recognised but not
+digitised **[not done]**. Accuracy of pixel positions given by a real model:
+**[not live]**.
+
+### 10. CSV and PGFPlots generation
+
+`plotTableCsv` (wide, `nan` for missing values) read by PGFPlots,
+`plotExportCsv` with origin and uncertainty per row, `parseXyCsv` for
+exact data with per-line errors, `generatePgfplots` for linear and log axes
+(`axis`, `semilogxaxis`, `semilogyaxis`, `loglogaxis`), reversed axes,
+legends, error bars, line, scatter, bar and histogram styles, real
+compiles reading the CSV: **[tested]**.
+
+### 11. Artifact storage and versioning
+
+Assets content-addressed with lineage; artifacts with versions that are
+never overwritten (model, manual, refinement, restore, calibration),
+restore as a copy, line diff and structure comparison, approval of one
+compiled version, task records with provider, model, privacy mode, consent
+time, prompt version and usage: **[tested]**. Reopening earlier results
+from the header uses the tested artifact list route; the selector itself
+has no UI test **[partial]**.
+
+### 12. LaTeX compilation isolation
+
+Static safety check, package allowlist through a wrapper, `kpsewhich`
+check with no installation, a throwaway owner-only folder outside every
+project, the hardened `compileProject` (no shell escape, paranoid reads and
+writes, sanitised environment), time limit, cancellation, cleanup, status
+`succeeded` only with a PDF and no errors: **[tested]** with real pdfLaTeX.
+There is still no OS-level sandbox around TeX (as in M1) **[partial]**;
+CPU and memory are bounded only by the time limit.
+
+### 13. Frontend functionality
+
+Input from upload, paste, drop, project images and library PDF regions;
+preprocessing; task, provider, model, layout, context and Precise; consent
+dialog; preview of input and compiled result; explanation view; LaTeX editor
+with validate and save as version; CSV, exact data, axes and style;
+structure view; warnings, validation, packages, log and versions with
+compare and restore; Improve, presets, Reconstruct, Precise, Explain,
+Compile, Approve, Insert, Copy, Export; insertion review with diffs,
+preamble opt-in, stale-preview handling, apply and undo; resizable and
+collapsible panels, tabs on narrow screens: **[tested]** (component tests
+with axe, Chromium E2E with axe including contrast at desktop and 390 px).
+The PDF region picker is covered by unit tests of the coordinate
+conversion and by the HTTP route, not by a browser test **[partial]**.
+
+### 14. API endpoints
+
+All routes listed in the assignment exist under `/api/v1/visual` (tasks,
+cancel, retry, choose, equations, diagrams, circuits and plots reconstruct,
+diagrams and captions generate, artifacts, versions, restore, validate,
+compile, insert) plus assets, providers, preview, refine, plot, approve,
+compare, export, insertion preview, insertions and rollback; Zod-validated
+inputs, schema-checked responses and events, async tasks with progress and
+cancellation, audit events: **[tested]** (`docs/API_SPECIFICATION.md`).
+
+### 15. Security controls
+
+T51 to T58 in `docs/security.md`: image validation and bomb limits, SVG
+sanitising, inert serving, per-task consent for anything off the computer,
+static LaTeX refusal and isolated compile, structured model output treated
+as data, reviewed compare-and-swap insertion with rollback, path guards.
+**[tested]**. Audit events carry IDs, sizes, provider, model and privacy
+mode, never images, prompts or answers (by construction; there is no test
+that scans the audit log for image bytes).
+
+### 16. Scientific validation results
+
+- Every output format compiles with pdfLaTeX from fixtures that cover the
+  required cases (equations of each kind, the qubit-resonator diagram, a
+  Bell circuit and a larger gate set, an RLC circuit, linear, log and
+  reversed plots with error bars). **[tested]**
+- Digitising is exact on synthetic calibrations (values recovered to six
+  significant digits, residual warnings on inconsistent ticks, half-pixel
+  uncertainties in data units). **[tested]**
+- Uncertainty is surfaced, not resolved: uncertain symbols, dashed
+  uncertain elements, digitised and estimated values, interpretations
+  labelled as such. **[tested]**
+- Reconstruction accuracy on real images is **not measured**: there is no
+  labelled image benchmark and no real model run in this environment.
+  **[not done]**
+
+### 17. Automated test results
+
+`pnpm -r --no-bail test`: **953 passed, 25 failed, 7 skipped**. The 25
+failures are all in packages M4 did not change and are environmental:
+`agent-adapters` 11 and `runtime` 9 (Claude Code and Codex CLIs absent),
+`latex-engine` 4 (XeLaTeX absent for one test; three log fixtures are kept
+out of the repository by the root `.gitignore` rule `*.log`, reported as a
+follow-up), `document-engine` 1 (a Windows-path test on Linux). M4 tests:
+`visual-engine` 43, `visual-assets` 12, `visual-artifacts` 8, `database` 3
+new, `model-adapters` 2 new, runtime 16, web 10, all passing. Playwright:
+10 of 10 specs pass, including `e2e/visual.spec.ts`.
+
+### 18. Build and lint results
+
+`pnpm -r typecheck` and `pnpm -r lint` pass in every package (strict
+TypeScript, typescript-eslint strict).
+
+### 19. Remaining limitations
+
+- No real vision model was run (mocked providers; opt-in live test exists).
+- No measurement of reconstruction quality on real images.
+- Only Ollama on loopback counts as local; a model's own retention policy
+  is outside the app's control once consent is given.
+- Assistant conversations still cannot attach images.
+- No OCR engine or model-free digitiser; contour plots not digitised.
+- Quantikz without classical control; Circuitikz without multi-terminal
+  components.
+- TeX is restricted, not sandboxed; the time limit is the only resource cap.
+- PGFPlots data paths in inserted figures are relative to the main file.
+
+### 20. Recommendations for M5
+
+- Build a small licensed image benchmark (equations, diagrams, circuits,
+  plots) with reference source and measure reconstruction accuracy per model
+  before relying on any model for scientific content.
+- Run the opt-in live test against the local and hosted models users are
+  expected to configure, and record which pass.
+- Keep the M4 separation of observation and interpretation as the input
+  format for any verification work in M5, and never feed model
+  interpretations back as evidence.
+- Consider an OS-level sandbox (container or seccomp profile) for both
+  project and visual compiles, with CPU and memory limits.
+- Add image attachments to assistant conversations through the same
+  validation, consent and provenance path.
+
+M5 has not been started; M4 awaits independent review.

@@ -169,7 +169,7 @@ export function InsertDialog({ open, onClose, artifact, versionNumber, defaultPr
                     {w}
                   </p>
                 ))}
-                {plan.missingPackages.length && !addPreamble ? <FieldHint>Tick “Add missing packages” to see the preamble change ({plan.preambleLines.join(' ')}).</FieldHint> : null}
+                {plan.missingPackages.length && !addPreamble ? <FieldHint className="text-ink-muted">Tick “Add missing packages” to see the preamble change ({plan.preambleLines.join(' ')}).</FieldHint> : null}
                 {plan.createdFiles.map((f) => (
                   <details key={f.path} className="rounded-md border border-rule" open={plan.createdFiles.length === 1}>
                     <summary className="flex cursor-pointer items-center gap-2 px-2 py-1 text-ui">

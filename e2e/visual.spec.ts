@@ -13,7 +13,7 @@ async function axeViolations(page: Page): Promise<string[]> {
   return page.evaluate(async () => {
     const res = await (window as unknown as { axe: { run(ctx: object, opts: object): Promise<{ violations: { id: string; nodes: { target: string[] }[] }[] }> } }).axe.run(
       { exclude: [['[data-sonner-toaster]'], ['.monaco-editor']] },
-      { resultTypes: ['violations'], rules: { 'color-contrast': { enabled: false } } },
+      { resultTypes: ['violations'] },
     );
     return res.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`);
   });
@@ -103,4 +103,14 @@ test('reconstruct an equation and a plot locally, compile, approve, insert after
   await studio.getByTestId('visual-bottom').getByRole('button', { name: /Versions/ }).click();
   await expect(studio.getByTestId('versions').locator('tbody tr')).toHaveCount(2);
   await shot(page, 'visual-3-plot');
+
+  // Phone width: the panels become tabs and nothing scrolls sideways.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(studio.getByRole('navigation', { name: 'Visual Studio panels' })).toBeVisible();
+  for (const tab of ['input', 'preview', 'source', 'details']) {
+    await studio.getByRole('navigation', { name: 'Visual Studio panels' }).getByRole('button', { name: tab }).click();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  }
+  expect(await axeViolations(page)).toEqual([]);
+  await shot(page, 'visual-4-phone');
 });
