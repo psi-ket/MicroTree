@@ -72,8 +72,9 @@ describe('GROBID client', () => {
   });
 
   it('times out slow requests and retries a timeout only once', async () => {
-    grobid.fallback = { status: 200, body: SAMPLE_TEI, delayMs: 400 };
-    const err = await failure(client({ timeoutMs: 100 }).processFulltext(pdf, new AbortController().signal));
+    // The mock logs a request once its body has arrived; the timeout leaves room for that on a busy machine.
+    grobid.fallback = { status: 200, body: SAMPLE_TEI, delayMs: 3000 };
+    const err = await failure(client({ timeoutMs: 1000 }).processFulltext(pdf, new AbortController().signal));
     expect(err.code).toBe('timeout');
     expect(grobid.requests).toHaveLength(2);
   });

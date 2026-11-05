@@ -3,6 +3,8 @@ dist/
 .turbo/
 coverage/
 *.log
+# Real pdfTeX logs used as parser fixtures.
+!packages/latex-engine/test/fixtures/*.log
 .env
 .env.local
 .rs-build/
