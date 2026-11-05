@@ -9,9 +9,19 @@ import type { Diagnostic, IsoDateTime, SourceLocation } from './domain';
 
 // ------------------------------------------------------------------ providers
 
-/** HTTP model APIs. */
-export const MODEL_PROVIDER_KINDS = ['anthropic', 'openai', 'gemini', 'openai-compatible', 'ollama'] as const;
+/**
+ * Model providers: HTTP model APIs, and the Claude Code and Codex CLIs used
+ * as plain models (one answer per call, no tools) with the user's own login.
+ */
+export const MODEL_PROVIDER_KINDS = ['anthropic', 'openai', 'gemini', 'openai-compatible', 'ollama', 'claude-cli', 'codex-cli'] as const;
 export type ModelProviderKind = (typeof MODEL_PROVIDER_KINDS)[number];
+
+/** Provider kinds served by a command-line agent instead of an HTTP API. */
+export const CLI_MODEL_PROVIDER_KINDS = ['claude-cli', 'codex-cli'] as const satisfies readonly ModelProviderKind[];
+export type CliModelProviderKind = (typeof CLI_MODEL_PROVIDER_KINDS)[number];
+
+/** The model name that leaves the choice to the CLI's own configuration. */
+export const CLI_DEFAULT_MODEL = 'default';
 
 /** Command-line coding agents the runtime can drive. */
 export const AGENT_KINDS = ['claude-code', 'codex', 'custom'] as const;

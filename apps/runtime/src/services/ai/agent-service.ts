@@ -1,8 +1,9 @@
 import { readFile } from 'node:fs/promises';
-import { createStreamRedactor, redactSecrets, type AgentProvider } from '@research-studio/ai-core';
+import { createStreamRedactor, redactSecrets, type AgentProvider, type ModelProvider } from '@research-studio/ai-core';
 import {
   buildAgentEnvironment,
   ClaudeCodeAgent,
+  CliModelProvider,
   CodexAgent,
   CustomAgent,
   parseAgentsConfig,
@@ -20,6 +21,7 @@ import {
   type AgentPermissionProfile,
   type AgentRun,
   type AgentRunStatus,
+  type CliModelProviderKind,
   type TokenUsage,
 } from '@research-studio/shared-types';
 import type { FastifyBaseLogger } from 'fastify';
@@ -160,6 +162,28 @@ export class AgentService {
 
   async get(agentId: string): Promise<AgentProvider> {
     return (await this.entry(agentId)).agent;
+  }
+
+  /**
+   * Claude Code or Codex as a plain model (`claude-cli` and `codex-cli`
+   * providers): the agent's executable and filtered environment, every tool
+   * off and an empty working folder. No project approval is involved because
+   * nothing in a project is read or written; the caller sends the text.
+   */
+  async modelProvider(kind: CliModelProviderKind): Promise<ModelProvider> {
+    const entry = await this.entry(kind === 'claude-cli' ? 'claude-code' : 'codex');
+    const detection = await entry.agent.detect();
+    if (!detection.available || !detection.executable) {
+      throw new StudioError('NOT_CONFIGURED', detection.problem ?? `${entry.agent.displayName} was not found on this computer.`);
+    }
+    return new CliModelProvider({
+      kind,
+      executable: detection.executable,
+      env: entry.environment.env,
+      secrets: entry.environment.secrets,
+      timeoutMs: this.config.ai.requestTimeoutMs,
+      windowsSandbox: this.config.ai.codexWindowsSandbox,
+    });
   }
 
   private async entry(agentId: string): Promise<AgentEntry> {

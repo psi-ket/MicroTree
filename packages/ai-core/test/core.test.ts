@@ -238,7 +238,8 @@ describe('message content', () => {
     }
     const vision = Object.values(PROVIDER_KINDS).filter((i) => i.capabilities.vision).map((i) => i.kind);
     // Ollama sends images since M4; per-model support comes from describeModel (/api/show).
-    expect(vision.sort()).toEqual(['anthropic', 'gemini', 'ollama', 'openai']);
+    // The Claude Code and Codex CLIs take images as content blocks and --image files.
+    expect(vision.sort()).toEqual(['anthropic', 'claude-cli', 'codex-cli', 'gemini', 'ollama', 'openai']);
   });
 });
 

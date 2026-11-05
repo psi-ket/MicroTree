@@ -1,4 +1,4 @@
-import type { ModelProvider } from '@research-studio/ai-core';
+import { ProviderError, type ModelProvider } from '@research-studio/ai-core';
 import type { ModelProviderKind } from '@research-studio/shared-types';
 import { AnthropicProvider } from './anthropic';
 import { GeminiProvider } from './gemini';
@@ -25,5 +25,9 @@ export function createModelProvider(kind: ModelProviderKind, connection: Provide
       return new GeminiProvider(connection);
     case 'ollama':
       return new OllamaProvider(connection);
+    case 'claude-cli':
+    case 'codex-cli':
+      // Built by the runtime from the CLI agent (`CliModelProvider` in agent-adapters).
+      throw new ProviderError('invalid-request', `${kind} is a command-line provider, not an HTTP API.`);
   }
 }

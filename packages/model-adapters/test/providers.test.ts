@@ -50,7 +50,8 @@ async function outcome(kind: ModelProviderKind, scenario: string) {
   }
 }
 
-const KINDS: ModelProviderKind[] = ['anthropic', 'openai', 'openai-compatible', 'gemini', 'ollama'];
+// The HTTP adapters; the CLI kinds are covered in agent-adapters.
+const KINDS = ['anthropic', 'openai', 'openai-compatible', 'gemini', 'ollama'] as const satisfies readonly ModelProviderKind[];
 
 describe.each(KINDS)('%s adapter', (kind) => {
   it('streams text deltas, then usage, then one done event', async () => {

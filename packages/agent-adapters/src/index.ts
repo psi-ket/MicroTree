@@ -3,6 +3,7 @@
 // permissions, auditing and review on top.
 export { ClaudeCodeAgent, CLAUDE_TOOLS, type ClaudeCodeOptions } from './claude-code';
 export { CodexAgent, type CodexOptions } from './codex';
+export { CliModelProvider, CODEX_DISABLED_FEATURES, renderConversation, type CliModelOptions } from './cli-model';
 export { CustomAgent, CustomAgentConfigSchema, parseAgentsConfig, parseAgentsFile, type AgentsFile, type CustomAgentConfig } from './custom';
 export { findOnPath, fromConfiguredPath } from './discovery';
 export {

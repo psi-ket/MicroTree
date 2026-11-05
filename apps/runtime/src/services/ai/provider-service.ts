@@ -1,13 +1,15 @@
 import { checkBaseUrl, PROVIDER_KINDS, ProviderError, type ModelProvider } from '@research-studio/ai-core';
 import type { AiRepositories, ProviderRecord, SecretStore } from '@research-studio/ai-storage';
 import { createModelProvider, type ProviderConnection } from '@research-studio/model-adapters';
-import { StudioError, type ModelInfo, type ModelProviderKind, type ProviderConfigView } from '@research-studio/shared-types';
+import { StudioError, type CliModelProviderKind, type ModelInfo, type ModelProviderKind, type ProviderConfigView } from '@research-studio/shared-types';
 import type { RuntimeConfig } from '../../config';
 import { randomId } from '../../security/tokens';
 import type { AuditService } from '../audit-service';
 import type { Actor } from '../project-service';
 
 export type ModelProviderFactory = (kind: ModelProviderKind, connection: ProviderConnection) => ModelProvider;
+/** Builds a `claude-cli` or `codex-cli` provider from the CLI agent of the same name. */
+export type CliModelFactory = (kind: CliModelProviderKind) => Promise<ModelProvider>;
 
 export interface ProviderInput {
   kind: ModelProviderKind;
@@ -40,6 +42,7 @@ export class AiProviderService {
     private readonly audit: AuditService,
     private readonly env: Record<string, string | undefined>,
     private readonly factory: ModelProviderFactory = createModelProvider,
+    private readonly cliFactory: CliModelFactory | null = null,
   ) {}
 
   async list(): Promise<ProviderConfigView[]> {
@@ -58,6 +61,9 @@ export class AiProviderService {
 
   async create(input: ProviderInput, actor: Actor): Promise<ProviderConfigView> {
     const baseUrl = this.validBaseUrl(input.kind, input.baseUrl);
+    if (input.apiKey && PROVIDER_KINDS[input.kind].transport === 'cli') {
+      throw new StudioError('VALIDATION_FAILED', `${PROVIDER_KINDS[input.kind].label} uses the CLI's own sign-in; it takes no API key.`);
+    }
     const id = `${input.kind}-${randomId(4)}`;
     let ref: string | null = null;
     if (input.apiKey) {
@@ -96,6 +102,9 @@ export class AiProviderService {
         }
       }
     }
+    if (patch.apiKey && PROVIDER_KINDS[current.kind].transport === 'cli') {
+      throw new StudioError('VALIDATION_FAILED', `${PROVIDER_KINDS[current.kind].label} uses the CLI's own sign-in; it takes no API key.`);
+    }
     if (patch.apiKey !== undefined) {
       const ref = current.secretRef ?? secretRef(id);
       if (patch.apiKey === null) {
@@ -131,6 +140,10 @@ export class AiProviderService {
     const record = this.record(id);
     if (!record.enabled) throw new StudioError('FORBIDDEN', `${record.displayName} is disabled`);
     const info = PROVIDER_KINDS[record.kind];
+    if (record.kind === 'claude-cli' || record.kind === 'codex-cli') {
+      if (!this.cliFactory) throw new StudioError('NOT_CONFIGURED', `${record.displayName} is not available on this runtime.`);
+      return { record, provider: await this.cliFactory(record.kind) };
+    }
     const apiKey = await this.resolveKey(record);
     if (info.capabilities.requiresApiKey && !apiKey) {
       throw new StudioError('NOT_CONFIGURED', `${record.displayName} has no API key. Add one in the assistant's provider settings.`);
@@ -166,6 +179,7 @@ export class AiProviderService {
 
   private validBaseUrl(kind: ModelProviderKind, value: string | null): string | null {
     const trimmed = value?.trim() || null;
+    if (trimmed && PROVIDER_KINDS[kind].transport === 'cli') throw new StudioError('VALIDATION_FAILED', `${PROVIDER_KINDS[kind].label} runs on this computer; it takes no base URL.`);
     if (!trimmed) {
       if (kind === 'openai-compatible') throw new StudioError('VALIDATION_FAILED', 'An OpenAI-compatible provider needs a base URL');
       return null;

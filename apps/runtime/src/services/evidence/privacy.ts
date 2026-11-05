@@ -62,7 +62,7 @@ export class EvidencePrivacy {
   /** Instantiate the chosen model and enforce the project's privacy settings and the per-operation consent. */
   async resolve(projectId: string, choice: { providerId: string; model: string; consent: boolean }, task: EvidenceModelTask, outgoing: Outgoing, actor: Actor): Promise<ResolvedModel> {
     const { record, provider } = await this.providers.instantiate(choice.providerId);
-    if (!provider.capabilities.structuredOutput) throw new StudioError('BAD_REQUEST', `${record.displayName} cannot return structured answers; choose OpenAI, Anthropic, Gemini or Ollama`, { reason: 'NO_STRUCTURED_OUTPUT' });
+    if (!provider.capabilities.structuredOutput) throw new StudioError('BAD_REQUEST', `${record.displayName} cannot return structured answers; choose OpenAI, Anthropic, Gemini, Ollama, Claude Code or Codex`, { reason: 'NO_STRUCTURED_OUTPUT' });
     const mode = privacyModeOf(record.kind, record.baseUrl ?? PROVIDER_KINDS[record.kind].defaultBaseUrl ?? null);
     const settings = this.settings(projectId);
     let consentAt: string | null = null;

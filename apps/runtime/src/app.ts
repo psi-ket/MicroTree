@@ -98,9 +98,10 @@ export async function buildApp(deps: AppDeps): Promise<RuntimeApp> {
 
   const aiRepos = createAiRepositories(deps.ai.db);
   const aiEnv = deps.ai.env ?? process.env;
-  const providers = new AiProviderService(aiRepos, deps.ai.secrets, deps.config, audit, aiEnv, deps.ai.modelFactory);
   const staging = new StagingLifecycle(aiRepos, deps.config, audit, app.log);
   const agents = new AgentService(aiRepos, deps.config, events, audit, app.log, aiEnv, staging, deps.ai.agentRegistry);
+  // Claude Code and Codex also serve as plain models (`claude-cli`, `codex-cli`) for every AI feature.
+  const providers = new AiProviderService(aiRepos, deps.ai.secrets, deps.config, audit, aiEnv, deps.ai.modelFactory, (kind) => agents.modelProvider(kind));
   const proposals = new ProposalService(aiRepos, projects, events, audit);
   const assistant = new AssistantService(aiRepos, projects, compile, providers, agents, proposals, events, audit, deps.config, app.log);
   const literature = new LiteratureService(deps.repos, deps.ai.secrets, deps.config, audit, aiEnv, app.log, deps.literature);
