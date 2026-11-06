@@ -43,6 +43,8 @@ export const aiConversations = sqliteTable(
     title: text('title').notNull(),
     /** Agent mode: the agent's own session id for resuming. */
     agentSessionId: text('agent_session_id'),
+    /** Set while the conversation is archived: kept, but listed apart. */
+    archivedAt: text('archived_at'),
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),
   },

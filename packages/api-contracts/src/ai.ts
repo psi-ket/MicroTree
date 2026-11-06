@@ -180,6 +180,7 @@ export const ConversationSchema = z.object({
   providerId: z.string(),
   model: z.string().nullable(),
   title: z.string(),
+  archivedAt: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -236,6 +237,9 @@ export const CreateConversationRequest = z.object({
   model: ModelName.nullable().default(null),
   title: z.string().trim().max(120).optional(),
 });
+
+export const ConversationListQuery = z.object({ archived: z.enum(['true', 'false']).default('false').transform((v) => v === 'true') });
+export const UpdateConversationRequest = z.object({ archived: z.boolean() });
 
 export const ConversationResponse = z.object({ conversation: ConversationSchema });
 export const ConversationListResponse = z.object({ conversations: z.array(ConversationSchema) });

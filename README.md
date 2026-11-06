@@ -105,8 +105,16 @@ Nothing is overwritten silently.
 
 ## Using the assistant
 
-Open the assistant panel (robot icon in the top bar) and choose **Set up the
-assistant**.
+Open the assistant (robot icon in the top bar) and choose **Set up the
+assistant**. It opens docked over the bottom of the code: drag its top edge to
+resize it, or use the arrow to collapse it to a bar. **Open as a tab** (in its
+header) turns it into an **Assistant** tab beside your files, and **Dock below
+the code** brings it back; the conversation and anything you were typing are
+kept. Opening a file, or jumping to a line from Problems or the PDF, brings
+the code back to the front. The **⋯** button beside the conversation list
+archives the open conversation (it moves to **Archived** at the bottom of the
+list; sending it a new message or **Restore** brings it back) or deletes it
+after you confirm.
 
 - **Model services.** Pick a service and enter the API key and a default
   model. The key goes to the runtime and is stored in your OS credential
@@ -115,6 +123,15 @@ assistant**.
   runtime's environment, that service works without entering a key. For
   OpenAI-compatible services (vLLM, LM Studio, OpenRouter…) also enter the
   base URL. Ollama needs no key.
+- **Claude Code or Codex as the model.** When Claude Code or Codex is
+  installed, **Claude Code (your sign-in)** and **Codex (your sign-in)** are
+  added as models automatically, so your own Claude or ChatGPT plan works
+  instead of an API key for the assistant and for every other AI feature
+  (Visual Studio, evidence, writing tools, review). Remove one in the
+  assistant's setup and it stays removed; you can add it back there.
+  The CLI runs with every tool turned off in an empty temporary folder, so it
+  only answers. It counts as a cloud service: tasks ask for your consent.
+  Details: [`docs/AI_PROVIDERS.md`](docs/AI_PROVIDERS.md).
 - **Command-line agents.** Claude Code and Codex are detected automatically
   and use their own login. Each agent must be allowed per project, separately
   for **Read only** and **Edit a copy**. Agents always work on a copy of the

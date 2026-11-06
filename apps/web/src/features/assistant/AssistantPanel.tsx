@@ -1,12 +1,12 @@
-import { ChevronDown, ChevronRight, Plus, SendHorizontal, Settings2, Square } from 'lucide-react';
+import { Archive, ArchiveRestore, ChevronDown, ChevronUp, Ellipsis, PanelBottom, PanelTop, Plus, SendHorizontal, Settings2, Square, Trash2, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { WRITING_ACTIONS } from '@research-studio/ai-core';
 import { WRITING_ACTION_IDS, type WritingActionId } from '@research-studio/shared-types';
-import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, PanelHeading, Select } from '@research-studio/ui';
+import { Button, cn, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, PanelHeading, Select, Spinner } from '@research-studio/ui';
 import { useCompile } from '../../stores/compile';
 import { useEditor } from '../../stores/editor';
-import { useLayout } from '../../stores/layout';
-import { ask, stop } from './actions';
+import { useLayout, type AssistantDock } from '../../stores/layout';
+import { archiveConversation, ask, deleteConversation, stop } from './actions';
 import { MessageView } from './Message';
 import { ReviewDialog } from './ReviewDialog';
 import { SetupDialog } from './SetupDialog';
@@ -14,6 +14,7 @@ import {
   parseTarget,
   useAgents,
   useApprovals,
+  useArchivedConversations,
   useAssistant,
   useConversation,
   useConversations,
@@ -176,13 +177,15 @@ function TargetPicker({ projectId }: { projectId: string }) {
   );
 }
 
-export function AssistantPanel({ projectId }: { projectId: string }) {
-  const toggle = useLayout((s) => s.toggle);
+export function AssistantPanel({ projectId, dock = 'overlay', collapsed = false }: { projectId: string; dock?: AssistantDock; collapsed?: boolean }) {
+  const { toggle, setAssistantDock, setAssistantCollapsed } = useLayout();
   const { conversation: open, open: openConversation, target, setTarget, setSetupOpen } = useAssistant();
   const activity = useAssistant((s) => s.activity);
   const conversationId = open[projectId] ?? null;
   const { data: conversations = [] } = useConversations(projectId);
+  const { data: archived = [] } = useArchivedConversations(projectId);
   const { data: detail } = useConversation(projectId, conversationId);
+  const current = detail?.conversation.id === conversationId ? detail.conversation : null;
   const { data: providers, isSuccess: providersLoaded } = useProviders();
   const hasSelection = useEditor((s) => !!s.selection && s.selection.file === s.active);
   const [text, setText] = useState('');
@@ -216,9 +219,16 @@ export function AssistantPanel({ projectId }: { projectId: string }) {
   const noSetup = providersLoaded && !providers.length && !target;
 
   return (
-    <aside className="flex h-full min-h-0 flex-col bg-paper" aria-label="Assistant" data-testid="assistant-panel">
+    <aside className="flex h-full min-h-0 flex-col bg-paper" aria-label="Assistant" data-testid="assistant-panel" data-collapsed={collapsed}>
       <PanelHeading className="gap-0.5 pr-1.5">
-        <span>Assistant</span>
+        {dock === 'overlay' ? (
+          <button type="button" className="flex items-center gap-1.5 uppercase tracking-[inherit]" aria-expanded={!collapsed} onClick={() => setAssistantCollapsed(!collapsed)}>
+            Assistant
+            {collapsed && streamingMessage ? <Spinner className="size-3 text-accent" aria-label="Answering" /> : null}
+          </button>
+        ) : (
+          <span>Assistant</span>
+        )}
         <Select
           aria-label="Conversation history"
           className="ml-2 h-6 min-w-0 flex-1 text-2xs"
@@ -226,7 +236,7 @@ export function AssistantPanel({ projectId }: { projectId: string }) {
           onChange={(e) => {
             const id = e.target.value || null;
             openConversation(projectId, id);
-            const c = conversations.find((x) => x.id === id);
+            const c = [...conversations, ...archived].find((x) => x.id === id);
             if (c) setTarget(`${c.mode}:${c.providerId}` as Target, c.model ?? '');
           }}
         >
@@ -236,76 +246,148 @@ export function AssistantPanel({ projectId }: { projectId: string }) {
               {c.title}
             </option>
           ))}
+          {archived.length ? (
+            <optgroup label="Archived">
+              {archived.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.title}
+                </option>
+              ))}
+            </optgroup>
+          ) : null}
         </Select>
         <Button variant="ghost" size="icon-sm" aria-label="New conversation" onClick={() => openConversation(projectId, null)}>
           <Plus />
         </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild disabled={!current}>
+            <Button variant="ghost" size="icon-sm" aria-label="Conversation options" title="Archive or delete this conversation">
+              <Ellipsis />
+            </Button>
+          </DropdownMenuTrigger>
+          {current ? (
+            <DropdownMenuContent align="end">
+              {current.archivedAt ? (
+                <DropdownMenuItem onSelect={() => void archiveConversation(projectId, current.id, false)}>
+                  <ArchiveRestore /> Restore conversation
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem onSelect={() => void archiveConversation(projectId, current.id, true)}>
+                  <Archive /> Archive conversation
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                danger
+                onSelect={() => {
+                  if (window.confirm(`Delete “${current.title}”? Its messages and any edits you have not accepted are removed. Changes already applied to your files stay.`)) {
+                    void deleteConversation(projectId, current.id);
+                  }
+                }}
+              >
+                <Trash2 /> Delete conversation…
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          ) : null}
+        </DropdownMenu>
         <Button variant="ghost" size="icon-sm" aria-label="Assistant setup" onClick={() => setSetupOpen(true)}>
           <Settings2 />
         </Button>
-        <Button variant="ghost" size="icon-sm" aria-label="Hide assistant" onClick={() => toggle('assistant', false)}>
-          <ChevronRight />
-        </Button>
+        {dock === 'overlay' ? (
+          <>
+            <Button variant="ghost" size="icon-sm" aria-label="Open as a tab" title="Open as a tab beside your files" onClick={() => setAssistantDock('tab')}>
+              <PanelTop />
+            </Button>
+            <Button variant="ghost" size="icon-sm" aria-label={collapsed ? 'Expand assistant' : 'Collapse assistant'} onClick={() => setAssistantCollapsed(!collapsed)}>
+              {collapsed ? <ChevronUp /> : <ChevronDown />}
+            </Button>
+            <Button variant="ghost" size="icon-sm" aria-label="Close assistant" onClick={() => toggle('assistant', false)}>
+              <X />
+            </Button>
+          </>
+        ) : (
+          <Button variant="ghost" size="icon-sm" aria-label="Dock below the code" title="Dock over the bottom of the code" onClick={() => setAssistantDock('overlay')}>
+            <PanelBottom />
+          </Button>
+        )}
       </PanelHeading>
 
-      <div ref={scroller} className="min-h-0 flex-1 overflow-auto px-3 pb-3" data-testid="assistant-messages">
-        {messages.length === 0 ? (
-          noSetup ? (
-            <div className="pt-2">
-              <p className="font-display text-[17px] italic leading-6 text-ink">No assistant connected</p>
-              <p className="mt-1.5 text-ui text-ink-muted">
-                Connect a model service or a command-line agent. Requests go through your local runtime; your API keys never reach this browser.
-              </p>
-              <Button className="mt-3" variant="primary" onClick={() => setSetupOpen(true)}>
-                Set up the assistant
+      <div ref={scroller} className={cn('min-h-0 flex-1 overflow-auto px-3 pb-3', collapsed && 'hidden')} data-testid="assistant-messages">
+        <div className={cn(dock === 'tab' && 'mx-auto max-w-3xl')}>
+          {current?.archivedAt ? (
+            <div className="sticky top-0 z-10 -mx-3 flex items-center gap-2 border-b border-rule bg-panel px-3 py-1.5 text-xs text-ink-muted" data-testid="archived-banner">
+              <Archive className="size-3.5 shrink-0" />
+              <span className="min-w-0 flex-1">Archived. Sending a message restores it.</span>
+              <Button size="sm" variant="ghost" onClick={() => void archiveConversation(projectId, current.id, false)}>
+                Restore
               </Button>
             </div>
+          ) : null}
+          {messages.length === 0 ? (
+            noSetup ? (
+              <div className="pt-2">
+                <p className="font-display text-[17px] italic leading-6 text-ink">No assistant connected</p>
+                <p className="mt-1.5 text-ui text-ink-muted">
+                  Connect a model service or a command-line agent. Requests go through your local runtime; your API keys never reach this browser.
+                </p>
+                <Button className="mt-3" variant="primary" onClick={() => setSetupOpen(true)}>
+                  Set up the assistant
+                </Button>
+              </div>
+            ) : (
+              <div className="pt-2">
+                <p className="font-display text-[17px] italic leading-6 text-ink">Ask about your manuscript</p>
+                <p className="mt-1.5 text-ui text-ink-muted">
+                  Select a passage in the editor and pick an action, or ask a question. Suggested edits appear as diffs; nothing changes until you accept.
+                </p>
+              </div>
+            )
           ) : (
-            <div className="pt-2">
-              <p className="font-display text-[17px] italic leading-6 text-ink">Ask about your manuscript</p>
-              <p className="mt-1.5 text-ui text-ink-muted">
-                Select a passage in the editor and pick an action, or ask a question. Suggested edits appear as diffs; nothing changes until you accept.
-              </p>
-            </div>
-          )
-        ) : (
-          messages.map((m) => (
-            <MessageView
-              key={m.id}
-              projectId={projectId}
-              message={m}
-              proposals={(detail?.proposals ?? []).filter((p) => p.messageId === m.id)}
-              activity={conversationId ? (activity[conversationId] ?? []) : []}
-            />
-          ))
-        )}
+            messages.map((m) => (
+              <MessageView
+                key={m.id}
+                projectId={projectId}
+                message={m}
+                proposals={(detail?.proposals ?? []).filter((p) => p.messageId === m.id)}
+                activity={conversationId ? (activity[conversationId] ?? []) : []}
+              />
+            ))
+          )}
+        </div>
       </div>
 
-      <div className="space-y-2 border-t border-rule bg-panel px-2.5 py-2">
-        <ContextChips projectId={projectId} />
-        <ActionBar disabled={!!streamingMessage || sending} hasSelection={hasSelection} onRun={(id) => void send(id)} />
-        <textarea
-          aria-label="Message the assistant"
-          rows={2}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={onKeyDown}
-          placeholder={hasSelection ? 'Ask about the selection… (Enter to send)' : 'Ask a question… (Enter to send)'}
-          className="block w-full resize-none rounded-ctl border border-rule bg-raised px-2 py-1.5 text-ui text-ink outline-none placeholder:text-ink-faint focus:border-accent"
-        />
-        <div className="flex items-end gap-2">
-          <div className="min-w-0 flex-1">
-            <TargetPicker projectId={projectId} />
+      {/* Narrow: stacked. Wide (the overlay and the tab): context beside actions, message beside the assistant picker. */}
+      <div className={cn('@container border-t border-rule bg-panel px-2.5 py-2', collapsed && 'hidden')}>
+        <div className={cn('space-y-2', dock === 'tab' && 'mx-auto max-w-3xl')}>
+          <div className="flex flex-col gap-2 @lg:flex-row @lg:flex-wrap @lg:items-center @lg:justify-between">
+            <ContextChips projectId={projectId} />
+            <ActionBar disabled={!!streamingMessage || sending} hasSelection={hasSelection} onRun={(id) => void send(id)} />
           </div>
-          {streamingMessage ? (
-            <Button aria-label="Stop" onClick={() => void stop(projectId, streamingMessage.id)}>
-              <Square /> Stop
-            </Button>
-          ) : (
-            <Button variant="primary" aria-label="Send" disabled={!text.trim() || sending} onClick={() => void send('chat')}>
-              <SendHorizontal />
-            </Button>
-          )}
+          <div className="flex flex-col gap-2 @lg:flex-row @lg:items-start">
+            <textarea
+              aria-label="Message the assistant"
+              rows={2}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={onKeyDown}
+              placeholder={hasSelection ? 'Ask about the selection… (Enter to send)' : 'Ask a question… (Enter to send)'}
+              className="block w-full resize-none rounded-ctl border border-rule bg-raised px-2 py-1.5 text-ui text-ink outline-none placeholder:text-ink-faint focus:border-accent @lg:min-w-0 @lg:flex-1"
+            />
+            <div className="flex items-end gap-2 @lg:w-80 @lg:shrink-0">
+              <div className="min-w-0 flex-1">
+                <TargetPicker projectId={projectId} />
+              </div>
+              {streamingMessage ? (
+                <Button aria-label="Stop" onClick={() => void stop(projectId, streamingMessage.id)}>
+                  <Square /> Stop
+                </Button>
+              ) : (
+                <Button variant="primary" aria-label="Send" disabled={!text.trim() || sending} onClick={() => void send('chat')}>
+                  <SendHorizontal />
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 

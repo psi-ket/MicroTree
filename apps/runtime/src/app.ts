@@ -6,6 +6,7 @@ import type { AgentProvider } from '@research-studio/ai-core';
 import { createAiRepositories, type AiDb, type SecretStore } from '@research-studio/ai-storage';
 import type { Repositories, StudioDb } from '@research-studio/database';
 import type { Toolchain } from '@research-studio/latex-engine';
+import { CLI_MODEL_PROVIDER_KINDS, type CliModelProviderKind } from '@research-studio/shared-types';
 import type { RuntimeConfig } from './config';
 import { EventBus } from './events';
 import { registerErrorHandling } from './http';
@@ -98,9 +99,20 @@ export async function buildApp(deps: AppDeps): Promise<RuntimeApp> {
 
   const aiRepos = createAiRepositories(deps.ai.db);
   const aiEnv = deps.ai.env ?? process.env;
-  const providers = new AiProviderService(aiRepos, deps.ai.secrets, deps.config, audit, aiEnv, deps.ai.modelFactory);
   const staging = new StagingLifecycle(aiRepos, deps.config, audit, app.log);
   const agents = new AgentService(aiRepos, deps.config, events, audit, app.log, aiEnv, staging, deps.ai.agentRegistry);
+  // Claude Code and Codex also serve as plain models (`claude-cli`, `codex-cli`) for every AI feature,
+  // added automatically when installed.
+  const removedCliProviders = () => {
+    const value = deps.repos.settings.get('ai', 'removedCliProviders');
+    return Array.isArray(value) ? value.filter((k): k is CliModelProviderKind => (CLI_MODEL_PROVIDER_KINDS as readonly unknown[]).includes(k)) : [];
+  };
+  const providers = new AiProviderService(aiRepos, deps.ai.secrets, deps.config, audit, aiEnv, deps.ai.modelFactory, {
+    create: (kind) => agents.modelProvider(kind),
+    available: (kind) => agents.modelAvailable(kind),
+    removed: removedCliProviders,
+    setRemoved: (kinds) => deps.repos.settings.setMany('ai', { removedCliProviders: kinds }),
+  });
   const proposals = new ProposalService(aiRepos, projects, events, audit);
   const assistant = new AssistantService(aiRepos, projects, compile, providers, agents, proposals, events, audit, deps.config, app.log);
   const literature = new LiteratureService(deps.repos, deps.ai.secrets, deps.config, audit, aiEnv, app.log, deps.literature);

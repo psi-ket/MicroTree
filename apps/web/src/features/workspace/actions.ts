@@ -6,6 +6,7 @@ import { runtime } from '../../lib/connection';
 import { errorMessage, keys, queryClient } from '../../lib/queries';
 import { useCompile } from '../../stores/compile';
 import { isDirty, useEditor } from '../../stores/editor';
+import { useLayout } from '../../stores/layout';
 
 function projectId(): string {
   const id = useEditor.getState().projectId;
@@ -29,6 +30,7 @@ export async function openFile(path: string, reveal?: { line: number; column?: n
     editor.activate(path);
   }
   if (reveal) useEditor.getState().revealAt(path, reveal.line, reveal.column);
+  useLayout.getState().setAssistantFront(false);
   return true;
 }
 

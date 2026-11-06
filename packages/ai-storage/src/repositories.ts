@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import type Database from 'better-sqlite3';
-import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 import { drizzle, type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import type {
@@ -87,7 +87,7 @@ export class ConversationRepository {
 
   create(input: { id: string; projectId: string; mode: ConversationMode; providerId: string; model: string | null; title: string }): Conversation {
     const at = now();
-    const row: ConversationRow = { ...input, agentSessionId: null, createdAt: at, updatedAt: at };
+    const row: ConversationRow = { ...input, agentSessionId: null, archivedAt: null, createdAt: at, updatedAt: at };
     this.db.insert(aiConversations).values(row).run();
     return toConversation(row);
   }
@@ -106,13 +106,14 @@ export class ConversationRepository {
     return this.db.select({ s: aiConversations.agentSessionId }).from(aiConversations).where(eq(aiConversations.id, id)).get()?.s ?? null;
   }
 
-  list(projectId: string, limit = 50): Conversation[] {
+  /** The project's conversations, or only its archived ones, most recently active first. */
+  list(projectId: string, options: { archived?: boolean; limit?: number } = {}): Conversation[] {
     return this.db
       .select()
       .from(aiConversations)
-      .where(eq(aiConversations.projectId, projectId))
+      .where(and(eq(aiConversations.projectId, projectId), options.archived ? isNotNull(aiConversations.archivedAt) : isNull(aiConversations.archivedAt)))
       .orderBy(desc(aiConversations.updatedAt))
-      .limit(limit)
+      .limit(options.limit ?? 50)
       .all()
       .map(toConversation);
   }
@@ -123,6 +124,16 @@ export class ConversationRepository {
 
   touch(id: string): void {
     this.db.update(aiConversations).set({ updatedAt: now() }).where(eq(aiConversations.id, id)).run();
+  }
+
+  /** Archive or restore; the conversation keeps its place by last activity. */
+  setArchived(projectId: string, id: string, archived: boolean): Conversation | null {
+    this.db
+      .update(aiConversations)
+      .set({ archivedAt: archived ? now() : null })
+      .where(and(eq(aiConversations.id, id), eq(aiConversations.projectId, projectId)))
+      .run();
+    return this.get(projectId, id);
   }
 
   delete(projectId: string, id: string): boolean {

@@ -113,6 +113,7 @@ function AddProvider() {
   const [model, setModel] = useState('');
   const [busy, setBusy] = useState(false);
   const info = PROVIDER_KINDS[kind];
+  const cli = info.transport === 'cli';
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -121,9 +122,9 @@ function AddProvider() {
       const { provider } = await runtime().ai.createProvider({
         kind,
         displayName: name.trim() || info.label,
-        baseUrl: baseUrl.trim() || null,
+        baseUrl: cli ? null : baseUrl.trim() || null,
         defaultModel: model.trim() || null,
-        apiKey: apiKey.trim() || null,
+        apiKey: cli ? null : apiKey.trim() || null,
       });
       setApiKey('');
       setName('');
@@ -151,15 +152,19 @@ function AddProvider() {
       </Select>
       <Label htmlFor="ai-name">Name</Label>
       <Input id="ai-name" placeholder={info.label} value={name} onChange={(e) => setName(e.target.value)} />
-      <Label htmlFor="ai-url">Base URL</Label>
-      <Input
-        id="ai-url"
-        placeholder={info.defaultBaseUrl ?? (kind === 'openai-compatible' ? 'https://… (required)' : 'Official endpoint')}
-        value={baseUrl}
-        onChange={(e) => setBaseUrl(e.target.value)}
-        spellCheck={false}
-      />
-      {info.capabilities.requiresApiKey || kind === 'openai-compatible' ? (
+      {cli ? null : (
+        <>
+          <Label htmlFor="ai-url">Base URL</Label>
+          <Input
+            id="ai-url"
+            placeholder={info.defaultBaseUrl ?? (kind === 'openai-compatible' ? 'https://… (required)' : 'Official endpoint')}
+            value={baseUrl}
+            onChange={(e) => setBaseUrl(e.target.value)}
+            spellCheck={false}
+          />
+        </>
+      )}
+      {!cli && (info.capabilities.requiresApiKey || kind === 'openai-compatible') ? (
         <>
           <Label htmlFor="ai-key">API key</Label>
           <Input
@@ -176,7 +181,11 @@ function AddProvider() {
       <Label htmlFor="ai-model">Default model</Label>
       <Input id="ai-model" placeholder={info.defaultModel ?? 'Model name'} value={model} onChange={(e) => setModel(e.target.value)} spellCheck={false} />
       <div className="col-span-2 flex items-center justify-between gap-3">
-        <FieldHint>The key goes to the local runtime only and is never stored in this browser.</FieldHint>
+        <FieldHint>
+          {cli
+            ? `Runs ${kind === 'claude-cli' ? 'Claude Code' : 'Codex'} on this computer with your own sign-in, every tool off. What you send goes to ${kind === 'claude-cli' ? 'Anthropic' : 'OpenAI'}. Model "default" uses the CLI's own choice.`
+            : 'The key goes to the local runtime only and is never stored in this browser.'}
+        </FieldHint>
         <Button type="submit" variant="primary" disabled={busy}>
           Add provider
         </Button>

@@ -31,7 +31,7 @@ export interface Route {
  */
 export async function routeTask(task: VisualTaskType, target: ProviderTarget, signal?: AbortSignal): Promise<Route> {
   const caps = target.provider.capabilities;
-  if (!caps.structuredOutput) throw new VisualError('no-structured-output', `${target.kind} cannot return structured answers here; choose OpenAI, Anthropic, Gemini or Ollama`);
+  if (!caps.structuredOutput) throw new VisualError('no-structured-output', `${target.kind} cannot return structured answers here; choose OpenAI, Anthropic, Gemini, Ollama, Claude Code or Codex`);
   const needsImage = IMAGE_TASKS.includes(task);
   let modelVision: boolean | null = null;
   if (needsImage) {

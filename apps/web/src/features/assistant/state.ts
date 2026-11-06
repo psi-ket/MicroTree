@@ -15,6 +15,7 @@ export const aiKeys = {
   models: (providerId: string) => ['ai', 'models', providerId] as const,
   approvals: (projectId: string) => ['ai', 'approvals', projectId] as const,
   conversations: (projectId: string) => ['ai', 'conversations', projectId] as const,
+  archivedConversations: (projectId: string) => ['ai', 'conversations', projectId, 'archived'] as const,
   conversation: (projectId: string, id: string) => ['ai', 'conversation', projectId, id] as const,
   preview: (projectId: string, id: string) => ['ai', 'preview', projectId, id] as const,
 };
@@ -43,6 +44,9 @@ export const useApprovals = (projectId: string) =>
 
 export const useConversations = (projectId: string) =>
   useQuery({ queryKey: aiKeys.conversations(projectId), queryFn: async () => (await runtime().ai.listConversations(projectId)).conversations });
+
+export const useArchivedConversations = (projectId: string) =>
+  useQuery({ queryKey: aiKeys.archivedConversations(projectId), queryFn: async () => (await runtime().ai.listConversations(projectId, { archived: true })).conversations });
 
 export const useConversation = (projectId: string, id: string | null) =>
   useQuery({

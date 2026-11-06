@@ -114,6 +114,14 @@ control applied at each.
 | T63 | Loss of the record of what supported a claim. | Evidence sources are snapshots (text, hash, location, extractor and index versions) that survive the deletion of the library item or PDF (links set to null). Assessments are superseded or marked stale, never overwritten. Human reviews are separate rows. Only an explicit "delete analysis" removes a project's claims and their links, and it is audited. |
 | T64 | A request touching data of the wrong project. | Every claim, record, recommendation, suggestion and job is loaded by ID and resolved to its project, which must exist, before anything is done. Routes that name a project and an object check that they belong together. The runtime has one local user, so this is about correctness, not access between users. |
 
+## Claude Code and Codex as models
+
+| # | Threat | Mitigation |
+| --- | --- | --- |
+| T65 | A CLI used as a model is steered by text in a manuscript, paper or image into reading files, running commands or browsing. | Claude Code: `--restricted --tools ""`, no MCP servers, no user or project settings, hooks or `CLAUDE.md`, permission prompts denied. Codex: command, browser, computer-use, app, plugin and image-viewing features disabled, read-only sandbox, approvals never, web search off, user config not loaded. Each call runs in a new empty folder that is deleted afterwards. A tool call or command in the output stops the process and fails the request (tested with fake CLIs; checked live that Codex with these settings answers without running a command). |
+| T66 | Runtime secrets or credentials reaching the CLI or its error messages. | The same filtered environment as agent runs: no `RS_*` variables, credentials only when allowed by exact name; forwarded values are redacted from errors. These providers take no API key (refused by the runtime). |
+| T67 | Project text leaving the computer through a CLI without consent. | Both kinds are `cloud` in every privacy decision: Visual Studio tasks need per-task consent; evidence, writing and review need a project that allows cloud providers and consent per operation. `RS_AGENTS=off` disables them. |
+
 ## Residual risks / accepted trade-offs
 
 - **Visual models can be wrong.** Reconstructions are drafts: a wrong symbol

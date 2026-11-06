@@ -1,8 +1,10 @@
-import type { ModelCapabilities, ModelProviderKind } from '@research-studio/shared-types';
+import { CLI_DEFAULT_MODEL, type ModelCapabilities, type ModelProviderKind } from '@research-studio/shared-types';
 
 export interface ProviderKindInfo {
   kind: ModelProviderKind;
   label: string;
+  /** `http`: an API reached by URL; `cli`: a command-line agent on this computer, signed in with its own login (no base URL, no API key). */
+  transport: 'http' | 'cli';
   /** Used when the config has no base URL. `null` means a base URL is required. */
   defaultBaseUrl: string | null;
   /** Suggested model before the list has been fetched. */
@@ -31,6 +33,7 @@ export const PROVIDER_KINDS: Record<ModelProviderKind, ProviderKindInfo> = {
   anthropic: {
     kind: 'anthropic',
     label: 'Anthropic',
+    transport: 'http',
     defaultBaseUrl: null,
     defaultModel: 'claude-opus-5-5',
     envKey: 'ANTHROPIC_API_KEY',
@@ -39,6 +42,7 @@ export const PROVIDER_KINDS: Record<ModelProviderKind, ProviderKindInfo> = {
   openai: {
     kind: 'openai',
     label: 'OpenAI',
+    transport: 'http',
     defaultBaseUrl: null,
     defaultModel: null,
     envKey: 'OPENAI_API_KEY',
@@ -47,6 +51,7 @@ export const PROVIDER_KINDS: Record<ModelProviderKind, ProviderKindInfo> = {
   gemini: {
     kind: 'gemini',
     label: 'Google Gemini',
+    transport: 'http',
     defaultBaseUrl: null,
     defaultModel: null,
     envKey: 'GEMINI_API_KEY',
@@ -55,6 +60,7 @@ export const PROVIDER_KINDS: Record<ModelProviderKind, ProviderKindInfo> = {
   'openai-compatible': {
     kind: 'openai-compatible',
     label: 'OpenAI-compatible endpoint',
+    transport: 'http',
     defaultBaseUrl: null,
     defaultModel: null,
     envKey: null,
@@ -75,6 +81,7 @@ export const PROVIDER_KINDS: Record<ModelProviderKind, ProviderKindInfo> = {
   ollama: {
     kind: 'ollama',
     label: 'Ollama (local)',
+    transport: 'http',
     defaultBaseUrl: 'http://127.0.0.1:11434',
     defaultModel: null,
     envKey: null,
@@ -91,6 +98,27 @@ export const PROVIDER_KINDS: Record<ModelProviderKind, ProviderKindInfo> = {
       modelListing: true,
       requiresApiKey: false,
     },
+  },
+  // The CLIs run as plain models: one answer per call, every tool disabled,
+  // signed in with the user's own Claude or ChatGPT login.
+  'claude-cli': {
+    kind: 'claude-cli',
+    label: 'Claude Code (your sign-in)',
+    transport: 'cli',
+    defaultBaseUrl: null,
+    defaultModel: CLI_DEFAULT_MODEL,
+    envKey: null,
+    capabilities: { ...HOSTED, requiresApiKey: false },
+  },
+  'codex-cli': {
+    kind: 'codex-cli',
+    label: 'Codex CLI (your sign-in)',
+    transport: 'cli',
+    defaultBaseUrl: null,
+    defaultModel: CLI_DEFAULT_MODEL,
+    envKey: null,
+    // Codex reports whole messages, not token deltas.
+    capabilities: { ...HOSTED, streaming: false, requiresApiKey: false },
   },
 };
 

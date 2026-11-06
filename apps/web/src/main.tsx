@@ -9,6 +9,7 @@ import { createRoot } from 'react-dom/client';
 import { Toaster } from 'sonner';
 import { TooltipProvider } from '@research-studio/ui';
 import { App } from './App';
+import { ErrorScreen } from './ErrorScreen';
 import { queryClient } from './lib/queries';
 import { useResolvedTheme } from './lib/theme';
 
@@ -32,7 +33,9 @@ createRoot(root).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider delayDuration={400}>
-        <App />
+        <ErrorScreen>
+          <App />
+        </ErrorScreen>
         <ThemedToaster />
       </TooltipProvider>
     </QueryClientProvider>
