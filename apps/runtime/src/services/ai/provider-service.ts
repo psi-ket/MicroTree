@@ -1,15 +1,25 @@
 import { checkBaseUrl, PROVIDER_KINDS, ProviderError, type ModelProvider } from '@research-studio/ai-core';
 import type { AiRepositories, ProviderRecord, SecretStore } from '@research-studio/ai-storage';
 import { createModelProvider, type ProviderConnection } from '@research-studio/model-adapters';
-import { StudioError, type CliModelProviderKind, type ModelInfo, type ModelProviderKind, type ProviderConfigView } from '@research-studio/shared-types';
+import { CLI_MODEL_PROVIDER_KINDS, StudioError, type CliModelProviderKind, type ModelInfo, type ModelProviderKind, type ProviderConfigView } from '@research-studio/shared-types';
 import type { RuntimeConfig } from '../../config';
 import { randomId } from '../../security/tokens';
 import type { AuditService } from '../audit-service';
 import type { Actor } from '../project-service';
 
 export type ModelProviderFactory = (kind: ModelProviderKind, connection: ProviderConnection) => ModelProvider;
-/** Builds a `claude-cli` or `codex-cli` provider from the CLI agent of the same name. */
-export type CliModelFactory = (kind: CliModelProviderKind) => Promise<ModelProvider>;
+/** Claude Code and Codex as models (`claude-cli`, `codex-cli`), backed by the CLI agents of the same name. */
+export interface CliModels {
+  create(kind: CliModelProviderKind): Promise<ModelProvider>;
+  /** The CLI is installed and CLI agents are on. */
+  available(kind: CliModelProviderKind): Promise<boolean>;
+  /** Kinds the user removed, which are not added back automatically. */
+  removed(): CliModelProviderKind[];
+  setRemoved(kinds: CliModelProviderKind[]): void;
+}
+
+const CLI_DISPLAY_NAMES: Record<CliModelProviderKind, string> = { 'claude-cli': 'Claude Code (your sign-in)', 'codex-cli': 'Codex (your sign-in)' };
+const isCliKind = (kind: ModelProviderKind): kind is CliModelProviderKind => (CLI_MODEL_PROVIDER_KINDS as readonly string[]).includes(kind);
 
 export interface ProviderInput {
   kind: ModelProviderKind;
@@ -42,11 +52,30 @@ export class AiProviderService {
     private readonly audit: AuditService,
     private readonly env: Record<string, string | undefined>,
     private readonly factory: ModelProviderFactory = createModelProvider,
-    private readonly cliFactory: CliModelFactory | null = null,
+    private readonly cli: CliModels | null = null,
   ) {}
 
+  private cliAdded: Promise<void> | null = null;
+
   async list(): Promise<ProviderConfigView[]> {
+    this.cliAdded ??= this.addCliProviders();
+    await this.cliAdded;
     return Promise.all(this.repos.providers.list().map((r) => this.view(r)));
+  }
+
+  /**
+   * Every installed CLI becomes a model provider without any setup, so each AI
+   * feature can use it. Runs once per runtime start; one the user removed stays removed.
+   */
+  private async addCliProviders(): Promise<void> {
+    if (!this.cli) return;
+    const removed = new Set(this.cli.removed());
+    for (const kind of CLI_MODEL_PROVIDER_KINDS) {
+      if (removed.has(kind) || this.repos.providers.list().some((r) => r.kind === kind)) continue;
+      if (!(await this.cli.available(kind).catch(() => false))) continue;
+      this.repos.providers.create({ id: kind, kind, displayName: CLI_DISPLAY_NAMES[kind], baseUrl: null, defaultModel: PROVIDER_KINDS[kind].defaultModel, enabled: true, secretRef: null });
+      this.audit.record({ action: 'ai.provider.create', outcome: 'success', target: kind, details: { kind, credential: false, automatic: true } });
+    }
   }
 
   async get(id: string): Promise<ProviderConfigView> {
@@ -132,6 +161,9 @@ export class AiProviderService {
     const record = this.record(id);
     if (record.secretRef) await this.secrets.delete(record.secretRef);
     this.repos.providers.delete(id);
+    if (this.cli && isCliKind(record.kind) && !this.repos.providers.list().some((r) => r.kind === record.kind)) {
+      this.cli.setRemoved([...new Set([...this.cli.removed(), record.kind])]);
+    }
     this.audit.record({ action: 'ai.provider.delete', outcome: 'success', actor: actor.sessionId, target: id });
   }
 
@@ -140,9 +172,9 @@ export class AiProviderService {
     const record = this.record(id);
     if (!record.enabled) throw new StudioError('FORBIDDEN', `${record.displayName} is disabled`);
     const info = PROVIDER_KINDS[record.kind];
-    if (record.kind === 'claude-cli' || record.kind === 'codex-cli') {
-      if (!this.cliFactory) throw new StudioError('NOT_CONFIGURED', `${record.displayName} is not available on this runtime.`);
-      return { record, provider: await this.cliFactory(record.kind) };
+    if (isCliKind(record.kind)) {
+      if (!this.cli) throw new StudioError('NOT_CONFIGURED', `${record.displayName} is not available on this runtime.`);
+      return { record, provider: await this.cli.create(record.kind) };
     }
     const apiKey = await this.resolveKey(record);
     if (info.capabilities.requiresApiKey && !apiKey) {

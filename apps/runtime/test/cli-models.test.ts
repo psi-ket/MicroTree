@@ -90,6 +90,40 @@ describe('CLI model providers', () => {
   });
 });
 
+describe('installed CLIs', () => {
+  const listed = async (runtime: TestRuntime) => (await runtime.request('GET', api('/ai/providers'))).json<{ providers: ProviderConfigView[] }>().providers;
+
+  it('are offered to every feature without any setup, and stay removed once removed', async () => {
+    let fresh = await createTestRuntime({ agentRegistry: registry });
+    try {
+      expect((await listed(fresh)).map((p) => [p.id, p.kind, p.enabled])).toEqual([
+        ['claude-cli', 'claude-cli', true],
+        ['codex-cli', 'codex-cli', true],
+      ]);
+      const visual = VisualProvidersResponse.parse((await fresh.request('GET', api('/visual/providers'))).json());
+      expect(visual.providers.filter((p) => p.usable).map((p) => p.id)).toEqual(['claude-cli', 'codex-cli']);
+
+      expect((await fresh.request('DELETE', api('/ai/providers/codex-cli'))).statusCode).toBeLessThan(300);
+      fresh = await fresh.restart();
+      expect((await listed(fresh)).map((p) => p.id)).toEqual(['claude-cli']);
+    } finally {
+      await fresh.dispose();
+    }
+  });
+
+  it('are not added when the CLI is missing or CLI agents are off', async () => {
+    const missing = await createTestRuntime({ agentRegistry: () => [new CodexAgent({ configuredPath: FAKE_CODEX, env: agentEnv })] });
+    const off = await createTestRuntime({ agentRegistry: registry, config: { RS_AGENTS: 'off' } });
+    try {
+      expect((await listed(missing)).map((p) => p.id)).toEqual(['codex-cli']);
+      expect(await listed(off)).toEqual([]);
+    } finally {
+      await missing.dispose();
+      await off.dispose();
+    }
+  });
+});
+
 describe('with CLI agents turned off', () => {
   it('cannot be used', async () => {
     const off = await createTestRuntime({ agentRegistry: registry, config: { RS_AGENTS: 'off' } });

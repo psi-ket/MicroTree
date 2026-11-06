@@ -186,6 +186,15 @@ export class AgentService {
     });
   }
 
+  /** Whether {@link modelProvider} can run: CLI agents are on and the CLI was found. */
+  async modelAvailable(kind: CliModelProviderKind): Promise<boolean> {
+    if (!this.enabled) return false;
+    const entry = (await this.load()).get(kind === 'claude-cli' ? 'claude-code' : 'codex');
+    if (!entry) return false;
+    const detection = await entry.agent.detect();
+    return detection.available && detection.executable !== null;
+  }
+
   private async entry(agentId: string): Promise<AgentEntry> {
     if (!this.enabled) throw new StudioError('AGENT_UNAVAILABLE', 'CLI agents are disabled on this runtime (RS_AGENTS=off).');
     const entry = (await this.load()).get(agentId);

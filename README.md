@@ -115,10 +115,12 @@ assistant**.
   runtime's environment, that service works without entering a key. For
   OpenAI-compatible services (vLLM, LM Studio, OpenRouter…) also enter the
   base URL. Ollama needs no key.
-- **Claude Code or Codex as the model.** Choose **Claude Code (your
-  sign-in)** or **Codex CLI (your sign-in)** as the service to use your own
-  Claude or ChatGPT plan instead of an API key, for the assistant and for
-  every other AI feature (Visual Studio, evidence, writing tools, review).
+- **Claude Code or Codex as the model.** When Claude Code or Codex is
+  installed, **Claude Code (your sign-in)** and **Codex (your sign-in)** are
+  added as models automatically, so your own Claude or ChatGPT plan works
+  instead of an API key for the assistant and for every other AI feature
+  (Visual Studio, evidence, writing tools, review). Remove one in the
+  assistant's setup and it stays removed; you can add it back there.
   The CLI runs with every tool turned off in an empty temporary folder, so it
   only answers. It counts as a cloud service: tasks ask for your consent.
   Details: [`docs/AI_PROVIDERS.md`](docs/AI_PROVIDERS.md).

@@ -104,10 +104,13 @@ prompts, answers or images.
 ## 4. Configuring providers
 
 Providers are added in the assistant's settings (or `POST
-/api/v1/ai/providers`). Keys go to the OS credential store. For **Claude Code
-(your sign-in)** or **Codex CLI (your sign-in)** choose the service and add
-it; there is no key or URL. The CLI must be installed and signed in (`claude`,
-then `/login`; `codex login`). For local
+/api/v1/ai/providers`). Keys go to the OS credential store. **Claude Code
+(your sign-in)** and **Codex (your sign-in)** need no setup: when CLI agents
+are on and the CLI is found, the runtime adds the provider (ids `claude-cli`,
+`codex-cli`) the first time providers are listed after it starts. A removed
+one is remembered and not added back; add it again in the assistant's
+settings. There is no key or URL. The CLI must be signed in (`claude`, then
+`/login`; `codex login`). For local
 visual tasks, install Ollama and a vision model (for example `ollama pull
 llava` or a Qwen-VL model) and add an Ollama provider with
 `http://127.0.0.1:11434`.
