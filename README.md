@@ -105,8 +105,16 @@ Nothing is overwritten silently.
 
 ## Using the assistant
 
-Open the assistant panel (robot icon in the top bar) and choose **Set up the
-assistant**.
+Open the assistant (robot icon in the top bar) and choose **Set up the
+assistant**. It opens docked over the bottom of the code: drag its top edge to
+resize it, or use the arrow to collapse it to a bar. **Open as a tab** (in its
+header) turns it into an **Assistant** tab beside your files, and **Dock below
+the code** brings it back; the conversation and anything you were typing are
+kept. Opening a file, or jumping to a line from Problems or the PDF, brings
+the code back to the front. The **⋯** button beside the conversation list
+archives the open conversation (it moves to **Archived** at the bottom of the
+list; sending it a new message or **Restore** brings it back) or deletes it
+after you confirm.
 
 - **Model services.** Pick a service and enter the API key and a default
   model. The key goes to the runtime and is stored in your OS credential

@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import {
   AcceptProposalRequest,
   AgentListQuery,
+  ConversationListQuery,
   ConversationParams,
   CreateConversationRequest,
   CreateProviderRequest,
@@ -12,6 +13,7 @@ import {
   ProviderParams,
   SendMessageRequest,
   SetAgentApprovalRequest,
+  UpdateConversationRequest,
   UpdateProviderRequest,
 } from '@research-studio/api-contracts';
 import type { SecretStore } from '@research-studio/ai-storage';
@@ -88,7 +90,8 @@ export function registerAiRoutes(api: FastifyInstance, deps: AiRouteDeps): void 
   // ---------------------------------------------------------- conversations
   api.get('/projects/:projectId/ai/conversations', async (request) => {
     const { projectId } = parse(ProjectParams, request.params);
-    return { conversations: assistant.list(projectId) };
+    const { archived } = parse(ConversationListQuery, request.query);
+    return { conversations: assistant.list(projectId, { archived }) };
   });
 
   api.post('/projects/:projectId/ai/conversations', async (request, reply) => {
@@ -100,6 +103,12 @@ export function registerAiRoutes(api: FastifyInstance, deps: AiRouteDeps): void 
   api.get('/projects/:projectId/ai/conversations/:conversationId', async (request) => {
     const { projectId, conversationId } = parse(ConversationParams, request.params);
     return assistant.detail(projectId, conversationId);
+  });
+
+  api.patch('/projects/:projectId/ai/conversations/:conversationId', async (request) => {
+    const { projectId, conversationId } = parse(ConversationParams, request.params);
+    const { archived } = parse(UpdateConversationRequest, request.body);
+    return { conversation: assistant.setArchived(projectId, conversationId, archived, actorOf(request)) };
   });
 
   api.delete('/projects/:projectId/ai/conversations/:conversationId', async (request, reply) => {

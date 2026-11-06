@@ -74,11 +74,45 @@ export async function ask(projectId: string, action: WritingActionId, text: stri
     });
     upsertMessage(projectId, res.userMessage);
     upsertMessage(projectId, res.assistantMessage);
+    // The runtime restores an archived conversation that gets a new message.
+    patchDetail(projectId, conversationId!, (d) => (d.conversation.archivedAt ? { ...d, conversation: { ...d.conversation, archivedAt: null } } : d));
     void queryClient.invalidateQueries({ queryKey: aiKeys.conversations(projectId) });
     return true;
   } catch (err) {
     toast.error('The assistant could not start', { description: errorMessage(err) });
     return false;
+  }
+}
+
+/** Archive (out of the history list, kept) or restore a conversation. */
+export async function archiveConversation(projectId: string, conversationId: string, archived: boolean): Promise<void> {
+  try {
+    const { conversation } = await runtime().ai.updateConversation(projectId, conversationId, { archived });
+    patchDetail(projectId, conversationId, (d) => ({ ...d, conversation }));
+    void queryClient.invalidateQueries({ queryKey: aiKeys.conversations(projectId) });
+    const { open } = useAssistant.getState();
+    if (archived) {
+      open(projectId, null);
+      toast.success('Conversation archived', { description: conversation.title, action: { label: 'Undo', onClick: () => void archiveConversation(projectId, conversationId, false) } });
+    } else {
+      open(projectId, conversationId);
+    }
+  } catch (err) {
+    toast.error(archived ? 'Could not archive the conversation' : 'Could not restore the conversation', { description: errorMessage(err) });
+  }
+}
+
+/** Delete a conversation with its messages, after the user confirmed. */
+export async function deleteConversation(projectId: string, conversationId: string): Promise<void> {
+  try {
+    await runtime().ai.deleteConversation(projectId, conversationId);
+    const state = useAssistant.getState();
+    if (state.conversation[projectId] === conversationId) state.open(projectId, null);
+    queryClient.removeQueries({ queryKey: aiKeys.conversation(projectId, conversationId) });
+    void queryClient.invalidateQueries({ queryKey: aiKeys.conversations(projectId) });
+    toast.success('Conversation deleted');
+  } catch (err) {
+    toast.error('Could not delete the conversation', { description: errorMessage(err) });
   }
 }
 

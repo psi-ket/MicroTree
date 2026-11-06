@@ -50,9 +50,11 @@ describe('migrations', () => {
       'ai_providers',
       'ai_staging_workspaces',
     ]);
-    expect(handle.sqlite.prepare("SELECT count(*) AS n FROM __ai_migrations").get()).toEqual({ n: 2 });
+    expect(handle.sqlite.prepare("SELECT count(*) AS n FROM __ai_migrations").get()).toEqual({ n: 3 });
     const messageColumns = handle.sqlite.prepare('PRAGMA table_info(ai_messages)').all().map((c) => (c as { name: string }).name);
     expect(messageColumns).toContain('finish_reason');
+    const conversationColumns = handle.sqlite.prepare('PRAGMA table_info(ai_conversations)').all().map((c) => (c as { name: string }).name);
+    expect(conversationColumns).toContain('archived_at');
     expect(() => openAiDb(handle.sqlite)).not.toThrow();
   });
 

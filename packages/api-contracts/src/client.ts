@@ -48,6 +48,7 @@ import {
   SendMessageResponse,
   type AcceptProposalRequest,
   type CreateConversationRequest,
+  type UpdateConversationRequest,
   type CreateProviderRequest,
   type SendMessageRequest,
   type SetAgentApprovalRequest,
@@ -374,11 +375,14 @@ export function createRuntimeClient(options: RuntimeClientOptions) {
       setAgentApproval: (projectId: string, input: z.input<typeof SetAgentApprovalRequest>) =>
         json(AgentApprovalsResponse, 'PUT', `${p(projectId)}/ai/agent-approvals`, { body: input }),
 
-      listConversations: (projectId: string) => json(ConversationListResponse, 'GET', `${p(projectId)}/ai/conversations`),
+      listConversations: (projectId: string, options: { archived?: boolean } = {}) =>
+        json(ConversationListResponse, 'GET', `${p(projectId)}/ai/conversations`, options.archived ? { query: { archived: 'true' } } : {}),
       createConversation: (projectId: string, input: z.input<typeof CreateConversationRequest>) =>
         json(ConversationResponse, 'POST', `${p(projectId)}/ai/conversations`, { body: input }),
       getConversation: (projectId: string, conversationId: string) =>
         json(ConversationDetailResponse, 'GET', `${p(projectId)}/ai/conversations/${encodeURIComponent(conversationId)}`),
+      updateConversation: (projectId: string, conversationId: string, input: z.input<typeof UpdateConversationRequest>) =>
+        json(ConversationResponse, 'PATCH', `${p(projectId)}/ai/conversations/${encodeURIComponent(conversationId)}`, { body: input }),
       deleteConversation: (projectId: string, conversationId: string) =>
         empty('DELETE', `${p(projectId)}/ai/conversations/${encodeURIComponent(conversationId)}`),
       sendMessage: (projectId: string, conversationId: string, input: z.input<typeof SendMessageRequest>) =>

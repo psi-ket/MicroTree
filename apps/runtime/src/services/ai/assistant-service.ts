@@ -140,9 +140,17 @@ export class AssistantService {
 
   // ------------------------------------------------------------ conversations
 
-  list(projectId: string): Conversation[] {
+  list(projectId: string, options: { archived?: boolean } = {}): Conversation[] {
     this.projects.get(projectId);
-    return this.repos.conversations.list(projectId);
+    return this.repos.conversations.list(projectId, options);
+  }
+
+  /** Archived conversations are kept with their messages and edits, but listed apart. */
+  setArchived(projectId: string, id: string, archived: boolean, actor: Actor): Conversation {
+    this.conversation(projectId, id);
+    const conversation = this.repos.conversations.setArchived(projectId, id, archived)!;
+    this.audit.record({ action: archived ? 'ai.conversation.archive' : 'ai.conversation.restore', outcome: 'success', actor: actor.sessionId, projectId, target: id });
+    return conversation;
   }
 
   conversation(projectId: string, id: string): Conversation {
@@ -243,6 +251,8 @@ export class AssistantService {
       this.repos.conversations.update(conversationId, { title: (text || action.label).replace(/\s+/g, ' ').slice(0, 60) });
     }
     this.repos.conversations.touch(conversationId);
+    // Continuing an archived conversation brings it back to the active list.
+    if (conversation.archivedAt) this.repos.conversations.setArchived(projectId, conversationId, false);
 
     const controller = new AbortController();
     const turn: Turn = { projectId, conversation, assistant, action: input.action, text, context, permission, actor, controller };

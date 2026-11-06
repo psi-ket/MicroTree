@@ -1,5 +1,5 @@
 import Editor, { type OnMount } from '@monaco-editor/react';
-import { AlertTriangle, BookMarked, FileCode2, FileText, X } from 'lucide-react';
+import { AlertTriangle, BookMarked, Bot, FileCode2, FileText, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { editor as MonacoEditor } from 'monaco-editor';
 import { classifyFile, editorLanguageFor } from '@research-studio/document-engine';
@@ -9,6 +9,7 @@ import { useSettings } from '../../lib/queries';
 import { WRITING_ACTIONS } from '@research-studio/ai-core';
 import { useResolvedTheme } from '../../lib/theme';
 import { ask } from '../assistant/actions';
+import { AssistantDock } from '../assistant/AssistantDock';
 import { useCompile } from '../../stores/compile';
 import { isDirty, useEditor } from '../../stores/editor';
 import { useLayout } from '../../stores/layout';
@@ -28,8 +29,50 @@ function TabIcon({ path }: { path: string }) {
   return <FileText className="size-3.5 text-ink-faint" />;
 }
 
+/** The assistant's tab when it is docked as a tab; it closes the assistant, not a file. */
+function AssistantTab({ selected }: { selected: boolean }) {
+  const { setAssistantFront, toggle } = useLayout();
+  return (
+    <div
+      role="tab"
+      aria-selected={selected}
+      tabIndex={selected ? 0 : -1}
+      data-testid="tab-assistant"
+      onClick={() => setAssistantFront(true)}
+      onAuxClick={(e) => e.button === 1 && toggle('assistant', false)}
+      onKeyDown={(e) => e.key === 'Enter' && setAssistantFront(true)}
+      className={cn(
+        'group relative flex shrink-0 cursor-default items-center gap-1.5 border-r border-rule pl-3 pr-1.5 text-ui',
+        selected ? 'bg-panel text-ink' : 'text-ink-muted hover:bg-panel/60 hover:text-ink',
+      )}
+    >
+      {selected ? <span className="absolute inset-x-0 top-0 h-[2px] bg-accent" /> : null}
+      <Bot className="size-3.5 text-accent" />
+      <span>Assistant</span>
+      <button
+        type="button"
+        aria-label="Close assistant"
+        onClick={(e) => {
+          e.stopPropagation();
+          toggle('assistant', false);
+        }}
+        className="ml-0.5 grid size-5 place-items-center rounded text-ink-faint hover:bg-sunken hover:text-ink"
+      >
+        <X className="size-3.5" />
+      </button>
+    </div>
+  );
+}
+
 function Tabs() {
   const { tabs, active, buffers, activate, closeTab } = useEditor();
+  const assistantTab = useLayout((s) => s.assistant && s.assistantDock === 'tab');
+  const assistantFront = useLayout((s) => s.assistantFront);
+  const setAssistantFront = useLayout((s) => s.setAssistantFront);
+  const show = (path: string) => {
+    activate(path);
+    setAssistantFront(false);
+  };
   const close = async (path: string) => {
     if (isDirty(buffers[path])) await saveFile(path);
     closeTab(path);
@@ -40,7 +83,7 @@ function Tabs() {
         const b = buffers[path];
         const name = path.split('/').pop();
         const dir = path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : '';
-        const selected = path === active;
+        const selected = path === active && !(assistantTab && assistantFront);
         return (
           <div
             key={path}
@@ -49,9 +92,9 @@ function Tabs() {
             tabIndex={selected ? 0 : -1}
             title={path}
             data-testid={`tab-${path}`}
-            onClick={() => activate(path)}
+            onClick={() => show(path)}
             onAuxClick={(e) => e.button === 1 && void close(path)}
-            onKeyDown={(e) => e.key === 'Enter' && activate(path)}
+            onKeyDown={(e) => e.key === 'Enter' && show(path)}
             className={cn(
               'group relative flex min-w-0 max-w-56 cursor-default items-center gap-1.5 border-r border-rule pl-3 pr-1.5 text-ui',
               selected ? 'bg-panel text-ink' : 'text-ink-muted hover:bg-panel/60 hover:text-ink',
@@ -78,6 +121,7 @@ function Tabs() {
           </div>
         );
       })}
+      {assistantTab ? <AssistantTab selected={assistantFront} /> : null}
     </div>
   );
 }
@@ -177,6 +221,9 @@ export function EditorPane({ projectId }: { projectId: string }) {
     );
   }, [markers, active, evidenceOpen, mounted]);
   const job = useCompile((s) => s.jobs[projectId]);
+  const assistantOpen = useLayout((s) => s.assistant);
+  // Room below the last line so it can be scrolled above the docked assistant.
+  const codeBottomPadding = useLayout((s) => (!s.assistant || s.assistantDock !== 'overlay' ? 10 : s.assistantOverlayPx + 10));
 
   // Autosave after a pause in typing.
   const content = buffer?.content;
@@ -219,6 +266,7 @@ export function EditorPane({ projectId }: { projectId: string }) {
     const position = { lineNumber: reveal.line, column: reveal.column ?? 1 };
     editor.setPosition(position);
     editor.revealLineInCenter(reveal.line, monaco.editor.ScrollType.Smooth);
+    useLayout.getState().setAssistantFront(false);
     editor.focus();
   }, [reveal, active]);
 
@@ -232,6 +280,7 @@ export function EditorPane({ projectId }: { projectId: string }) {
     editor.pushUndoStop();
     editor.executeEdits('rs.insert', [{ range: selection, text: insertion.text, forceMoveMarkers: true }]);
     editor.pushUndoStop();
+    useLayout.getState().setAssistantFront(false);
     editor.focus();
     useEditor.setState({ insertion: null });
   }, [insertion, active]);
@@ -268,7 +317,7 @@ export function EditorPane({ projectId }: { projectId: string }) {
         contextMenuGroupId: '9_assistant',
         precondition: 'editorHasSelection',
         run: () => {
-          useLayout.getState().toggle('assistant', true);
+          useLayout.getState().showAssistant();
           void ask(projectId, action, '');
         },
       });
@@ -315,7 +364,7 @@ export function EditorPane({ projectId }: { projectId: string }) {
       scrollBeyondLastLine: false,
       renderLineHighlight: 'line',
       smoothScrolling: true,
-      padding: { top: 10, bottom: 10 },
+      padding: { top: 10, bottom: codeBottomPadding },
       lineNumbersMinChars: 3,
       glyphMargin: false,
       folding: true,
@@ -328,30 +377,33 @@ export function EditorPane({ projectId }: { projectId: string }) {
       fixedOverflowWidgets: true,
       ariaLabel: 'LaTeX source editor',
     }),
-    [settings.editorFontSize, settings.editorWordWrap],
+    [settings.editorFontSize, settings.editorWordWrap, codeBottomPadding],
   );
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-panel">
       <Tabs />
       {buffer?.conflict ? <ConflictBar projectId={projectId} path={buffer.path} deleted={buffer.diskState === 'deleted'} /> : null}
-      <div className="min-h-0 flex-1" data-testid="editor">
-        {buffer ? (
-          <Editor
-            key={projectId}
-            path={modelUri(projectId, buffer.path).toString()}
-            defaultValue={buffer.content}
-            defaultLanguage={editorLanguageFor(buffer.path)}
-            language={editorLanguageFor(buffer.path)}
-            theme={theme === 'dark' ? 'rs-dark' : 'rs-light'}
-            onChange={(value) => setContent(buffer.path, value ?? '')}
-            onMount={onMount}
-            options={options}
-            loading={<div className="h-full bg-panel" />}
-          />
-        ) : (
-          <EmptyEditor />
-        )}
+      <div className="relative min-h-0 flex-1">
+        <div className="h-full" data-testid="editor">
+          {buffer ? (
+            <Editor
+              key={projectId}
+              path={modelUri(projectId, buffer.path).toString()}
+              defaultValue={buffer.content}
+              defaultLanguage={editorLanguageFor(buffer.path)}
+              language={editorLanguageFor(buffer.path)}
+              theme={theme === 'dark' ? 'rs-dark' : 'rs-light'}
+              onChange={(value) => setContent(buffer.path, value ?? '')}
+              onMount={onMount}
+              options={options}
+              loading={<div className="h-full bg-panel" />}
+            />
+          ) : (
+            <EmptyEditor />
+          )}
+        </div>
+        {assistantOpen ? <AssistantDock projectId={projectId} /> : null}
       </div>
     </div>
   );

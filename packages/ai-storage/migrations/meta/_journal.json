@@ -15,6 +15,13 @@
       "when": 1793613446235,
       "tag": "0001_staging_and_finish_reason",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1793925461031,
+      "tag": "0002_conversation_archive",
+      "breakpoints": true
     }
   ]
 }

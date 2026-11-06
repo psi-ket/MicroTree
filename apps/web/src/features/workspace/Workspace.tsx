@@ -12,7 +12,6 @@ import { openLibrary } from '../../lib/routes';
 import { useCompile } from '../../stores/compile';
 import { isDirty, useEditor } from '../../stores/editor';
 import { useLayout } from '../../stores/layout';
-import { AssistantPanel } from '../assistant/AssistantPanel';
 import { DiagnosticsPanel } from '../diagnostics/DiagnosticsPanel';
 import { EditorPane } from '../editor/EditorPane';
 import { completionSources } from '../editor/monaco-setup';
@@ -98,8 +97,9 @@ export function Workspace({ projectId, onBack }: { projectId: string; onBack: ()
     completionSources.citations = symbols?.citations ?? [];
   }, [files, symbols]);
 
-  const horizontalIds = ['explorer', 'editor', 'pdf', 'references', 'evidence', 'assistant'].filter(
-    (id) => (id !== 'explorer' || layout.explorer) && (id !== 'assistant' || layout.assistant) && (id !== 'references' || layout.references) && (id !== 'evidence' || layout.evidence),
+  // The assistant lives inside the editor pane (see AssistantDock), not in this row.
+  const horizontalIds = ['explorer', 'editor', 'pdf', 'references', 'evidence'].filter(
+    (id) => (id !== 'explorer' || layout.explorer) && (id !== 'references' || layout.references) && (id !== 'evidence' || layout.evidence),
   );
   const horizontal = useDefaultLayout({ id: 'rs.workspace.h', panelIds: horizontalIds });
   const verticalIds = layout.diagnostics ? ['main', 'diagnostics'] : ['main'];
@@ -113,7 +113,8 @@ export function Workspace({ projectId, onBack }: { projectId: string; onBack: ()
     { id: 'explorer', label: 'Toggle explorer', shortcut: 'Ctrl B', run: () => layout.toggle('explorer') },
     { id: 'problems', label: 'Toggle problems panel', shortcut: 'Ctrl J', run: () => layout.toggle('diagnostics') },
     { id: 'log', label: 'Show raw compile log', run: () => { layout.toggle('diagnostics', true); layout.setBottomTab('log'); } },
-    { id: 'assistant', label: 'Toggle assistant', run: () => layout.toggle('assistant') },
+    { id: 'assistant', label: 'Toggle assistant', run: () => layout.toggleAssistant() },
+    { id: 'assistant-dock', label: layout.assistantDock === 'tab' ? 'Dock the assistant below the code' : 'Open the assistant as a tab', run: () => layout.setAssistantDock(layout.assistantDock === 'tab' ? 'overlay' : 'tab') },
     { id: 'references', label: 'Toggle references', run: () => layout.toggle('references') },
     { id: 'evidence', label: 'Toggle evidence panel', run: () => layout.toggle('evidence') },
     { id: 'library', label: 'Open your library', run: () => void saveAll().finally(() => openLibrary(projectId)) },
@@ -187,14 +188,6 @@ export function Workspace({ projectId, onBack }: { projectId: string; onBack: ()
                   <ResizableHandle />
                   <ResizablePanel id="evidence" defaultSize={340} minSize={260} maxSize="45">
                     <EvidencePanel projectId={projectId} />
-                  </ResizablePanel>
-                </>
-              ) : null}
-              {layout.assistant ? (
-                <>
-                  <ResizableHandle />
-                  <ResizablePanel id="assistant" defaultSize={300} minSize={240} maxSize="40">
-                    <AssistantPanel projectId={projectId} />
                   </ResizablePanel>
                 </>
               ) : null}

@@ -137,7 +137,7 @@ export function TopBar({ project, onBack }: { project: Project; onBack: () => vo
         <PanelToggle label="Problems and log" shortcut="Ctrl J" pressed={layout.diagnostics} onClick={() => layout.toggle('diagnostics')}>
           <PanelBottom />
         </PanelToggle>
-        <PanelToggle label="Assistant" pressed={layout.assistant} onClick={() => layout.toggle('assistant')}>
+        <PanelToggle label="Assistant" pressed={layout.assistant} onClick={() => layout.toggleAssistant()}>
           <Bot />
         </PanelToggle>
         <PanelToggle label="References" pressed={layout.references} onClick={() => layout.toggle('references')}>

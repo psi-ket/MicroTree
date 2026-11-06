@@ -375,6 +375,42 @@ describe('model conversations', () => {
 
 // --------------------------------------------------------------- isolation
 
+describe('archiving and deleting conversations', () => {
+  const ids = async (query = '') => (await rt.request('GET', proj(`/ai/conversations${query}`))).json<{ conversations: Conversation[] }>().conversations.map((c) => c.id);
+  const archive = (id: string, archived: boolean, projectId = project.id) => rt.request('PATCH', proj(`/ai/conversations/${id}`, projectId), { body: { archived } });
+
+  it('lists archived conversations apart and restores one that gets a new message', async () => {
+    const conv = await conversation();
+    expect(conv.archivedAt).toBeNull();
+    const res = await archive(conv.id, true);
+    expect(res.statusCode).toBe(200);
+    expect(res.json<{ conversation: Conversation }>().conversation.archivedAt).toEqual(expect.any(String));
+    expect(await ids()).not.toContain(conv.id);
+    expect(await ids('?archived=true')).toContain(conv.id);
+    expect((await detail(conv.id)).conversation.archivedAt).not.toBeNull();
+
+    script = () => ({ chunks: ['Back again.'] });
+    const { assistantMessage } = (await send(conv.id, { text: 'One more question' })).json<{ assistantMessage: ConversationMessage }>();
+    await finished(conv.id, assistantMessage.id);
+    expect(await ids()).toContain(conv.id);
+    expect(await ids('?archived=true')).not.toContain(conv.id);
+
+    await archive(conv.id, true);
+    expect((await archive(conv.id, false)).json<{ conversation: Conversation }>().conversation.archivedAt).toBeNull();
+    expect(await ids()).toContain(conv.id);
+    expect((await archive(conv.id, true, other.id)).statusCode).toBe(404);
+    expect((await rt.request('PATCH', proj(`/ai/conversations/${conv.id}`), { body: { archived: 'yes' } })).statusCode).toBe(400);
+  });
+
+  it('deletes a conversation with its messages, archived or not', async () => {
+    const conv = await conversation();
+    await archive(conv.id, true);
+    expect((await rt.request('DELETE', proj(`/ai/conversations/${conv.id}`))).statusCode).toBe(204);
+    expect(await ids('?archived=true')).not.toContain(conv.id);
+    expect((await rt.request('GET', proj(`/ai/conversations/${conv.id}`))).statusCode).toBe(404);
+  });
+});
+
 describe('project isolation', () => {
   it('scopes conversations and proposals to their project', async () => {
     script = () => ({ chunks: ['<rs-edit file="main.tex"><rs-original>\\section{A}</rs-original><rs-proposed>\\section{B}</rs-proposed><rs-reason>r</rs-reason></rs-edit>'] });

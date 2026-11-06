@@ -17,7 +17,8 @@ async function typeLines(page: Page, lines: string[]) {
 
 /** Select one whole line in the editor (1-based). */
 async function selectLine(page: Page, line: number) {
-  await editor(page).click();
+  // Near the top: the assistant may be docked over the bottom of the code.
+  await editor(page).click({ position: { x: 80, y: 12 } });
   await page.keyboard.press('Control+Home');
   for (let i = 1; i < line; i++) await page.keyboard.press('ArrowDown');
   // Arrow keys and End stop at soft wraps; Ctrl+L selects the whole line (with
@@ -79,6 +80,19 @@ test('configure a model, ask about a selection, review and accept an edit, then 
   await expect(answer).toContainText('converges');
   await expect(answer).toContainText('321 in · 42 out');
 
+  // The assistant sits over the bottom of the code; the conversation moves into a tab and back.
+  await expect(page.getByTestId('assistant-dock')).toHaveAttribute('data-dock', 'overlay');
+  await panel.getByRole('button', { name: 'Open as a tab' }).click();
+  await expect(page.getByTestId('tab-assistant')).toHaveAttribute('aria-selected', 'true');
+  await expect(answer).toContainText('converges');
+  await page.getByTestId('tab-main.tex').click();
+  await expect(panel).toBeHidden();
+  await page.getByTestId('tab-assistant').click();
+  await expect(answer).toBeVisible();
+  await panel.getByRole('button', { name: 'Dock below the code' }).click();
+  await expect(page.getByTestId('tab-assistant')).toHaveCount(0);
+  await expect(page.getByTestId('assistant-dock')).toHaveAttribute('data-dock', 'overlay');
+
   // 5–6. Request a modification and review the structured diff.
   await selectLine(page, 3);
   await panel.getByRole('button', { name: 'Make more concise' }).click();
@@ -111,6 +125,28 @@ test('configure a model, ask about a selection, review and accept an edit, then 
   await card.getByRole('button', { name: 'Revert' }).click();
   await expect(card).toHaveAttribute('data-status', 'reverted');
   await expect(editor(page)).toContainText('does in fact converge');
+
+  // Archive the conversation: it leaves the history list but can be reopened and restored.
+  const history = panel.getByLabel('Conversation history');
+  const title = (await history.locator('option:checked').textContent())!;
+  await panel.getByRole('button', { name: 'Conversation options' }).click();
+  await page.getByRole('menuitem', { name: 'Archive conversation' }).click();
+  await expect(history).toHaveValue('');
+  await expect(history.locator('optgroup[label="Archived"] option')).toHaveText([title]);
+  await history.selectOption({ label: title });
+  await expect(panel.getByTestId('archived-banner')).toBeVisible();
+  await expect(answer).toContainText('converges');
+  await panel.getByTestId('archived-banner').getByRole('button', { name: 'Restore' }).click();
+  await expect(panel.getByTestId('archived-banner')).toBeHidden();
+  await expect(history.locator('optgroup[label="Archived"]')).toHaveCount(0);
+
+  // Delete it, after confirming.
+  page.once('dialog', (dialog) => void dialog.accept());
+  await panel.getByRole('button', { name: 'Conversation options' }).click();
+  await page.getByRole('menuitem', { name: 'Delete conversation…' }).click();
+  await expect(history).toHaveValue('');
+  await expect(history.locator('option', { hasText: title })).toHaveCount(0);
+  await expect(panel.getByTestId('assistant-message')).toHaveCount(0);
 
   expect(pageErrors).toEqual([]);
 });

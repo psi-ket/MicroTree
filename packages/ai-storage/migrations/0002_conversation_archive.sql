@@ -1,0 +1,1 @@
+ALTER TABLE `ai_conversations` ADD `archived_at` text;

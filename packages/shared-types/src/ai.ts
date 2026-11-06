@@ -189,6 +189,8 @@ export interface Conversation {
   providerId: string;
   model: string | null;
   title: string;
+  /** Set while archived: kept, but listed apart from the active conversations. */
+  archivedAt: IsoDateTime | null;
   createdAt: IsoDateTime;
   updatedAt: IsoDateTime;
 }
