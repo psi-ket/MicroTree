@@ -12,6 +12,7 @@ import {
   CompareQuery,
   CompileRequestBody,
   CreateVisualTaskRequest,
+  CreateDataPlotRequest,
   ExportQuery,
   InsertionOptionsSchema,
   InsertionParams,
@@ -178,6 +179,10 @@ export function registerVisualRoutes(api: FastifyInstance, visual: VisualRuntime
   });
 
   // ---------------------------------------------------------- artifacts
+  api.post('/visual/plots/from-data', { bodyLimit: 6 * 1024 * 1024 }, async (request, reply) => {
+    return reply.code(201).send(await visual.createDataPlot(parse(CreateDataPlotRequest, request.body), actorOf(request)));
+  });
+
   api.get('/visual/artifacts', async (request) => {
     const { projectId } = parse(ArtifactsQuery, request.query);
     return { artifacts: visual.artifactList(projectId) };

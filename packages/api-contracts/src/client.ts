@@ -161,6 +161,7 @@ import {
   type InsertionOptionsSchema,
   type ManualEditRequest,
   type PlotUpdateRequest,
+  type CreateDataPlotRequest,
   type PreprocessOperationSchema,
   type RefineRequest,
 } from './visual';
@@ -581,6 +582,7 @@ export function createRuntimeClient(options: RuntimeClientOptions) {
       preview: async (artifactId: string, version: number, signal?: AbortSignal) => (await send('GET', `${art(artifactId)}/versions/${version}/preview`, { signal })).arrayBuffer(),
       refine: (artifactId: string, input: z.input<typeof RefineRequest>, signal?: AbortSignal) => json(RefineResponse, 'POST', `${art(artifactId)}/refine`, { body: input, signal }),
       updatePlot: (artifactId: string, input: z.input<typeof PlotUpdateRequest>) => json(VersionResponse, 'POST', `${art(artifactId)}/plot`, { body: input }),
+      createDataPlot: (input: z.input<typeof CreateDataPlotRequest>) => json(ArtifactResponse, 'POST', '/visual/plots/from-data', { body: input }),
       approve: (artifactId: string, version: number) => json(zod.object({ artifact: VisualArtifactSchema }), 'POST', `${art(artifactId)}/approve`, { body: { version } }),
       compare: (artifactId: string, from: number, to: number) => json(CompareResponse, 'GET', `${art(artifactId)}/compare`, { query: { from, to } }),
       export: async (artifactId: string, version: number, format: 'tex' | 'standalone' | 'csv' | 'json') => (await send('GET', `${art(artifactId)}/versions/${version}/export`, { query: { format } })).text(),

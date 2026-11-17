@@ -258,6 +258,35 @@ describe('plots', () => {
   });
 });
 
+describe('heatmaps', () => {
+  const data = () => ({ series: [exactSeries('1.7', [{ x: 19, y: 33.574 }, { x: 24, y: 38.198 }]), exactSeries('1.10', [{ x: 19, y: 41.634 }, { x: 24, y: 47.610 }])], xAxis: { ...LINEAR_PLOT.xAxis, label: 'Column', scale: 'linear' as const }, yAxis: { ...LINEAR_PLOT.yAxis, label: 'Pol Angle', scale: 'linear' as const }, warnings: [] });
+  it('compiles a heatmap, preserves headings and maps every cell to its exact value', async () => {
+    const plot = buildPlotFromData(data(), { ...DEFAULT_PLOT_STYLE, plotType: 'heatmap', colorLabel: 'Intensity', colorMin: 0, colorMax: 60 });
+    expect(plot.dataCsv).toBe('column,row,value\n0,0,33.574\n1,0,41.634\n0,1,38.198\n1,1,47.61\n');
+    expect(plot.sourceCode).toContain('xticklabels={{1.7},{1.10}}');
+    expect(plot.sourceCode).toContain('yticklabels={{19},{24}}');
+    expect(plot.sourceCode).toContain('y dir=reverse');
+    expect(plot.sourceCode).toContain('matrix plot*, mesh/cols=2');
+    expect(plot.sourceCode).toContain('colorbar style={ylabel={Intensity}}');
+    expect(plot.sourceCode).toContain('point meta max=60');
+    if (tex) await compileOk(plot);
+  });
+  it('restyles colours and row order without changing the data', async () => {
+    const original = data();
+    const plot = buildPlotFromData(original, { ...DEFAULT_PLOT_STYLE, plotType: 'heatmap', colormap: 'gray', colorbar: false, heatmapTopDown: false });
+    expect(plot.sourceCode).not.toContain('colorbar');
+    expect(plot.sourceCode).not.toContain('y dir=reverse');
+    expect(plot.dataCsv).toBe(buildPlotFromData(original, { ...DEFAULT_PLOT_STYLE, plotType: 'heatmap' }).dataCsv);
+    if (tex) await compileOk(plot);
+  });
+  it('rejects incomplete grids and invalid colour ranges', () => {
+    expect(() => buildPlotFromData({ ...data(), series: data().series.slice(0, 1) }, { ...DEFAULT_PLOT_STYLE, plotType: 'heatmap' })).toThrow('at least two');
+    const mismatched = data(); mismatched.series[1]!.points[0]!.x = 20;
+    expect(() => buildPlotFromData(mismatched, { ...DEFAULT_PLOT_STYLE, plotType: 'heatmap' })).toThrow('same row values');
+    expect(() => buildPlotFromData(data(), { ...DEFAULT_PLOT_STYLE, plotType: 'heatmap', colorMin: 10, colorMax: 0 })).toThrow('minimum');
+  });
+});
+
 describe('refinement', () => {
   it('applies structural operations, keeps everything else and reports topology changes', () => {
     const r = applyDiagramPatch(QUBIT_RESONATOR, {

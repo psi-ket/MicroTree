@@ -8,6 +8,7 @@ import type { z } from 'zod';
 import type {
   ApplyInsertionRequest,
   CreateVisualTaskRequest,
+  CreateDataPlotRequest,
   InsertionOptionsSchema,
   ManualEditRequest,
   PlotUpdateRequest,
@@ -475,6 +476,25 @@ export class VisualRuntime {
 
   // ---------------------------------------------------------- artifacts
 
+  async createDataPlot(input: z.infer<typeof CreateDataPlotRequest>, actor: Actor) {
+    if (input.projectId) this.projects.get(input.projectId);
+    const escape = (s: string) => s.replace(/[\\{}%&#_$^~]/g, (c) => ({ '\\': '\\textbackslash{}', '^': '\\textasciicircum{}', '~': '\\textasciitilde{}' }[c] ?? `\\${c}`));
+    const axis = (label: string, scale: 'linear' | 'log'): Axis => ({ label: escape(label), scale, unit: null, reversed: false, min: null, max: null, calibration: [] });
+    if (input.series.some((s) => s.points.some((p) => (input.xScale === 'log' && p.x <= 0) || (input.yScale === 'log' && p.y <= 0)))) {
+      throw new StudioError('VALIDATION_FAILED', 'Logarithmic axes require positive values');
+    }
+    const data: PlotData = {
+      series: input.series.map((s) => exactSeries(escape(s.name), s.points)),
+      xAxis: axis(input.xLabel, input.xScale), yAxis: axis(input.yLabel, input.yScale), warnings: [],
+    };
+    const style = { ...DEFAULT_PLOT_STYLE, ...stripUndefined(input.style), ...(input.style.colorLabel ? { colorLabel: escape(input.style.colorLabel) } : {}), title: input.style.title ? escape(input.style.title) : null };
+    const payload = await guard(() => buildPlotFromData(data, style, { title: input.title }));
+    const { artifact, version } = this.artifacts.create(payload, { projectId: input.projectId, sourceAssetId: null, taskId: null, origin: 'manual', changeDescription: 'Created from exact table data' });
+    this.audit.record({ action: 'visual.artifact.from-data', outcome: 'success', actor: actor.sessionId, projectId: input.projectId, target: artifact.id });
+    this.changed(artifact.id, version);
+    return { artifact, version: this.autoCompile(artifact, version) };
+  }
+
   artifact(id: string) {
     return guard(() => ({ artifact: this.artifacts.require(id), version: versionView(this.artifacts.current(id)) }));
   }
@@ -631,18 +651,25 @@ export class VisualRuntime {
       if (parsed.errors.length) throw new StudioError('VALIDATION_FAILED', parsed.errors[0]!, { errors: parsed.errors.slice(0, 20) });
       if (!parsed.rows.length) throw new StudioError('VALIDATION_FAILED', 'The CSV has no data rows');
       const data: PlotData = { series: [exactSeries(sd.data.series[0]?.name ?? 'Data', parsed.rows)], xAxis: mergeAxis(sd.data.xAxis, input.xAxis), yAxis: mergeAxis(sd.data.yAxis, input.yAxis), warnings: [] };
-      payload = buildPlotFromData(data, style, { title: a.title, ...(sd.reconstruction ? { reconstruction: sd.reconstruction } : {}) });
+      payload = await guard(() => buildPlotFromData(data, style, { title: a.title, ...(sd.reconstruction ? { reconstruction: sd.reconstruction } : {}) }));
       origin = 'manual';
       description = `Replaced the data with ${parsed.rows.length} exact values`;
     } else if (input.xAxis || input.yAxis) {
-      if (!sd.reconstruction) throw new StudioError('CONFLICT', 'Recalibration needs the pixel positions from an image reconstruction');
-      const recon: PlotOutput = { ...sd.reconstruction, xAxis: mergeAxis(sd.reconstruction.xAxis, input.xAxis), yAxis: mergeAxis(sd.reconstruction.yAxis, input.yAxis) };
-      payload = buildPlot(recon, style);
-      payload.title = a.title;
-      origin = 'calibration';
-      description = 'Recalibrated the axes and digitised again';
+      if (!sd.reconstruction || sd.data.series.every((s) => s.points.every((p) => p.origin === 'exact'))) {
+        const data = { ...sd.data, xAxis: mergeAxis(sd.data.xAxis, input.xAxis), yAxis: mergeAxis(sd.data.yAxis, input.yAxis) };
+        if (data.series.some((s) => s.points.some((p) => (data.xAxis.scale === 'log' && p.x <= 0) || (data.yAxis.scale === 'log' && p.y <= 0)))) throw new StudioError('VALIDATION_FAILED', 'Logarithmic axes require positive values');
+        payload = await guard(() => buildPlotFromData(data, style, { title: a.title }));
+        origin = 'manual';
+        description = 'Changed axes without changing exact data';
+      } else {
+        const recon: PlotOutput = { ...sd.reconstruction, xAxis: mergeAxis(sd.reconstruction.xAxis, input.xAxis), yAxis: mergeAxis(sd.reconstruction.yAxis, input.yAxis) };
+        payload = await guard(() => buildPlot(recon, style));
+        payload.title = a.title;
+        origin = 'calibration';
+        description = 'Recalibrated the axes and digitised again';
+      }
     } else {
-      payload = buildPlotFromData(sd.data, style, { title: a.title, ...(sd.reconstruction ? { reconstruction: sd.reconstruction } : {}) });
+      payload = await guard(() => buildPlotFromData(sd.data!, style, { title: a.title, ...(sd.reconstruction ? { reconstruction: sd.reconstruction } : {}) }));
       origin = 'manual';
       description = 'Changed the plot style';
     }

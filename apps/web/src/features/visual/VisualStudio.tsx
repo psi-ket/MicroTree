@@ -26,6 +26,7 @@ import { consentRequest, errorText, isFinished, PRESETS, TASK_LABEL, type Consen
 import { PreviewPane } from './PreviewPane';
 import { invalidateArtifact, useArtifact, useArtifacts, useVersions, useVisualTask } from './queries';
 import { SourcePanel } from './SourcePanel';
+import { DataPlotPanel } from './DataPlotPanel';
 
 const WIDE = '(min-width: 1100px)';
 const SETTINGS_KEY = 'rs.visual.settings';
@@ -71,6 +72,7 @@ export function VisualStudio({ projectId, backLabel, onBack }: { projectId: stri
   const [instruction, setInstruction] = useState('');
   const [refining, setRefining] = useState(false);
   const [showLeft, setShowLeft] = useState(true);
+  const [inputMode, setInputMode] = useState<'image' | 'data'>('image');
   const [showRight, setShowRight] = useState(true);
   const [narrowTab, setNarrowTab] = useState<'input' | 'preview' | 'source' | 'details'>('input');
 
@@ -199,7 +201,13 @@ export function VisualStudio({ projectId, backLabel, onBack }: { projectId: stri
   const canApprove = !!version && (artifact?.artifactType === 'explanation' || version.compilationStatus === 'succeeded');
   const imageAsset = assetId ?? artifact?.sourceAssetId ?? null;
 
-  const input = <InputPanel projectId={projectId} assetId={assetId} onAsset={setAssetId} settings={settings} onSettings={(p) => setSettings((s) => ({ ...s, ...p }))} onRun={() => void start()} running={running} />;
+  const input = <div className="flex h-full min-h-0 flex-col overflow-auto">
+    <div className="flex gap-1 border-b border-rule p-2" aria-label="Visual input source">
+      <Button size="sm" aria-pressed={inputMode === 'image'} onClick={() => setInputMode('image')}>Image / AI</Button>
+      <Button size="sm" aria-pressed={inputMode === 'data'} onClick={() => setInputMode('data')}>Graph from data</Button>
+    </div>
+    {inputMode === 'data' ? <DataPlotPanel projectId={projectId} settings={settings} onSettings={(p) => setSettings((s) => ({ ...s, ...p }))} onCreated={(id) => { setTaskId(null); setAssetId(null); setArtifactId(id); setSelected(null); if (!wide) setNarrowTab('preview'); }} /> : <InputPanel projectId={projectId} assetId={assetId} onAsset={setAssetId} settings={settings} onSettings={(p) => setSettings((s) => ({ ...s, ...p }))} onRun={() => void start()} running={running} />}
+  </div>;
   const preview = (
     <PreviewPane
       assetId={imageAsset}
