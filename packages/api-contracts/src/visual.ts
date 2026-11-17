@@ -201,7 +201,13 @@ export const PlotUpdateRequest = z
         grid: z.enum(['none', 'major', 'both']),
         monochrome: z.boolean(),
         legend: z.enum(['north east', 'north west', 'south east', 'south west', 'outer north east', 'none']),
-        plotType: z.enum(['line', 'scatter', 'bar', 'histogram']),
+        plotType: z.enum(['line', 'scatter', 'bar', 'histogram', 'heatmap']),
+        colormap: z.enum(['viridis', 'hot', 'gray']),
+        colorbar: z.boolean(),
+        colorLabel: z.string().max(200),
+        colorMin: z.number().finite().nullable(),
+        colorMax: z.number().finite().nullable(),
+        heatmapTopDown: z.boolean(),
         title: z.string().max(300).nullable(),
       })
       .partial()
@@ -212,6 +218,25 @@ export const PlotUpdateRequest = z
   })
   .strict();
 export const CompareResponse = z.object({ from: z.number().int(), to: z.number().int(), diff: z.array(z.object({ kind: z.enum(['same', 'added', 'removed']), text: z.string() })), structuredChanged: z.boolean() });
+
+/** Exact numeric data imported by the graph builder. No provider is needed. */
+export const CreateDataPlotRequest = z.object({
+  projectId: z.string().min(1).max(80).nullable().default(null),
+  title: z.string().trim().min(1).max(200),
+  xLabel: z.string().max(200),
+  yLabel: z.string().max(200),
+  series: z.array(z.object({
+    name: z.string().max(200),
+    points: z.array(z.object({ x: z.number().finite(), y: z.number().finite() }).strict()).min(1).max(10000),
+  }).strict()).min(1).max(20),
+  style: PlotUpdateRequest.shape.style.unwrap().extend({
+    width: z.string().regex(/^(?!0+(?:\.0+)?(?:cm|mm|pt|in)$)\d+(?:\.\d+)?(?:cm|mm|pt|in)$/).optional(),
+    height: z.string().regex(/^(?!0+(?:\.0+)?(?:cm|mm|pt|in)$)\d+(?:\.\d+)?(?:cm|mm|pt|in)$/).optional(),
+    plotType: z.enum(['line', 'scatter', 'bar', 'heatmap']).optional(),
+  }),
+  xScale: z.enum(['linear', 'log']).default('linear'),
+  yScale: z.enum(['linear', 'log']).default('linear'),
+}).strict();
 
 export const InsertionOptionsSchema = z
   .object({

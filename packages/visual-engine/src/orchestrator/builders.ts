@@ -9,6 +9,7 @@ import { formatEquation, type EquationFormatOptions } from '../equations/equatio
 import { normalizeEquationLatex } from '../equations/equation-normalizer';
 import { validateEquation } from '../equations/equation-validator';
 import { plotExportCsv, plotTableCsv } from '../plots/csv-generator';
+import { heatmapTableCsv } from '../plots/heatmap';
 import { generatePgfplots, DEFAULT_PLOT_STYLE, type PlotStyle } from '../plots/pgfplots-generator';
 import { digitizePlot } from '../plots/plot-digitizer';
 import type { ElectricalCircuitOutput, QuantumCircuitOutput } from '../schemas/circuit.schema';
@@ -117,7 +118,7 @@ export const PREVIEW_DATA_FILE = 'plot-data.csv';
 
 /** A plot from data (digitised from an image, estimated, or exact) with a style that never touches the data. */
 export function buildPlotFromData(data: PlotData, style: PlotStyle, extra: { reconstruction?: PlotOutput; title?: string } = {}): ArtifactPayload {
-  const csv = plotTableCsv(data);
+  const csv = style.plotType === 'heatmap' ? heatmapTableCsv(data) : plotTableCsv(data);
   const source = generatePgfplots(data, PREVIEW_DATA_FILE, style);
   const origins = new Set(data.series.flatMap((s) => s.points.map((p) => p.origin)));
   const warnings = [...data.warnings];

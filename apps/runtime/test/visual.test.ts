@@ -102,6 +102,62 @@ afterAll(async () => {
 
 // ------------------------------------------------------------------ tests
 
+describe('graphs from exact data', () => {
+  it('creates and restyles a heatmap with exact data and a compiled preview', async () => {
+    const input = { projectId: project.id, title: 'Polarization heatmap', xLabel: 'Column', yLabel: 'Pol Angle',
+      series: [{ name: '1.7', points: [{ x: 19, y: 33.574 }, { x: 24, y: 38.198 }] }, { name: '1.10', points: [{ x: 19, y: 41.634 }, { x: 24, y: 47.610 }] }],
+      style: { plotType: 'heatmap', colormap: 'viridis', colorLabel: 'Intensity', colorMin: 0, colorMax: 60 } };
+    const response = await rt.request('POST', api('/visual/plots/from-data'), { body: input });
+    expect(response.statusCode, response.body).toBe(201);
+    const result = ArtifactResponse.parse(response.json());
+    expect(result.version.sourceCode).toContain('matrix plot*');
+    expect(result.version.sourceCode).toContain('xticklabels={{1.7},{1.10}}');
+    const updated = await rt.request('POST', api(`/visual/artifacts/${result.artifact.id}/plot`), { body: { style: { colormap: 'hot', heatmapTopDown: false } } });
+    expect(updated.statusCode, updated.body).toBe(201);
+    expect(updated.json<{ version: ArtifactVersion }>().version.dataCsv).toBe(result.version.dataCsv);
+    const out = await current(result.artifact.id);
+    if (texAvailable) {
+      expect(out.version.compilationStatus).toBe('succeeded');
+      const approved = await rt.request('POST', api(`/visual/artifacts/${result.artifact.id}/approve`), { body: { version: out.version.versionNumber } });
+      expect(approved.statusCode, approved.body).toBe(200);
+      const plan = await rt.request('POST', api(`/visual/artifacts/${result.artifact.id}/insert/preview`), { body: { projectId: project.id, version: out.version.versionNumber, targetFile: 'main.tex', label: 'fig:heatmap', caption: 'Polarization measurements', addPreamble: true } });
+      expect(plan.statusCode, plan.body).toBe(200);
+      expect(plan.json<{ plan: InsertionPlan }>().plan.createdFiles.some((f) => f.content === result.version.dataCsv)).toBe(true);
+    }
+    const invalid = await rt.request('POST', api('/visual/plots/from-data'), { body: { ...input, series: input.series.slice(0, 1) } });
+    expect(invalid.statusCode, invalid.body).toBe(400);
+  });
+
+  it('creates multiple series without AI and preserves values when editing axes', async () => {
+    const beforeCalls = seen.length;
+    const response = await rt.request('POST', api('/visual/plots/from-data'), { body: {
+      projectId: project.id, title: 'Imported graph', xLabel: 'Time (s)', yLabel: 'Value_%',
+      series: [{ name: 'A & B', points: [{ x: 1, y: 4 }, { x: 2, y: 9 }] }, { name: 'Second', points: [{ x: 1, y: 2 }, { x: 2, y: 3 }] }],
+      style: { plotType: 'scatter', width: '9cm', height: '6cm' },
+    } });
+    expect(response.statusCode, response.body).toBe(201);
+    const result = ArtifactResponse.parse(response.json());
+    expect(result.artifact).toMatchObject({ artifactType: 'plot', sourceAssetId: null });
+    expect(result.version.sourceCode).toContain('only marks');
+    expect(result.version.sourceCode).toContain('A \\& B');
+    expect(result.version.sourceCode).toContain('Value\\_\\%');
+    const csv = result.version.dataCsv;
+    const updated = await rt.request('POST', api(`/visual/artifacts/${result.artifact.id}/plot`), { body: { xAxis: { label: 'Elapsed time', scale: 'log' } } });
+    expect(updated.statusCode, updated.body).toBe(201);
+    expect(updated.json<{ version: ArtifactVersion }>().version.dataCsv).toBe(csv);
+    expect(seen.length).toBe(beforeCalls);
+    await rt.visual.idle();
+    const out = await current(result.artifact.id);
+    if (texAvailable) expect(out.version.compilationStatus).toBe('succeeded');
+  });
+
+  it('rejects nonpositive logarithmic data and invalid dimensions', async () => {
+    const input = { title: 'Graph', xLabel: 'x', yLabel: 'y', series: [{ name: 'Data', points: [{ x: 0, y: 2 }] }], style: { plotType: 'line' } };
+    expect((await rt.request('POST', api('/visual/plots/from-data'), { body: { ...input, xScale: 'log' } })).statusCode).toBe(400);
+    expect((await rt.request('POST', api('/visual/plots/from-data'), { body: { ...input, style: { width: 'nonsense' } } })).statusCode).toBe(400);
+  });
+});
+
 describe('image intake', () => {
   it('keeps the original, serves it inert, and refuses what is not an image', async () => {
     const res = await upload();

@@ -154,7 +154,7 @@ export interface PlotAxis {
 }
 
 export interface PlotSettings {
-  style: { width: string; height: string; grid: 'none' | 'major' | 'both'; monochrome: boolean; legend: 'north east' | 'north west' | 'south east' | 'south west' | 'outer north east' | 'none'; plotType: 'line' | 'scatter' | 'bar' | 'histogram'; title: string | null };
+  style: { width: string; height: string; grid: 'none' | 'major' | 'both'; monochrome: boolean; legend: 'north east' | 'north west' | 'south east' | 'south west' | 'outer north east' | 'none'; plotType: 'line' | 'scatter' | 'bar' | 'histogram' | 'heatmap'; title: string | null; colormap?: 'viridis' | 'hot' | 'gray'; colorbar?: boolean; colorLabel?: string; colorMin?: number | null; colorMax?: number | null; heatmapTopDown?: boolean };
   xAxis: PlotAxis;
   yAxis: PlotAxis;
   canRecalibrate: boolean;

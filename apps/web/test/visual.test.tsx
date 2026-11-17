@@ -34,6 +34,7 @@ const visual = {
   preview: vi.fn(),
   refine: vi.fn(),
   updatePlot: vi.fn(),
+  createDataPlot: vi.fn(),
   approve: vi.fn(),
   compare: vi.fn(),
   export: vi.fn(),
@@ -180,6 +181,57 @@ async function noAxeViolations(container: HTMLElement) {
 }
 
 // ---------------------------------------------------------------- tests
+
+describe('graph from data', () => {
+  it('creates a heatmap from column headings, angle rows and decimal-comma cells', async () => {
+    visual.createDataPlot.mockResolvedValue({ artifact: ARTIFACT, version: version(2) });
+    const { container } = wrap(<VisualStudio projectId={null} backLabel="Projects" onBack={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Graph from data' }));
+    fireEvent.change(screen.getByLabelText('Paste or edit data'), { target: { value: 'Pol Angle\t1.7\t1.10\n19\t33,574\t41,634\n24\t38,198\t47,610' } });
+    fireEvent.change(screen.getByLabelText('Graph type'), { target: { value: 'heatmap' } });
+    fireEvent.change(screen.getByLabelText('Colour palette'), { target: { value: 'hot' } });
+    fireEvent.change(screen.getByLabelText('Colour-bar label'), { target: { value: 'Intensity' } });
+    fireEvent.change(screen.getByLabelText('Colour maximum'), { target: { value: '60' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Create graph' }));
+    await waitFor(() => expect(visual.createDataPlot).toHaveBeenLastCalledWith(expect.objectContaining({
+      xLabel: 'Column', yLabel: 'Pol Angle', xScale: 'linear', yScale: 'linear',
+      style: expect.objectContaining({ plotType: 'heatmap', colormap: 'hot', colorLabel: 'Intensity', colorMax: 60 }),
+      series: [{ name: '1.7', points: [{ x: 19, y: 33.574 }, { x: 24, y: 38.198 }] }, { name: '1.10', points: [{ x: 19, y: 41.634 }, { x: 24, y: 47.61 }] }],
+    })));
+    await noAxeViolations(container);
+  });
+
+  it('uses decimal commas by default and allows explicit comma thousands', async () => {
+    visual.createDataPlot.mockResolvedValue({ artifact: ARTIFACT, version: version(2) });
+    wrap(<VisualStudio projectId={null} backLabel="Projects" onBack={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Graph from data' }));
+    fireEvent.change(screen.getByLabelText('Paste or edit data'), { target: { value: 'Pol Angle\t1.8\n19\t28,381\n24\t33,398' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Create graph' }));
+    await waitFor(() => expect(visual.createDataPlot).toHaveBeenLastCalledWith(expect.objectContaining({ series: [{ name: '1.8', points: [{ x: 19, y: 28.381 }, { x: 24, y: 33.398 }] }] })));
+    await waitFor(() => expect((screen.getByRole('button', { name: 'Create graph' }) as HTMLButtonElement).disabled).toBe(false));
+    fireEvent.change(screen.getByLabelText('Number format'), { target: { value: 'dot' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Create graph' }));
+    await waitFor(() => expect(visual.createDataPlot).toHaveBeenLastCalledWith(expect.objectContaining({ series: [{ name: '1.8', points: [{ x: 19, y: 28381 }, { x: 24, y: 33398 }] }] })));
+  });
+
+  it('creates a graph from selected columns and rows without an AI provider', async () => {
+    visual.createDataPlot.mockResolvedValue({ artifact: ARTIFACT, version: version(2) });
+    const { container } = wrap(<VisualStudio projectId={null} backLabel="Projects" onBack={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Graph from data' }));
+    fireEvent.change(screen.getByLabelText('Paste or edit data'), { target: { value: 'Time,A,B\n0,2,5\n1,4,9' } });
+    fireEvent.change(screen.getByLabelText('First data row'), { target: { value: '2' } });
+    fireEvent.click(screen.getByLabelText('B'));
+    fireEvent.change(screen.getByLabelText('Graph type'), { target: { value: 'scatter' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Create graph' }));
+    await waitFor(() => expect(visual.createDataPlot).toHaveBeenCalledWith(expect.objectContaining({
+      xLabel: 'Time', style: expect.objectContaining({ plotType: 'scatter' }),
+      series: [{ name: 'A', points: [{ x: 1, y: 4 }] }, { name: 'B', points: [{ x: 1, y: 9 }] }],
+    })));
+    expect(visual.createTask).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.getByRole('toolbar', { name: 'Result actions' })).toBeTruthy());
+    await noAxeViolations(container);
+  });
+});
 
 describe('model helpers', () => {
   it('turns a dragged box into page points with the top-left origin', () => {

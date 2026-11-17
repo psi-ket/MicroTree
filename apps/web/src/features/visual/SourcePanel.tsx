@@ -8,6 +8,7 @@ import { runtime } from '../../lib/connection';
 import { useResolvedTheme } from '../../lib/theme';
 import { setupMonaco } from '../editor/monaco-setup';
 import { errorText, plotSettingsOf, type PlotAxis, type PlotSettings } from './model';
+import { HeatmapControls } from './HeatmapControls';
 import { invalidateArtifact } from './queries';
 
 setupMonaco();
@@ -181,6 +182,8 @@ function AxisEditor({ name, axis, onChange, canRecalibrate }: { name: string; ax
   return (
     <fieldset className="rounded-md border border-rule p-2">
       <legend className="px-1 text-[12px] font-medium">{name} axis</legend>
+      <label className="text-[12px]">Label<input className="w-full rounded-ctl border border-rule bg-raised px-2" value={axis.label ?? ''} maxLength={200} onChange={(e) => onChange({ ...axis, label: e.target.value })} /></label>
+      <label className="text-[12px]">Unit<input className="w-full rounded-ctl border border-rule bg-raised px-2" value={axis.unit ?? ''} maxLength={60} onChange={(e) => onChange({ ...axis, unit: e.target.value })} /></label>
       <div className="grid grid-cols-2 gap-1.5">
         <label className="text-[12px]">
           Scale
@@ -243,10 +246,10 @@ function PlotTab({ artifactId, settings }: { artifactId: string; settings: PlotS
   const apply = async (what: 'style' | 'axes') => {
     setBusy(true);
     try {
-      const pick = (a: PlotAxis) => ({ scale: a.scale, reversed: a.reversed, calibration: a.calibration });
+      const pick = (a: PlotAxis) => ({ label: a.label, unit: a.unit, scale: a.scale, reversed: a.reversed, ...(settings.canRecalibrate ? { calibration: a.calibration } : {}) });
       await runtime().visual.updatePlot(artifactId, what === 'style' ? { style } : { xAxis: pick(x), yAxis: pick(y) });
       invalidateArtifact(artifactId);
-      toast.success(what === 'style' ? 'Style changed; the data was not touched' : 'Axes recalibrated and digitised again');
+      toast.success(what === 'style' ? 'Style changed; the data was not touched' : 'Axes updated');
     } catch (e) {
       toast.error(errorText(e));
     } finally {
@@ -261,7 +264,7 @@ function PlotTab({ artifactId, settings }: { artifactId: string; settings: PlotS
         <label className="text-[12px]">
           Type
           <Select value={style.plotType} onChange={(e) => setStyle({ ...style, plotType: e.target.value as PlotSettings['style']['plotType'] })}>
-            {['line', 'scatter', 'bar', 'histogram'].map((t) => (
+            {['line', 'scatter', 'bar', 'histogram', 'heatmap'].map((t) => (
               <option key={t}>{t}</option>
             ))}
           </Select>
@@ -281,10 +284,11 @@ function PlotTab({ artifactId, settings }: { artifactId: string; settings: PlotS
           Apply style
         </Button>
       </fieldset>
+      {style.plotType === 'heatmap' && <HeatmapControls style={style} onChange={(patch) => setStyle({ ...style, ...patch })} />}
       <AxisEditor name="x" axis={x} onChange={setX} canRecalibrate={settings.canRecalibrate} />
       <AxisEditor name="y" axis={y} onChange={setY} canRecalibrate={settings.canRecalibrate} />
       <Button size="sm" disabled={busy} onClick={() => void apply('axes')} data-testid="apply-axes">
-        Recalibrate axes
+        Apply axes
       </Button>
       {!settings.canRecalibrate ? <FieldHint className="text-ink-muted">These values were entered as exact data, so there are no pixel positions to recalibrate.</FieldHint> : null}
     </div>

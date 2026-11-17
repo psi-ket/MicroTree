@@ -1,4 +1,5 @@
 import type { PlotData } from '../schemas/plot.schema';
+import { generateHeatmap } from './heatmap';
 
 /** Style choices that do not touch the data (changing them never re-extracts anything). */
 export interface PlotStyle {
@@ -7,7 +8,13 @@ export interface PlotStyle {
   grid: 'none' | 'major' | 'both';
   monochrome: boolean;
   legend: 'north east' | 'north west' | 'south east' | 'south west' | 'outer north east' | 'none';
-  plotType: 'line' | 'scatter' | 'bar' | 'histogram';
+  plotType: 'line' | 'scatter' | 'bar' | 'histogram' | 'heatmap';
+  colormap?: 'viridis' | 'hot' | 'gray';
+  colorbar?: boolean;
+  colorLabel?: string;
+  colorMin?: number | null;
+  colorMax?: number | null;
+  heatmapTopDown?: boolean;
   /** Title above the axis. */
   title: string | null;
 }
@@ -39,6 +46,7 @@ export function generatePgfplots(data: PlotData, dataFile: string, style: PlotSt
     `xlabel={${axisLabel(ax.label, ax.unit)}}`,
     `ylabel={${axisLabel(ay.label, ay.unit)}}`,
   ];
+  if (style.plotType === 'heatmap') return generateHeatmap(data, dataFile, style, opts);
   if (ax.scale === 'log') opts.push('xmode=log');
   if (ay.scale === 'log') opts.push('ymode=log');
   if (ax.reversed) opts.push('x dir=reverse');
